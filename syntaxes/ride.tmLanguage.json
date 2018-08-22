@@ -78,25 +78,8 @@
         "base58": {
             "patterns": [
                 {
-                    "begin": "\\b(base58)'",
-                    "beginCaptures": {
-                        "0": {
-                            "name": "punctuation.definition.string.begin.ride"
-                        }
-                    },
-                    "end": "'",
-                    "endCaptures": {
-                        "0": {
-                            "name": "punctuation.definition.string.end.ride"
-                        }
-                    },
-                    "name": "constant.character.escape.ride",
-                    "patterns":[
-                        {
-                            "match": "[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]*",
-                            "name": "base58.ride"
-                        }
-                    ]
+                    "match": "\\b(base58)'[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+'",
+                    "name": "constant.character.escape.ride"
                 }
             ]
         }

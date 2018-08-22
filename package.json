@@ -39,15 +39,15 @@
 		],
 		"configuration": {
 			"type": "object",
-			"title": "Example configuration",
+			"title": "Ride configuration",
 			"properties": {
-				"languageServerExample.maxNumberOfProblems": {
+				"rideLanguageServer.maxNumberOfProblems": {
 					"scope": "resource",
 					"type": "number",
 					"default": 100,
 					"description": "Controls the maximum number of problems produced by the server."
 				},
-				"languageServerExample.trace.server": {
+				"rideLanguageServer.trace.server": {
 					"scope": "window",
 					"type": "string",
 					"enum": [
