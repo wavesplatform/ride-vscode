@@ -1,0 +1,104 @@
+{
+    "information_for_contributors": [
+        "None"
+    ],
+    "version": "",
+    "name": "Ride",
+    "scopeName": "source.ride",
+    "patterns": [
+        {
+            "name": "keyword.ride",
+            "match": "\\b(let|if|then|else)\\b"
+        },
+        {
+            "include": "#strings"
+        },
+        {
+            "include": "#base58"
+        },
+        {
+            "include": "#boolean"
+        }
+    ],
+    "repository": {
+        "strings": {
+            "patterns": [
+                {
+                    "begin": "\"",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.begin.ride"
+                        }
+                    },
+                    "end": "\"",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.end.ride"
+                        }
+                    },
+                    "name": "string.quoted.double.ride",
+                    "patterns": [
+                        {
+                            "match": "\\\\.",
+                            "name": "constant.character.escape.ride"
+                        }
+                    ]
+                },
+                {
+                    "begin": "'",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.begin.ride"
+                        }
+                    },
+                    "end": "'",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.end.ride"
+                        }
+                    },
+                    "name": "string.quoted.single.ride",
+                    "patterns": [
+                        {
+                            "match": "\\\\.",
+                            "name": "constant.character.escape.ride"
+                        }
+                    ]
+                }
+            ]
+        },
+        "boolean": {
+            "patterns": [
+                {
+                    "match": "\\b(true|false)\\b",
+                    "name": "constant.language.ride"
+                }
+            ]
+        },
+        "base58": {
+            "patterns": [
+                {
+                    "begin": "\\b(base58)'",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.begin.ride"
+                        }
+                    },
+                    "end": "'",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.end.ride"
+                        }
+                    },
+                    "name": "constant.character.escape.ride",
+                    "patterns":[
+                        {
+                            "match": "[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]*",
+                            "name": "base58.ride"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
