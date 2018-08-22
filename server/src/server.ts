@@ -13,10 +13,10 @@ import {
 	CompletionItemKind,
 	TextDocumentPositionParams
 } from 'vscode-languageserver';
+import {suggestions} from './suggestions'
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
-// Also include all preview / proposed LSP features.
-let connection = createConnection(ProposedFeatures.all);
+let connection = createConnection();
 
 // Create a simple text document manager. The text document manager
 // supports full document sync only
@@ -178,18 +178,7 @@ connection.onCompletion(
 		// The pass parameter contains the position of the text document in
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
-		return [
-			{
-				label: 'TypeScript',
-				kind: CompletionItemKind.Text,
-				data: 1
-			},
-			{
-				label: 'JavaScript',
-				kind: CompletionItemKind.Text,
-				data: 2
-			}
-		];
+		return suggestions
 	}
 );
 
