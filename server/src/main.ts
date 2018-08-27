@@ -1,65 +1,158 @@
 'use strict';
 
 import {
-	createConnection,
-	TextDocuments,
-	TextDocument,
-	Diagnostic,
-	DiagnosticSeverity,
-	ProposedFeatures,
-	InitializeParams,
+    createConnection,
+    TextDocuments,
+    TextDocument,
+    Diagnostic,
+    DiagnosticSeverity,
+    ProposedFeatures,
+    InitializeParams,
     DidChangeConfigurationNotification,
     DidOpenTextDocumentParams,
     DidCloseTextDocumentParams,
     DidChangeTextDocumentParams,
-	CompletionItem,
-	CompletionItemKind,
-	TextDocumentPositionParams,
+    CompletionItem,
+    CompletionItemKind,
+    TextDocumentPositionParams,
     IConnection,
-    Files
+    Files,
+    TextDocumentSyncKind
 } from 'vscode-languageserver';
 import * as fs from 'fs'
-import {suggestions} from './suggestions'
-import {LspService} from './LspService'
+import { LspService } from './LspService'
 
 class LspServer {
-    private connection: IConnection
-    private service: LspService
-    private documents: {[uri: string]: TextDocument} = {}
+    private hasConfigurationCapability: boolean = false;
+    private hasWorkspaceFolderCapability: boolean = false;
+    private hasDiagnosticRelatedInformationCapability: boolean = false;
 
-    constructor(){
-        this.connection = createConnection()
+    private service: LspService
+    private documents: { [uri: string]: TextDocument } = {}
+
+    constructor(private connection: IConnection) {
         this.service = new LspService()
 
-        const connection = createConnection();
-        const service = new LspService()
-    
         // Bind connection events to server methods
         // Init
-        connection.onInitialize(service.initialize.bind(service));
-        connection.onInitialized(service.initialized.bind(service));
-    
+        this.bindInit()
+        this.bindCallbacks()
+
+        // Listen
+        this.connection.listen()
+    }
+
+    private async getDocument(uri: string) {
+        let document = this.documents[uri]
+        if (!document) {
+            const path = Files.uriToFilePath(uri)
+            document = await new Promise<TextDocument>((resolve, reject) => {
+                fs.access(path, (err) => {
+                    if (err) {
+                        resolve(null)
+                    } else {
+                        fs.readFile(path, (err, data) => {
+                            resolve(TextDocument.create(uri, "ride", 1, data.toString()))
+                        })
+                    }
+                })
+            })
+        }
+        return document
+    }
+
+    private applyChanges(document: TextDocument, didChangeTextDocumentParams: DidChangeTextDocumentParams): TextDocument {
+        let buffer = document.getText();
+        let changes = didChangeTextDocumentParams.contentChanges;
+        for (let i = 0; i < changes.length; i++) {
+            if (!changes[i].range && !changes[i].rangeLength) {
+                // no ranges defined, the text is the entire document then
+                buffer = changes[i].text;
+                break;
+            }
+
+            let offset = document.offsetAt(changes[i].range.start);
+            let end = null;
+            if (changes[i].range.end) {
+                end = document.offsetAt(changes[i].range.end);
+            } else {
+                end = offset + changes[i].rangeLength;
+            }
+            buffer = buffer.substring(0, offset) + changes[i].text + buffer.substring(end);
+        }
+        const changedDocument = TextDocument.create(didChangeTextDocumentParams.textDocument.uri, document.languageId, didChangeTextDocumentParams.textDocument.version, buffer);
+        return changedDocument
+    }
+
+    private bindInit(connection: IConnection = this.connection, service: LspService = this.service) {
+        connection.onInitialize((params: InitializeParams) => {
+            let capabilities = params.capabilities;
+
+            // Does the client support the `workspace/configuration` request?
+            // If not, we will fall back using global settings
+            this.hasConfigurationCapability =
+                capabilities.workspace && !!capabilities.workspace.configuration;
+            this.hasWorkspaceFolderCapability =
+                capabilities.workspace && !!capabilities.workspace.workspaceFolders;
+            this.hasDiagnosticRelatedInformationCapability =
+                capabilities.textDocument &&
+                capabilities.textDocument.publishDiagnostics &&
+                capabilities.textDocument.publishDiagnostics.relatedInformation;
+
+            return {
+                capabilities: {
+                    textDocumentSync: TextDocumentSyncKind.Incremental,
+                    // Tell the client that the server supports code completion
+                    completionProvider: {
+                        resolveProvider: true,
+                        triggerCharacters: ['.']
+                    }
+                }
+            }
+        });
+        connection.onInitialized(() => {
+            if (this.hasConfigurationCapability) {
+                // Register for all configuration changes.
+                connection.client.register(
+                    DidChangeConfigurationNotification.type,
+                    undefined
+                );
+            }
+            if (this.hasWorkspaceFolderCapability) {
+                connection.workspace.onDidChangeWorkspaceFolders(_event => {
+                    connection.console.log('Workspace folder change event received.');
+                });
+            }
+        });
+    }
+
+    private bindCallbacks(connection: IConnection = this.connection, service: LspService = this.service) {
         // Document changes
         connection.onDidOpenTextDocument((didOpenTextDocumentParams: DidOpenTextDocumentParams): void => {
             let document = TextDocument.create(didOpenTextDocumentParams.textDocument.uri, didOpenTextDocumentParams.textDocument.languageId, didOpenTextDocumentParams.textDocument.version, didOpenTextDocumentParams.textDocument.text);
             this.documents[didOpenTextDocumentParams.textDocument.uri] = document;
-            service.didChangeContent(document)
+            const diagnostics = service.validateTextDocument(document)
+            this.sendDiagnostics(document.uri,diagnostics)
         });
         connection.onDidCloseTextDocument((didCloseTextDocumentParams: DidCloseTextDocumentParams): void => {
             delete this.documents[didCloseTextDocumentParams.textDocument.uri];
         });
         connection.onDidChangeTextDocument((didChangeTextDocumentParams: DidChangeTextDocumentParams): void => {
             const document = this.documents[didChangeTextDocumentParams.textDocument.uri];
-            const changedDocument = this.applyChanges(document, didChangeTextDocumentParams)    
+            const changedDocument = this.applyChanges(document, didChangeTextDocumentParams)
             this.documents[didChangeTextDocumentParams.textDocument.uri] = changedDocument;
             if (document.getText() !== changedDocument.getText()) {
-                service.didChangeContent(document)
+                const diagnostics = service.validateTextDocument(document)
+                this.sendDiagnostics(document.uri,diagnostics)
             }
         });
-    
+
         // Lsp callbacks
         // connection.onCodeAction(service.codeAction.bind(service));
-        // connection.onCompletion(service.completion.bind(service));
+        connection.onCompletion(async (textDocumentPosition: TextDocumentPositionParams): Promise<CompletionItem[]>=>{
+            const document = await this.getDocument(textDocumentPosition.textDocument.uri)
+            return this.service.completion(document, textDocumentPosition)
+        });
         // connection.onCompletionResolve(service.completionResolve.bind(service));
         // connection.onDefinition(service.definition.bind(service));
         // connection.onImplementation(service.implementation.bind(service));
@@ -74,52 +167,12 @@ class LspServer {
         // connection.onSignatureHelp(service.signatureHelp.bind(service));
         // connection.onWorkspaceSymbol(service.workspaceSymbol.bind(service));
         // connection.onFoldingRanges(service.foldingRanges.bind(service));
-    
-        // Listen
-        connection.listen()
     }
 
-    async getDocument(uri:string){
-        let document = this.documents[uri]
-        if (!document){
-            const path = Files.uriToFilePath(uri)
-            document = await new Promise<TextDocument>((resolve,reject)=>{
-                fs.access(path, (err)=> {
-                    if (err){
-                        resolve(null)
-                    }else{
-                        fs.readFile(path, (err, data)=> {
-                            resolve(TextDocument.create(uri, "ride", 1, data.toString()))
-                        })
-                    }
-                })
-            })
-        } 
-        return document
-    }
-
-    applyChanges(document: TextDocument, didChangeTextDocumentParams: DidChangeTextDocumentParams): TextDocument {
-        let buffer = document.getText();
-        let changes = didChangeTextDocumentParams.contentChanges;
-        for (let i = 0; i < changes.length; i++) {
-            if (!changes[i].range && !changes[i].rangeLength) {
-                // no ranges defined, the text is the entire document then
-                buffer = changes[i].text;
-                break;
-            }
-    
-            let offset = document.offsetAt(changes[i].range.start);
-            let end = null;
-            if (changes[i].range.end) {
-                end = document.offsetAt(changes[i].range.end);
-            } else {
-                end = offset + changes[i].rangeLength;
-            }
-            buffer = buffer.substring(0, offset) + changes[i].text + buffer.substring(end);
-        }
-        const changedDocument = TextDocument.create(didChangeTextDocumentParams.textDocument.uri, document.languageId, didChangeTextDocumentParams.textDocument.version, buffer);
-        return changedDocument
+    private sendDiagnostics(uri: string, diagnostics: Diagnostic[]){
+        this.connection.sendDiagnostics({uri, diagnostics})
     }
 }
 
-new LspServer();
+const connection = createConnection()
+new LspServer(connection);
