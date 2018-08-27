@@ -1,7 +1,7 @@
-import { CompletionItemKind } from 'vscode-languageserver'
+import { CompletionItemKind, CompletionItem, InsertTextFormat } from 'vscode-languageserver'
 const keywords = ["let", "true", "false", "if", "then", "else"]
 
-export const txFields = [
+const txFields = [
   'type',
   'id',
   'fee',
@@ -40,7 +40,7 @@ export const txTypes = [
   'DataTransaction',
 ]
 
-export const generalSuggestions = (kind: any) => [
+const generalSuggestions = (kind: any) => [
   {
     label: 'ifelse',
     kind,
@@ -67,7 +67,7 @@ export const generalSuggestions = (kind: any) => [
   },
 ]
 
-export const cryptoFunctions = (kind: any) => [
+const cryptoFunctions = (kind: any) => [
   {
     label: 'keccak256',
     kind,
@@ -102,7 +102,7 @@ export const cryptoFunctions = (kind: any) => [
   },
 ]
 
-export const contextFields = (kind: any) => [
+const contextFields = (kind: any) => [
   {
     label: 'height',
     kind,
@@ -121,7 +121,7 @@ export const contextFields = (kind: any) => [
   },
 ]
 
-export const contextFunctions = (kind: any) => [
+const contextFunctions = (kind: any) => [
   {
     label: 'getTransactionById',
     kind,
@@ -212,8 +212,25 @@ export const contextFunctions = (kind: any) => [
   },
 ]
 
-export const suggestions = keywords.map(label => ({ label, kind: CompletionItemKind.Keyword }))
-.concat(generalSuggestions(CompletionItemKind.Snippet))
-.concat(cryptoFunctions(CompletionItemKind.Function))
-.concat(contextFunctions(CompletionItemKind.Function))
-.concat(contextFields(CompletionItemKind.Field))
+export const globalSuggestions: CompletionItem[] = keywords.map(label => ({ label, kind: CompletionItemKind.Keyword }))
+  .concat(
+    generalSuggestions(CompletionItemKind.Snippet)
+      .map(item => Object.assign(
+        {},
+        item,
+        { insertTextFormat: InsertTextFormat.Snippet, insertText: item.insertText.value }))
+  )
+  .concat(cryptoFunctions(CompletionItemKind.Function)
+    .map(item => Object.assign(
+      {},
+      item,
+      { insertTextFormat: InsertTextFormat.Snippet, insertText: item.insertText.value })))
+  .concat(contextFunctions(CompletionItemKind.Function)
+    .map(item => Object.assign(
+      {},
+      item,
+      { insertTextFormat: InsertTextFormat.Snippet, insertText: item.insertText.value })))
+  .concat(contextFields(CompletionItemKind.Field))
+export const txFieldsItems = txFields.map(label => ({ label, kind: CompletionItemKind.Field }))
+
+export const txTypesItems = txTypes.map(label => ({ label, kind: CompletionItemKind.Interface }))

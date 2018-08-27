@@ -105,7 +105,7 @@ class LspServer {
                     // Tell the client that the server supports code completion
                     completionProvider: {
                         resolveProvider: true,
-                        triggerCharacters: ['.']
+                        triggerCharacters: ['.', ':']
                     }
                 }
             }
@@ -153,7 +153,7 @@ class LspServer {
             const document = await this.getDocument(textDocumentPosition.textDocument.uri)
             return this.service.completion(document, textDocumentPosition)
         });
-        // connection.onCompletionResolve(service.completionResolve.bind(service));
+        connection.onCompletionResolve(service.completionResolve.bind(service));
         // connection.onDefinition(service.definition.bind(service));
         // connection.onImplementation(service.implementation.bind(service));
         // connection.onTypeDefinition(service.typeDefinition.bind(service));

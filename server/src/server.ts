@@ -13,7 +13,7 @@ import {
 	CompletionItemKind,
 	TextDocumentPositionParams
 } from 'vscode-languageserver';
-import {suggestions} from './suggestions'
+import {globalSuggestions} from './suggestions'
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 let connection = createConnection();
@@ -178,7 +178,7 @@ connection.onCompletion(
 		// The pass parameter contains the position of the text document in
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
-		return suggestions
+		return globalSuggestions
 	}
 );
 
