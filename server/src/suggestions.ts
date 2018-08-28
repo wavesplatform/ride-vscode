@@ -1,4 +1,4 @@
-import { CompletionItemKind, CompletionItem, InsertTextFormat } from 'vscode-languageserver'
+import { CompletionItemKind, CompletionItem, InsertTextFormat } from 'vscode-languageserver-types'
 const keywords = ["let", "true", "false", "if", "then", "else"]
 
 const txFields = [
@@ -25,7 +25,7 @@ const txFields = [
   'minSponsoredAssetFee',
 ]
 
-export const txTypes = [
+const txTypes = [
   'TransferTransaction',
   'IssueTransaction',
   'ReissueTransaction',
@@ -40,197 +40,161 @@ export const txTypes = [
   'DataTransaction',
 ]
 
-const generalSuggestions = (kind: any) => [
+export const generalSuggestions: CompletionItem[] = [
   {
     label: 'ifelse',
-    kind,
-    insertText: {
-      value: 'if (${1:condition}) then $2 else $3',
-    },
+    insertText: 'if (${1:condition}) then $2 else $3',
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Snippet
   },
   {
     label: 'match',
-    kind,
-    insertText: {
-      value: `match (\${1:obj}) {
+    insertText: `match (\${1:obj}) {
     case $1:\${2:type} => $0
     case _ =>
   }`,
-    },
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Snippet
   },
-  {
-    label: 'base58',
-    kind,
-    insertText: {
-      value: `base58'$0'`,
-    },
-  },
+{
+  label: 'base58',
+    insertText:  `base58'$0'`,
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Snippet
+},
 ]
 
-const cryptoFunctions = (kind: any) => [
+export const cryptoFunctions: CompletionItem[] = [
   {
     label: 'keccak256',
-    kind,
-    insertText: {
-      value: 'keccak256(${0:BYTE_VECTOR})',
-    },
-    detail: "Computes the keccak 256 bit hash"
+    insertText: 'keccak256(${0:BYTE_VECTOR})',
+    detail: "Computes the keccak 256 bit hash",
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Function
   },
   {
     label: 'blake2b256',
-    kind,
-    insertText: {
-      value: 'blake2b256(${0:BYTE_VECTOR})',
-    },
-    detail: "Computes the blake2b 256 bit hash"
+    insertText: 'blake2b256(${0:BYTE_VECTOR})',
+    detail: "Computes the blake2b 256 bit hash",
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Function
   },
   {
     label: 'sha256',
-    kind,
-    insertText: {
-      value: 'sha256(${0:BYTE_VECTOR})',
-    },
-    detail: "Computes the sha 256 bit hash"
+    insertText: 'sha256(${0:BYTE_VECTOR})',
+    detail: "Computes the sha 256 bit hash",
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Function
   },
   {
     label: 'sigVerify',
-    kind,
-    insertText: {
-      value: 'sigVerify(${1:bytes: BYTE_VECTOR}, ${2:signature: BYTE_VECTOR}, ${3:publicKey: BYTE_VECTOR})',
-    },
+    insertText: 'sigVerify(${1:bytes: BYTE_VECTOR}, ${2:signature: BYTE_VECTOR}, ${3:publicKey: BYTE_VECTOR})',
     detail: "Validated signature for bytes and public key",
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Function
   },
 ]
 
-const contextFields = (kind: any) => [
+export const contextFields: CompletionItem[] = [
   {
     label: 'height',
-    kind,
-    insertText: {
-      value: 'height',
-    },
+    kind: CompletionItemKind.Field,
+    insertText: 'height',
     detail: "Retrieves current blockchain height",
   },
   {
     label: 'tx',
-    kind,
-    insertText: {
-      value: 'tx',
-    },
+    kind: CompletionItemKind.Field,
+    insertText: 'tx',
     detail: "Retrieves current transaction being processed",
   },
 ]
 
-const contextFunctions = (kind: any) => [
+export const contextFunctions: CompletionItem[] = [
   {
     label: 'getTransactionById',
-    kind,
-    insertText: {
-      value: 'getTransactionById(${1:transactionId: BYTE_VECTOR})',
-    },
+    insertText: 'getTransactionById(${1:transactionId: BYTE_VECTOR})',
     detail: "Retrieves transaction by it's id",
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Function
   },
   {
     label: 'transactionHeightById',
-    kind,
-    insertText: {
-      value: 'transactionHeightById(${1:transactionId: BYTE_VECTOR})',
-    },
+    insertText: 'transactionHeightById(${1:transactionId: BYTE_VECTOR})',
     detail: "Retrieves transaction's height by it's id",
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Function
   },
   {
     label: 'addressFromRecipient',
-    kind,
-    insertText: {
-      value: 'addressFromRecipient(${1:recipient: Obj(bytes)})',
-    },
+    insertText: 'addressFromRecipient(${1:recipient: Obj(bytes)})',
     detail: "Retrieves adress from recipient obj",
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Function
   },
   {
     label: 'addressFromString',
-    kind,
-    insertText: {
-      value: 'addressFromString(${1:base58})',
-    },
+    insertText: 'addressFromString(${1:base58})',
     detail: "Retrieves adress from base58 string",
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Function
   },
   {
     label: 'addressFromPublicKey',
-    kind,
-    insertText: {
-      value: 'addressFromPublicKey(${1:publicKey: BYTE_VECTOR})',
-    },
+    insertText: 'addressFromPublicKey(${1:publicKey: BYTE_VECTOR})',
     detail: "Retrieves adress from publicKey bytes",
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Function
   },
   {
     label: 'accountBalance',
-    kind,
-    insertText: {
-      value: 'accountBalance(${1:addressOrAlias: Obj(bytes)})',
-    },
+    insertText:'accountBalance(${1:addressOrAlias: Obj(bytes)})',
     detail: "Returns account balance for address or alias",
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Function
   },
   {
     label: 'accountAssetBalance',
-    kind,
-    insertText: {
-      value: 'accountAssetBalance(${1:addressOrAlias: Obj(bytes)}, ${2:assetId: BYTE_VECTOR})',
-    },
+    insertText: 'accountAssetBalance(${1:addressOrAlias: Obj(bytes)}, ${2:assetId: BYTE_VECTOR})',
     detail: "Returns asset balance for address or alias",
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Function
   },
   {
     label: 'getLong',
-    kind,
-    insertText: {
-      value: 'getLong(${1:address: Obj(bytes)}, ${2:key: STRING})',
-    },
+    insertText: 'getLong(${1:address: Obj(bytes)}, ${2:key: STRING})',
     detail: "Gets long value from address data table",
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Function
   },
   {
     label: 'getBoolean',
-    kind,
-    insertText: {
-      value: 'getBoolean(${1:address: Obj(bytes)}, ${2:key: STRING})',
-    },
+    insertText: 'getBoolean(${1:address: Obj(bytes)}, ${2:key: STRING})',
     detail: "Gets boolean value from address data table",
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Function
   },
   {
     label: 'getBytes',
-    kind,
-    insertText: {
-      value: 'getBytes(${1:address: Obj(bytes)}, ${2:key: STRING})',
-    },
+    insertText: 'getBytes(${1:address: Obj(bytes)}, ${2:key: STRING})',
     detail: "Gets bytevector value from address data table",
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Function
   },
   {
     label: 'getString',
-    kind,
-    insertText: {
-      value: 'getString(${1:address: Obj(bytes)}, ${2:key: STRING})',
-    },
+    insertText: 'getString(${1:address: Obj(bytes)}, ${2:key: STRING})',
     detail: "Gets string value from address data table",
+    insertTextFormat: InsertTextFormat.Snippet,
+    kind: CompletionItemKind.Function
   },
 ]
 
-export const globalSuggestions: CompletionItem[] = keywords.map(label => ({ label, kind: CompletionItemKind.Keyword }))
-  .concat(
-    generalSuggestions(CompletionItemKind.Snippet)
-      .map(item => Object.assign(
-        {},
-        item,
-        { insertTextFormat: InsertTextFormat.Snippet, insertText: item.insertText.value }))
-  )
-  .concat(cryptoFunctions(CompletionItemKind.Function)
-    .map(item => Object.assign(
-      {},
-      item,
-      { insertTextFormat: InsertTextFormat.Snippet, insertText: item.insertText.value })))
-  .concat(contextFunctions(CompletionItemKind.Function)
-    .map(item => Object.assign(
-      {},
-      item,
-      { insertTextFormat: InsertTextFormat.Snippet, insertText: item.insertText.value })))
-  .concat(contextFields(CompletionItemKind.Field))
+export const globalSuggestions: CompletionItem[] = 
+keywords.map(label => <CompletionItem>({ label, kind: CompletionItemKind.Keyword }))
+  .concat(generalSuggestions)
+  .concat(cryptoFunctions)
+  .concat(contextFunctions)
+  .concat(contextFields)
 export const txFieldsItems = txFields.map(label => ({ label, kind: CompletionItemKind.Field }))
-
 export const txTypesItems = txTypes.map(label => ({ label, kind: CompletionItemKind.Interface }))

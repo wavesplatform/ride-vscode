@@ -151,7 +151,7 @@ class LspServer {
         // connection.onCodeAction(service.codeAction.bind(service));
         connection.onCompletion(async (textDocumentPosition: TextDocumentPositionParams): Promise<CompletionItem[]>=>{
             const document = await this.getDocument(textDocumentPosition.textDocument.uri)
-            return this.service.completion(document, textDocumentPosition)
+            return this.service.completion(document, textDocumentPosition.position)
         });
         connection.onCompletionResolve(service.completionResolve.bind(service));
         // connection.onDefinition(service.definition.bind(service));
