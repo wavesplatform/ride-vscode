@@ -46,12 +46,12 @@ class LspServer {
         let document = this.documents[uri]
         if (!document) {
             const path = Files.uriToFilePath(uri)
-            document = await new Promise<TextDocument>((resolve, reject) => {
+            document = await new Promise<TextDocument>((resolve) => {
                 fs.access(path, (err) => {
                     if (err) {
                         resolve(null)
                     } else {
-                        fs.readFile(path, (err, data) => {
+                        fs.readFile(path, (_, data) => {
                             resolve(TextDocument.create(uri, "ride", 1, data.toString()))
                         })
                     }

@@ -1,7 +1,7 @@
 'use strict';
 
 import * as path from 'path';
-import { workspace, ExtensionContext } from 'vscode';
+import { workspace, ExtensionContext, commands } from 'vscode';
 
 import {
 	LanguageClient,
@@ -10,9 +10,16 @@ import {
 	TransportKind
 } from 'vscode-languageclient';
 
+import { RideReplPanel } from './RideReplPanel'
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
+	// Activate REPL window
+	const startCommand = commands.registerCommand('ride-repl.start', () => {
+		RideReplPanel.createOrShow(context.extensionPath);
+	});
+	context.subscriptions.push(startCommand);
+
 	// The server is implemented in node
 	let serverModule = context.asAbsolutePath(
 		path.join('server', 'out', 'main.js')

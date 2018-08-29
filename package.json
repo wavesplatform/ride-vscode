@@ -17,7 +17,8 @@
 		"vscode": "^1.23.0"
 	},
 	"activationEvents": [
-		"onLanguage:ride"
+		"onLanguage:ride",
+		"onCommand:ride-repl.start"
 	],
 	"main": "./client/out/extension",
 	"contributes": {
@@ -35,6 +36,13 @@
 				"language": "ride",
 				"scopeName": "source.ride",
 				"path": "./syntaxes/ride.tmLanguage.json"
+			}
+		],
+		"commands": [
+			{
+				"command": "ride-repl.start",
+				"title": "Start Ride REPL",
+				"category": "RIDE"
 			}
 		],
 		"configuration": {
