@@ -18,7 +18,6 @@
 	},
 	"dependencies": {
 		"vscode": "^1.1.18",
-		"vscode-languageclient": "^4.1.4",
-		"ride-repl": "git+https://github.com/siemarell/ride-repl.git#master"
+		"vscode-languageclient": "^4.1.4"
 	}
 }

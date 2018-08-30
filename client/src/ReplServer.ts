@@ -6,7 +6,9 @@ export const runReplServer = () => {
     http.createServer(function (request, response) {
         console.log('request starting...');
     
-        var filePath = '/Users/siem/PycharmProjects/ride-extention/client/node_modules/ride-repl/dist' + request.url;
+        var filePath = '/Users/siem/PycharmProjects/ride-repl/dist' + request.url;
+        //var filePath = '/Users/siem/PycharmProjects/ride-extention/ride-repl/dist' + request.url;
+        //var filePath = '/Users/siem/PycharmProjects/ride-extention/client/node_modules/ride-repl/dist' + request.url;
         if (filePath == './')
             filePath = './index.html';
     

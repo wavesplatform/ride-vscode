@@ -38,8 +38,6 @@ export class RideReplPanel {
 		this._extensionPath = extensionPath;
 		this.pathToApp = '/Users/siem/PycharmProjects/ride-repl/dist'//path.join(this._extensionPath,'client','node_modules','ride-repl', 'dist')
 
-		// this.httpServerProcess = child_process.fork(path.join(this._extensionPath, 'client', 'out', 'ReplServer.js'))
-		// this.httpServerProcess.on('message', console.log)
 		// Create and show a new webview panel
 		this._panel = vscode.window.createWebviewPanel(RideReplPanel.viewType, "RideRepl", column, {
 			// Enable javascript in the webview
@@ -117,10 +115,7 @@ export class RideReplPanel {
 			<body>
 				<noscript>You need to enable JavaScript to run this app.</noscript>
 				<div id="root">Grazzi ragazzi</div>
-				
-				<script nonce="${nonce}" src="${scriptUri}">
-					window.location.href='http://localhost:8125/index.html'
-				</script>
+				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
 	}

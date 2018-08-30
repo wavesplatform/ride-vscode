@@ -11,7 +11,7 @@ import {
 } from 'vscode-languageclient';
 
 import { RideReplPanel } from './RideReplPanel'
-import {runReplServer} from './ReplServer'
+// import {runReplServer} from './ReplServer'
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
@@ -20,7 +20,7 @@ export function activate(context: ExtensionContext) {
 		RideReplPanel.createOrShow(context.extensionPath);
 	});
 	context.subscriptions.push(startCommand);
-	runReplServer()
+	// runReplServer()
 	// const httpServerProcess = child_process.fork(path.join(context.extensionPath, 'client', 'out', 'ReplServer.js'), ['--inspect=6010', '--nolazy'])
 	// httpServerProcess.on('message', console.log)
 
