@@ -110,12 +110,12 @@ export class RideReplPanel {
 				<meta name="theme-color" content="#000000">
 				<title>React App</title>
 				<link rel="stylesheet" type="text/css" href="${styleUri}">
-				<base href="${vscode.Uri.file(this.pathToApp).with({ scheme: 'vscode-resource' })}/">
+				<base href="http://localhost:8125/">
 			</head>
 			<body>
 				<noscript>You need to enable JavaScript to run this app.</noscript>
 				<div id="root">Grazzi ragazzi</div>
-				<script nonce="${nonce}" src="${scriptUri}"></script>
+				<script nonce="${nonce}" src="bundle.js"></script>
 			</body>
 			</html>`;
 	}

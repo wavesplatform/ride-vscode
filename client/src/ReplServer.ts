@@ -2,13 +2,11 @@ import * as http from 'http'
 import * as fs from 'fs';
 import * as path from 'path';
 
-export const runReplServer = () => {
+export const runReplServer = (basePath: string) => {
     http.createServer(function (request, response) {
         console.log('request starting...');
     
-        var filePath = '/Users/siem/PycharmProjects/ride-repl/dist' + request.url;
-        //var filePath = '/Users/siem/PycharmProjects/ride-extention/ride-repl/dist' + request.url;
-        //var filePath = '/Users/siem/PycharmProjects/ride-extention/client/node_modules/ride-repl/dist' + request.url;
+        var filePath = path.join(basePath + request.url);
         if (filePath == './')
             filePath = './index.html';
     
