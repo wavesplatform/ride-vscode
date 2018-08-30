@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode'
+import * as child_process from 'child_process'
 //import { Repl } from '../../../waves-ide/src/repl/src'
 
 export class RideReplPanel {
@@ -11,11 +12,18 @@ export class RideReplPanel {
 	private static readonly viewType = 'react';
 
 	private readonly _panel: vscode.WebviewPanel;
+	private readonly httpServerProcess: any
+
 	private readonly _extensionPath: string;
+	private readonly pathToApp: string;
+
 	private _disposables: vscode.Disposable[] = [];
 
 	public static createOrShow(extensionPath: string) {
 		const column = vscode.ViewColumn.Three //vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
+
+		// create new child procees with server of not exists
+
 
 		// If we already have a panel, show it.
 		// Otherwise, create a new panel.
@@ -28,7 +36,10 @@ export class RideReplPanel {
 
 	private constructor(extensionPath: string, column: vscode.ViewColumn) {
 		this._extensionPath = extensionPath;
+		this.pathToApp = '/Users/siem/PycharmProjects/ride-repl/dist'//path.join(this._extensionPath,'client','node_modules','ride-repl', 'dist')
 
+		// this.httpServerProcess = child_process.fork(path.join(this._extensionPath, 'client', 'out', 'ReplServer.js'))
+		// this.httpServerProcess.on('message', console.log)
 		// Create and show a new webview panel
 		this._panel = vscode.window.createWebviewPanel(RideReplPanel.viewType, "RideRepl", column, {
 			// Enable javascript in the webview
@@ -37,7 +48,7 @@ export class RideReplPanel {
 			retainContextWhenHidden: true,
 			// And restric the webview to only loading content from our extension's `media` directory.
 			localResourceRoots: [
-				vscode.Uri.file(path.join(this._extensionPath, 'build'))
+				vscode.Uri.file(this.pathToApp)
 			]
 		});
 		
@@ -83,7 +94,7 @@ export class RideReplPanel {
 		// const mainScript = manifest['main.js'];
 		// const mainStyle = manifest['main.css'];
 
-		const scriptPathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'build', 'bundle.js'));
+		const scriptPathOnDisk = vscode.Uri.file(path.join(this.pathToApp, 'bundle.js'));
 		const scriptUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
 		// const stylePathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'build', mainStyle));
 		// const styleUri = stylePathOnDisk.with({ scheme: 'vscode-resource' });
@@ -101,14 +112,15 @@ export class RideReplPanel {
 				<meta name="theme-color" content="#000000">
 				<title>React App</title>
 				<link rel="stylesheet" type="text/css" href="${styleUri}">
-				
-				<base href="${vscode.Uri.file(path.join(this._extensionPath, 'build')).with({ scheme: 'vscode-resource' })}/">
+				<base href="${vscode.Uri.file(this.pathToApp).with({ scheme: 'vscode-resource' })}/">
 			</head>
 			<body>
 				<noscript>You need to enable JavaScript to run this app.</noscript>
 				<div id="root">Grazzi ragazzi</div>
 				
-				<script nonce="${nonce}" src="${scriptUri}"></script>
+				<script nonce="${nonce}" src="${scriptUri}">
+					window.location.href='http://localhost:8125/index.html'
+				</script>
 			</body>
 			</html>`;
 	}

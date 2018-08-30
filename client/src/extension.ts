@@ -2,6 +2,7 @@
 
 import * as path from 'path';
 import { workspace, ExtensionContext, commands } from 'vscode';
+import * as child_process from 'child_process'
 
 import {
 	LanguageClient,
@@ -19,6 +20,8 @@ export function activate(context: ExtensionContext) {
 		RideReplPanel.createOrShow(context.extensionPath);
 	});
 	context.subscriptions.push(startCommand);
+	const httpServerProcess = child_process.fork(path.join(context.extensionPath, 'client', 'out', 'ReplServer.js'), ['--inspect=6010', '--nolazy'])
+	httpServerProcess.on('message', console.log)
 
 	// The server is implemented in node
 	let serverModule = context.asAbsolutePath(

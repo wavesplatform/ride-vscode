@@ -2,6 +2,7 @@
 {
 	"version": "0.2.0",
 	"configurations": [
+
 		{
 			"type": "extensionHost",
 			"request": "launch",
@@ -22,6 +23,16 @@
 			"port": 6009,
 			"sourceMaps": true,
 			"outFiles": ["${workspaceRoot}/server/out/**/*.js"]
+		},	
+			{
+			"type": "node",
+			"request": "attach",
+			"name": "Attach to HttpServer",
+			"address": "localhost",
+			"protocol": "inspector",
+			"port": 6010,
+			"sourceMaps": true,
+			"outFiles": ["${workspaceRoot}/client/out/**/*.js"]
 		},
 		{
 			"name": "Language Server E2E Test",
@@ -42,6 +53,10 @@
 		{
 			"name": "Client + Server",
 			"configurations": ["Launch Client", "Attach to Server"]
+		},
+		{
+			"name": "Client + HttpServer",
+			"configurations": ["Launch Client", "Attach to HttpServer"]
 		}
 	]
 }
