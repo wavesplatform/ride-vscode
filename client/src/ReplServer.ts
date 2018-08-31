@@ -2,7 +2,7 @@ import * as http from 'http'
 import * as fs from 'fs';
 import * as path from 'path';
 
-export const runReplServer = (basePath: string) => {
+export const runReplServer = (basePath: string, appPort: number) => {
     http.createServer(function (request, response) {
         console.log('request starting...');
     
@@ -53,6 +53,6 @@ export const runReplServer = (basePath: string) => {
             }
         });
     
-    }).listen(8125);
-    console.log('Server running at http://127.0.0.1:8125/');
+    }).listen(appPort, 'localhost');
+    console.log(`Server running at http://127.0.0.1:${appPort}/`);
 }

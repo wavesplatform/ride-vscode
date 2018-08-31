@@ -16,11 +16,13 @@ let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
 	// Activate REPL window
+	const appPort = 8125
+	const appPath = '/Users/siem/PycharmProjects/ride-repl/dist'
 	const startCommand = commands.registerCommand('ride-repl.start', () => {
-		RideReplPanel.createOrShow(context.extensionPath);
+		RideReplPanel.createOrShow(appPort);
 	});
 	context.subscriptions.push(startCommand);
-	runReplServer('/Users/siem/PycharmProjects/ride-repl/dist')
+	runReplServer(appPath, appPort)
 	// const httpServerProcess = child_process.fork(path.join(context.extensionPath, 'client', 'out', 'ReplServer.js'), ['--inspect=6010', '--nolazy'])
 	// httpServerProcess.on('message', console.log)
 
