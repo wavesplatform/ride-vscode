@@ -1,17 +1,17 @@
 {
 	"name": "ride-extrention",
-	"description": "",
-	"author": "",
+	"description": "Extention for Waves platfrom RIDE language",
+	"author": "wavesplatform",
 	"license": "MIT",
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"repository": {
 		"type": "git",
 		"url": ""
 	},
 	"publisher": "",
-	"categories": [],
+	"categories": ["Programming Languages"],
 	"keywords": [
-		""
+		"Waves", "RIDE", "Blockchain"
 	],
 	"engines": {
 		"vscode": "^1.23.0"
