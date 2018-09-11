@@ -49,13 +49,13 @@
 			"type": "object",
 			"title": "Ride configuration",
 			"properties": {
-				"rideLanguageServer.maxNumberOfProblems": {
+				"rideExtention.languageServer.maxNumberOfProblems": {
 					"scope": "resource",
 					"type": "number",
 					"default": 100,
 					"description": "Controls the maximum number of problems produced by the server."
 				},
-				"rideLanguageServer.trace.server": {
+				"rideExtention.LanguageServer.trace.server": {
 					"scope": "window",
 					"type": "string",
 					"enum": [
@@ -65,6 +65,20 @@
 					],
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server."
+				},
+				"rideExtention.repl.SEED":{
+					"type": "string",
+					"default": "our default example seed for ride extention plugin inside visual studio code",
+					"description": "Seed phrase that is used to create keypair. This keypair will be used as default inside REPL"
+				},
+				"rideExtention.repl.CHAIN_ID":{
+					"type":"string",
+					"default": "T",
+					"enum": [
+						"T",
+						"W"
+					],
+					"description": "Network byte. 'T' for testnet, 'W' for mainnet"
 				}
 			}
 		}

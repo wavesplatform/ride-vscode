@@ -1,5 +1,10 @@
 import * as vscode from 'vscode'
 
+export interface IReplSettings {
+	seed: string,
+	networkCode: string
+}
+
 export class RideReplPanel {
 	/**
 	 * Track the currently panel. Only allow a single panel to exist at a time.
@@ -31,7 +36,7 @@ export class RideReplPanel {
 			// Act as background tab
 			retainContextWhenHidden: true
 		});
-		
+
 		// Set the webview's initial html content 
 		this._panel.webview.html = this._getHtmlForWebview();
 
@@ -39,20 +44,35 @@ export class RideReplPanel {
 		// This happens when the user closes the panel or when the panel is closed programatically
 		this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
 
-		// Handle messages from the webview
+		// Handle commands from the webview
 		this._panel.webview.onDidReceiveMessage(message => {
 			switch (message.command) {
-				case 'alert':
-					vscode.window.showErrorMessage(message.text);
-					return;
+				case 'GetDefaultSettings':
+					this.updateWebviewSettings()
+				default:
+					console.log(`Unknown command ${message.command}`)
+
 			}
 		}, null, this._disposables);
+
+		// Send message on settings update
+		vscode.workspace.onDidChangeConfiguration(e => {
+			if (e.affectsConfiguration('rideExtention.repl')) {
+				this.updateWebviewSettings()
+			}
+		})
 	}
 
-	public doRefactor() {
+	private updateWebviewSettings() {
 		// Send a message to the webview webview.
 		// You can send any JSON serializable data.
-		this._panel.webview.postMessage({ command: 'refactor' });
+		if (this._panel) {
+			const replSettings = vscode.workspace.getConfiguration('rideExtention.repl')
+			this._panel.webview.postMessage({
+				command: 'ReplSettings',
+				value: replSettings
+			});
+		}
 	}
 
 	public dispose() {
