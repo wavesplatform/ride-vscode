@@ -35,8 +35,8 @@ class LspServer {
 
         // Bind connection events to server methods
         // Init
-        this.bindInit()
-        this.bindCallbacks()
+        this.bindInit(connection)
+        this.bindCallbacks(connection)
 
         // Listen
         this.connection.listen()
