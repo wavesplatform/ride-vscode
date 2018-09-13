@@ -102,7 +102,7 @@ export class RideReplPanel {
 			</head>
 			<body>
 				<noscript>You need to enable JavaScript to run this app.</noscript>
-				<div id="root">Grazzi ragazzi</div>
+				<div id="root"></div>
 				<script src="bundle.js"></script>
 			</body>
 			</html>`;

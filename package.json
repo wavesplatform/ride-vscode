@@ -9,9 +9,13 @@
 		"url": ""
 	},
 	"publisher": "",
-	"categories": ["Programming Languages"],
+	"categories": [
+		"Programming Languages"
+	],
 	"keywords": [
-		"Waves", "RIDE", "Blockchain"
+		"Waves",
+		"RIDE",
+		"Blockchain"
 	],
 	"engines": {
 		"vscode": "^1.23.0"
@@ -66,13 +70,13 @@
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server."
 				},
-				"rideExtention.repl.SEED":{
+				"rideExtention.repl.SEED": {
 					"type": "string",
 					"default": "our default example seed for ride extention plugin inside visual studio code",
 					"description": "Seed phrase that is used to create keypair. This keypair will be used as default inside REPL"
 				},
-				"rideExtention.repl.CHAIN_ID":{
-					"type":"string",
+				"rideExtention.repl.CHAIN_ID": {
+					"type": "string",
 					"default": "T",
 					"enum": [
 						"T",

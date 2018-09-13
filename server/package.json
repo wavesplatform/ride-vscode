@@ -1,15 +1,15 @@
 {
-	"name": "lsp-sample-server",
-	"description": "Example implementation of a language server in node.",
-	"version": "1.0.0",
-	"author": "Microsoft Corporation",
+	"name": "ride-language-server",
+	"description": "Language server for Wavesplatfor RIDE language",
+	"version": "0.0.1",
+	"author": "Wavesplatform",
 	"license": "MIT",
 	"engines": {
 		"node": "*"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Microsoft/vscode-extension-samples"
+		"url": "https://github.com/wavesplatform/ride-vscode/tree/master/server"
 	},
 	"dependencies": {
 		"vscode-languageserver": "^4.1.3"
