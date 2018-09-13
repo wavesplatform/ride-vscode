@@ -18,13 +18,12 @@ export class LspService {
 
         switch (character) {
             case '.':
-
-                if (line.match(/\b(tx\.)/g) !== null) {
+                if (line.match(/\b(tx\.)/) !== null) {
                     result = txFieldsItems
                 }
                 break;
             case ':':
-                if (line.match(/\b(tx:)/g) !== null) {
+                if (line.match(/\bcase[ \t]+(.+):$/) !== null) {
                     result = txTypesItems
                 }
                 break;
