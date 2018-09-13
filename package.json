@@ -18,7 +18,7 @@
 	},
 	"activationEvents": [
 		"onLanguage:ride",
-		"onCommand:ride-repl.start"
+		"onCommand:waves-repl.start"
 	],
 	"main": "./client/out/extension",
 	"contributes": {
@@ -40,8 +40,8 @@
 		],
 		"commands": [
 			{
-				"command": "ride-repl.start",
-				"title": "Start Ride REPL",
+				"command": "waves-repl.start",
+				"title": "Start Waves REPL",
 				"category": "RIDE"
 			}
 		],
