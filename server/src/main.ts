@@ -142,7 +142,7 @@ class LspServer {
             const changedDocument = this.applyChanges(document, didChangeTextDocumentParams)
             this.documents[didChangeTextDocumentParams.textDocument.uri] = changedDocument;
             if (document.getText() !== changedDocument.getText()) {
-                const diagnostics = service.validateTextDocument(document)
+                const diagnostics = service.validateTextDocument(changedDocument)
                 this.sendDiagnostics(document.uri,diagnostics)
             }
         });

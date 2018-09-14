@@ -8,7 +8,10 @@
 		"outDir": "out",
         "rootDir": "src",
         "declaration": true,
-		"lib": [ "es6" ]
+        "lib": [ "es6" ],
+        "typeRoots": [
+            "./src/types"
+          ]
 	},
 	"include": [
 		"src"
