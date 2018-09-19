@@ -17,14 +17,20 @@
             "include": "#base58"
         },
         {
+            "include": "#base64"
+        },
+        {
             "include": "#boolean"
+        },
+        {
+            "include": "#comments"
         }
     ],
     "repository": {
         "strings": {
             "patterns": [
                 {
-                    "begin": "\"",
+                    "begin": "\\b(\")",
                     "beginCaptures": {
                         "0": {
                             "name": "punctuation.definition.string.begin.ride"
@@ -37,27 +43,6 @@
                         }
                     },
                     "name": "string.quoted.double.ride",
-                    "patterns": [
-                        {
-                            "match": "\\\\.",
-                            "name": "constant.character.escape.ride"
-                        }
-                    ]
-                },
-                {
-                    "begin": "'",
-                    "beginCaptures": {
-                        "0": {
-                            "name": "punctuation.definition.string.begin.ride"
-                        }
-                    },
-                    "end": "'",
-                    "endCaptures": {
-                        "0": {
-                            "name": "punctuation.definition.string.end.ride"
-                        }
-                    },
-                    "name": "string.quoted.single.ride",
                     "patterns": [
                         {
                             "match": "\\\\.",
@@ -78,8 +63,65 @@
         "base58": {
             "patterns": [
                 {
-                    "match": "\\b(base58)'[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+'",
-                    "name": "constant.character.escape.ride"
+                    "begin": "\\b(base58)'",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.base58.begin.ride"
+                        }
+                    },
+                    "end": "(')",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.base58.end.ride"
+                        }
+                    },
+                    "patterns":[
+                        {
+                            "match":"[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+",
+                            "name": "string.ride"
+                        },
+                        {
+                            "match":"[^123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz']+",
+                            "name":"invalid.illegal.character.base58.ride"
+                        }
+                    ]
+                }
+            ]
+        },
+        "base64": {
+            "patterns": [
+                {
+                    "begin": "\\b(base64)'",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.base64.begin.ride"
+                        }
+                    },
+                    "end": "'",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.string.base64.end.ride"
+                        }
+                    },
+                    "patterns":[
+                        {
+                            "match":"[A-Za-z0-9+/]+",
+                            "name": "string.ride"
+                        },
+                        {
+                            "match":"[^A-Za-z0-9+/]+",
+                            "name":"invalid.illegal.character.base64.ride"
+                        }
+                    ]
+                }
+            ]
+        },
+        "comments": {
+            "patterns": [
+                {
+                    "name": "comment.line.ride",
+                    "begin": "#",
+                    "end": "\\n"
                 }
             ]
         }
