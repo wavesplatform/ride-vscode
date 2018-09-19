@@ -3,16 +3,17 @@ import {
     Diagnostic, CompletionItem, Position, Range, DiagnosticSeverity
 } from "vscode-languageserver-types";
 import { globalSuggestions, txFieldsItems, txTypesItems } from './suggestions'
-import { compile } from "@waves/ride-js"
+import { safeCompile } from './safeCompile'
 
 export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         let diagnostics: Diagnostic[] = []
-        const result = compile(document.getText())
+        let result = safeCompile(document.getText())
         const errorText = result.error
         if (errorText) {
-            const errRgxp = /\d+-\d+/gm
-            const errors = errRgxp.exec(errorText).map(offsets => {
+            const errRangesRegxp = /\d+-\d+/gm
+            const errorRanges:string[] = errRangesRegxp.exec(errorText) || []
+            const errors = errorRanges.map(offsets => {
                 const [start, end] = offsets.split('-').map(offset => document.positionAt(parseInt(offset)))
                 const range = Range.create(start, end)
                 return {
