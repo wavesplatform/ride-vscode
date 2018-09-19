@@ -30,7 +30,7 @@
         "strings": {
             "patterns": [
                 {
-                    "begin": "\\b(\")",
+                    "begin": "(\")",
                     "beginCaptures": {
                         "0": {
                             "name": "punctuation.definition.string.begin.ride"
