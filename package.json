@@ -1,5 +1,5 @@
 {
-	"name": "ride-extrention",
+	"name": "ride-extention",
 	"description": "Extention for Waves platfrom RIDE language",
 	"author": "wavesplatform",
 	"license": "MIT",
@@ -89,7 +89,7 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "cd extention && npm run update-vscode && cd .. && npm run compile",
-		"compile:extention": "tsc -p ./extention/tsconfig.json",
+		"compile:extention": "tsc -p ./extention/tsconfig.json && cd ./extention && ./node_modules/.bin/webpack",
 		"compile:server": "tsc -p ./server/tsconfig.json",
 		"watch:extention": "tsc -w -p ./extention/tsconfig.json",
 		"watch:server": "tsc -w -p ./server/tsconfig.json",
