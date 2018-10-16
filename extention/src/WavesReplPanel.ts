@@ -1,15 +1,16 @@
 import * as vscode from 'vscode'
+import * as path from 'path'
 
 export interface IReplSettings {
     seed: string,
     networkCode: string
 }
 
-export class RideReplPanel {
+export class WavesReplPanel {
 	/**
 	 * Track the currently panel. Only allow a single panel to exist at a time.
 	 */
-    public static currentPanel: RideReplPanel | undefined;
+    public static currentPanel: WavesReplPanel | undefined;
 
     private static readonly viewType = 'react';
 
@@ -17,24 +18,27 @@ export class RideReplPanel {
 
     private _disposables: vscode.Disposable[] = [];
 
-    public static createOrShow(appPort: number) {
+    public static createOrShow(appPath: string) {
         const column = vscode.ViewColumn.Three
         // If we already have a panel, show it.
         // Otherwise, create a new panel.
-        if (RideReplPanel.currentPanel) {
-            RideReplPanel.currentPanel._panel.reveal(column);
+        if (WavesReplPanel.currentPanel) {
+            WavesReplPanel.currentPanel._panel.reveal(column);
         } else {
-            RideReplPanel.currentPanel = new RideReplPanel(column, appPort);
+            WavesReplPanel.currentPanel = new WavesReplPanel(column, appPath);
         }
     }
 
-    private constructor(column: vscode.ViewColumn, private appPort = 8175) {
+    private constructor(column: vscode.ViewColumn, private _appPath: string) {
         // Create and show a new webview panel
-        this._panel = vscode.window.createWebviewPanel(RideReplPanel.viewType, "RideRepl", column, {
+        this._panel = vscode.window.createWebviewPanel(WavesReplPanel.viewType, "RideRepl", column, {
             // Enable javascript in the webview
             enableScripts: true,
             // Act as background tab
-            retainContextWhenHidden: true
+            retainContextWhenHidden: true,
+            localResourceRoots:[
+                vscode.Uri.file(this._appPath)
+            ]
         });
 
         // Set the webview's initial html content 
@@ -104,7 +108,7 @@ export class RideReplPanel {
     }
 
     public dispose() {
-        RideReplPanel.currentPanel = undefined;
+        WavesReplPanel.currentPanel = undefined;
 
         // Clean up our resources
         this._panel.dispose();
@@ -118,6 +122,11 @@ export class RideReplPanel {
     }
 
     private _getHtmlForWebview() {
+        const scriptPathOnDisk = vscode.Uri.file(path.join(this._appPath, 'main.js'));
+        const scriptUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
+
+        // Use a nonce to whitelist which scripts can be run
+        const nonce = getNonce();
 
         return `<!DOCTYPE html>
 			<html lang="en">
@@ -126,13 +135,24 @@ export class RideReplPanel {
 				<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
 				<meta name="theme-color" content="#000000">
 				<title>React App</title>
-				<base href="http://localhost:${this.appPort}/">
+				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https: data:; script-src 'nonce-${nonce}' 'unsafe-eval';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
+				<base href="${vscode.Uri.file(this._appPath).with({ scheme: 'vscode-resource' })}/">
 			</head>
 			<body>
 				<noscript>You need to enable JavaScript to run this app.</noscript>
 				<div id="root"></div>
-				<script src="main.js"></script>
+				
+				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
     }
+}
+
+function getNonce() {
+    let text = "";
+    const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for (let i = 0; i < 32; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
 }
