@@ -24,7 +24,7 @@
 		"onLanguage:ride",
 		"onCommand:waves-repl.start"
 	],
-	"main": "./client/out/extension",
+	"main": "./extention/out/extension",
 	"contributes": {
 		"languages": [
 			{
@@ -88,13 +88,13 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
-		"compile:client": "tsc -p ./client/tsconfig.json",
+		"vscode:prepublish": "cd extention && npm run update-vscode && cd .. && npm run compile",
+		"compile:extention": "tsc -p ./extention/tsconfig.json",
 		"compile:server": "tsc -p ./server/tsconfig.json",
-		"watch:client": "tsc -w -p ./client/tsconfig.json",
+		"watch:extention": "tsc -w -p ./extention/tsconfig.json",
 		"watch:server": "tsc -w -p ./server/tsconfig.json",
-		"compile": "npm run compile:client && npm run compile:server",
-		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+		"compile": "npm run compile:extention && npm run compile:server",
+		"postinstall": "cd extention && npm install && cd ../server && npm install && cd ..",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"devDependencies": {
