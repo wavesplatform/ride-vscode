@@ -1,14 +1,15 @@
 {
-	"name": "ride-extention",
-	"description": "Extention for Waves platfrom RIDE language",
+	"name": "ride-vscode",
+	"description": "Waves Ride language for Visual Studio Code",
 	"author": "wavesplatform",
 	"license": "MIT",
 	"version": "0.0.1",
 	"repository": {
 		"type": "git",
-		"url": ""
-	},
-	"publisher": "",
+		"url": "https://github.com/wavesplatform/ride-vscode"
+    },
+    "icon": "assets/icon_128.png",
+	"publisher": "wavesplatform",
 	"categories": [
 		"Programming Languages"
 	],
