@@ -14,11 +14,11 @@ Extention recognizes ".ride" files
 
 Use standard Ctrl/Command + Space to autocomplete. Global functions, variables, transaction types are supported. Pattern
 matching and if/else statements supported via snippets
-![alt text](assets/completion.gif "Error highlighting")
+![gif](assets/completion.gif "Error highlighting")
 ## Error highlighting
 
 Currently shows first compilation error. Invalid base64 and base58 strings are highlighted via syntax highlighting
-![alt text](assets/error.gif "Error highlighting")
+![gif](assets/error.gif "Error highlighting")
 ## Interactive console
 
 To open interactive console run "Start Waves Repl" task via command palette (Shift + Command + P).
