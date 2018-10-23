@@ -6,7 +6,7 @@
 			"dependsOn": [
 				{
 					"type": "npm",
-					"script": "compile:client"
+					"script": "compile:extention"
 				},
 				{
 					"type": "npm",
@@ -17,7 +17,7 @@
 		},
 		{
 			"type": "npm",
-			"script": "compile:client",
+			"script": "compile:extention",
 			"group": "build",
 			"presentation": {
 				"panel": "dedicated",
@@ -44,7 +44,7 @@
 			"dependsOn": [
 				{
 					"type": "npm",
-					"script": "watch:client"
+					"script": "watch:extention"
 				},
 				{
 					"type": "npm",
@@ -59,7 +59,7 @@
 		},
 		{
 			"type": "npm",
-			"script": "watch:client",
+			"script": "watch:extention",
 			"isBackground": true,
 			"group": "build",
 			"presentation": {
