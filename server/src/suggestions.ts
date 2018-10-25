@@ -6,7 +6,6 @@ const txFields = [
     'fee',
     'feeAssetId',
     'timestamp',
-    'amount',
     'bodyBytes',
     'sender',
     'quantity',
@@ -164,13 +163,13 @@ export const contextFunctions: CompletionItem[] = [
         insertTextFormat: InsertTextFormat.Snippet,
         kind: CompletionItemKind.Function
     },
-    {
-        label: 'transactionHeightById',
-        insertText: 'transactionHeightById(${1:transactionId: BYTE_VECTOR})',
-        detail: "Retrieves transaction's height by it's id",
-        insertTextFormat: InsertTextFormat.Snippet,
-        kind: CompletionItemKind.Function
-    },
+    // {
+    //     label: 'transactionHeightById',
+    //     insertText: 'transactionHeightById(${1:transactionId: BYTE_VECTOR})',
+    //     detail: "Retrieves transaction's height by it's id",
+    //     insertTextFormat: InsertTextFormat.Snippet,
+    //     kind: CompletionItemKind.Function
+    // },
     {
         label: 'addressFromRecipient',
         insertText: 'addressFromRecipient(${1:recipient: Obj(bytes)})',
@@ -305,7 +304,7 @@ export const contextFunctions: CompletionItem[] = [
     },
     {
         label: 'toBytes',
-        insertText: 'size(${1:value: BOOLEAN|STRING|LONG})',
+        insertText: 'toBytes(${1:value: BOOLEAN|STRING|LONG})',
         detail: "Converts boolean or string or long to byte vector",
         insertTextFormat: InsertTextFormat.Snippet,
         kind: CompletionItemKind.Function
@@ -361,7 +360,7 @@ export const contextFunctions: CompletionItem[] = [
     },
     {
         label: 'throw',
-        insertText: 'extract(${1:err: STRING?})',
+        insertText: 'throw(${1:err: STRING?})',
         detail: "Throws exception. Explicit script termination",
         insertTextFormat: InsertTextFormat.Snippet,
         kind: CompletionItemKind.Function
