@@ -63,8 +63,8 @@ export const generalSuggestions: CompletionItem[] = [
     },
     {
         label: 'match',
-        insertText: `match (\${1:obj}) {
-    case $1:\${2:type} => $0
+        insertText: `match (\${1:tx}) {
+    case t:\${2:type} => $0
     case _ =>
   }`,
         insertTextFormat: InsertTextFormat.Snippet,

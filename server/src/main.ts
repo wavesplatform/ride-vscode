@@ -17,7 +17,8 @@ import {
     TextDocumentPositionParams,
     IConnection,
     Files,
-    TextDocumentSyncKind
+    TextDocumentSyncKind,
+    CompletionList
 } from 'vscode-languageserver';
 import * as fs from 'fs'
 import { LspService } from './LspService'
@@ -149,7 +150,7 @@ class LspServer {
 
         // Lsp callbacks
         // connection.onCodeAction(service.codeAction.bind(service));
-        connection.onCompletion(async (textDocumentPosition: TextDocumentPositionParams): Promise<CompletionItem[]>=>{
+        connection.onCompletion(async (textDocumentPosition: TextDocumentPositionParams): Promise<CompletionItem[] | CompletionList>=>{
             const document = await this.getDocument(textDocumentPosition.textDocument.uri)
             return this.service.completion(document, textDocumentPosition.position)
         });
