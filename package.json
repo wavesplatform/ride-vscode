@@ -3,12 +3,12 @@
 	"description": "Waves Ride language for Visual Studio Code",
 	"author": "wavesplatform",
 	"license": "MIT",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/wavesplatform/ride-vscode"
-    },
-    "icon": "assets/icon_128.png",
+	},
+	"icon": "assets/icon_128.png",
 	"publisher": "wavesplatform",
 	"categories": [
 		"Programming Languages"
@@ -80,6 +80,11 @@
 					"type": "string",
 					"default": "T",
 					"description": "Network byte. 'T' for testnet, 'W' for mainnet"
+				},
+				"rideExtention.repl.API_BASE": {
+					"type": "string",
+					"default": "https://testnodes.wavesnodes.com/",
+					"description": "Node url to send transactions"
 				}
 			}
 		}

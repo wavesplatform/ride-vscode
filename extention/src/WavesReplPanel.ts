@@ -135,7 +135,7 @@ export class WavesReplPanel {
 				<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
 				<meta name="theme-color" content="#000000">
 				<title>React App</title>
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https: data:; script-src 'nonce-${nonce}' 'unsafe-eval';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
+				<meta http-equiv="Content-Security-Policy" content="default-src https://*; img-src vscode-resource: https: data:; script-src 'nonce-${nonce}' 'unsafe-eval';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
 				<base href="${vscode.Uri.file(this._appPath).with({ scheme: 'vscode-resource' })}/">
 			</head>
 			<body>
