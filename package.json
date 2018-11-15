@@ -79,10 +79,6 @@
 				"rideExtention.repl.CHAIN_ID": {
 					"type": "string",
 					"default": "T",
-					"enum": [
-						"T",
-						"W"
-					],
 					"description": "Network byte. 'T' for testnet, 'W' for mainnet"
 				}
 			}
