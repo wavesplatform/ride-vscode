@@ -6,13 +6,13 @@
 		{
 			"type": "extensionHost",
 			"request": "launch",
-			"name": "Launch Extention",
+			"name": "Launch Extension",
 			"runtimeExecutable": "${execPath}",
 			"args": ["--extensionDevelopmentPath=${workspaceRoot}"],
 			"stopOnEntry": false,
 			"sourceMaps": true,
-			"outFiles": ["${workspaceRoot}/extention/out/**/*.js"],
-			"preLaunchTask": "npm: watch:extention"
+			"outFiles": ["${workspaceRoot}/extension/out/**/*.js"],
+			"preLaunchTask": "npm: watch:extension"
 		},
 		{
 			"type": "node",
@@ -32,7 +32,7 @@
 			"protocol": "inspector",
 			"port": 6010,
 			"sourceMaps": true,
-			"outFiles": ["${workspaceRoot}/extention/out/**/*.js"]
+			"outFiles": ["${workspaceRoot}/extension/out/**/*.js"]
 		},
 		{
 			"name": "Language Server E2E Test",
@@ -41,7 +41,7 @@
 			"runtimeExecutable": "${execPath}",
 			"args": [
 				"--extensionDevelopmentPath=${workspaceRoot}",
-				"--extensionTestsPath=${workspaceRoot}/extention/out/test",
+				"--extensionTestsPath=${workspaceRoot}/extension/out/test",
 				"${workspaceRoot}/client/testFixture"
 			],
 			"stopOnEntry": false,
@@ -51,12 +51,12 @@
 	],
 	"compounds": [
 		{
-			"name": "Extention + Server",
-			"configurations": ["Launch Extention", "Attach to Server"]
+			"name": "Extension + Server",
+			"configurations": ["Launch Extension", "Attach to Server"]
 		},
 		{
 			"name": "Client + HttpServer",
-			"configurations": ["Launch Extention", "Attach to HttpServer"]
+			"configurations": ["Launch Extension", "Attach to HttpServer"]
 		}
 	]
 }

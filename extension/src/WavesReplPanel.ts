@@ -63,7 +63,7 @@ export class WavesReplPanel {
 
         // Send message on settings update
         vscode.workspace.onDidChangeConfiguration(e => {
-            if (e.affectsConfiguration('rideExtention.repl')) {
+            if (e.affectsConfiguration('rideExtension.repl')) {
                 this.updateWebviewSettings()
             }
         })
@@ -99,7 +99,7 @@ export class WavesReplPanel {
         // Send a message to the webview webview.
         // You can send any JSON serializable data.
         if (this._panel) {
-            const replSettings = vscode.workspace.getConfiguration('rideExtention.repl')
+            const replSettings = vscode.workspace.getConfiguration('rideExtension.repl')
             this._panel.webview.postMessage({
                 command: 'ReplSettings',
                 value: replSettings

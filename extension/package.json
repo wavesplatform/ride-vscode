@@ -17,6 +17,7 @@
 		"postinstall": "node ./node_modules/vscode/bin/install"
 	},
 	"dependencies": {
+		"@waves/ride-js": "0.15.3",
 		"react": "^16.5.2",
 		"react-dom": "^16.5.2",
 		"vscode": "^1.1.22",
@@ -33,6 +34,7 @@
 		"postcss-loader": "^3.0.0",
 		"style-loader": "^0.23.1",
 		"ts-loader": "^5.2.2",
+		"typescript": "^3.2.2",
 		"webpack": "^4.20.2",
 		"webpack-cli": "^3.1.2"
 	}

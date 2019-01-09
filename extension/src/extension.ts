@@ -17,7 +17,7 @@ let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
 	// Activate REPL window
-    const appPath = context.asAbsolutePath(path.join('extention', 'out', 'repl'))
+    const appPath = context.asAbsolutePath(path.join('extension', 'out', 'repl'))
 	//const appPath = '/Users/siem/PycharmProjects/ride-repl/dist'
 	const startCommand = commands.registerCommand('waves-repl.start', () => {
 		WavesReplPanel.createOrShow(appPath);

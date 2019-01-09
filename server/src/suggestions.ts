@@ -39,7 +39,7 @@ const txFields = [
     'minSponsoredAssetFee',
 ]
 
-const txTypes = [
+export const txTypes = [
     'TransferTransaction',
     'IssueTransaction',
     'ReissueTransaction',
@@ -52,6 +52,7 @@ const txTypes = [
     'SponsorFeeTransaction',
     'ExchangeTransaction',
     'DataTransaction',
+    'SetAssetScriptTransaction'
 ]
 
 export const generalSuggestions: CompletionItem[] = [

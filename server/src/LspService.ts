@@ -4,7 +4,7 @@ import {
 } from "vscode-languageserver-types";
 import { globalSuggestions, txFieldsItems, txTypesItems } from './suggestions'
 import { safeCompile } from './safeCompile'
-CompletionList
+
 export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         let diagnostics: Diagnostic[] = []
@@ -53,7 +53,10 @@ export class LspService {
         }
 
 
-        return result
+        return {
+            isIncomplete: false,
+            items: result
+        } as CompletionList
     }
 
     public completionResolve(item: CompletionItem) {
