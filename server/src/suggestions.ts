@@ -179,8 +179,8 @@ export const contextFunctions: CompletionItem[] = [
     },
     {
         label: 'addressFromString',
-        insertText: 'addressFromString(${1:base58})',
-        detail: "Retrieves adress from base58 string",
+        insertText: 'addressFromString(${1:STRING})',
+        detail: "Retrieves address from base58 string",
         insertTextFormat: InsertTextFormat.Snippet,
         kind: CompletionItemKind.Function
     },
@@ -200,7 +200,7 @@ export const contextFunctions: CompletionItem[] = [
     },
     {
         label: 'assetBalance',
-        insertText: 'accountAssetBalance(${1:addressOrAlias: Obj(bytes)}, ${2:assetId: BYTE_VECTOR})',
+        insertText: 'assetBalance(${1:addressOrAlias: Obj(bytes)}, ${2:assetId: BYTE_VECTOR})',
         detail: "Returns asset balance for address or alias",
         insertTextFormat: InsertTextFormat.Snippet,
         kind: CompletionItemKind.Function

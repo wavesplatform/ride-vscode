@@ -21,7 +21,7 @@
 		"react-dom": "^16.5.2",
 		"vscode": "^1.1.22",
 		"vscode-languageclient": "^4.1.4",
-		"waves-repl": "^1.2.1"
+		"waves-repl": "^1.4.9"
 	},
 	"devDependencies": {
 		"@types/react": "^16.4.17",

@@ -1,7 +1,7 @@
 {
 	"name": "ride-language-server",
 	"description": "Language server for Wavesplatfor RIDE language",
-	"version": "0.0.7",
+	"version": "0.1.0",
 	"author": "Wavesplatform",
 	"license": "MIT",
 	"scripts": {},
@@ -13,7 +13,7 @@
 		"url": "https://github.com/wavesplatform/ride-vscode/tree/master/server"
 	},
 	"dependencies": {
-		"@waves/ride-js": "^0.14.6",
+		"@waves/ride-js": "^0.15.3",
 		"vscode-languageserver": "^4.1.3"
 	}
 }
