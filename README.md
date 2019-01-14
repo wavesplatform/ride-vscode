@@ -29,7 +29,7 @@ Console provides help method for this functions.
 #### Available functions
 ##### Transactions:
 You can create and sign transactions.  All functions take transaction parameters and optional seed to sign.
-If no seed is provided, default one from settings will be used. For more detailed list check [waves-transactions](https://ebceu4.github.io/waves-transactions/) library, that is used internally
+If no seed is provided, default one from settings will be used. For more detailed list check [@waves/waves-transactions](https://wavesplatform.github.io/waves-transactions/) library, that is used internally
 
 * alias(txParams, seed?) - create and sign createAlias transaction
 * issue(txParams, seed?) - create and sign issue transaction

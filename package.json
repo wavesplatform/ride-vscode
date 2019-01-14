@@ -54,13 +54,13 @@
 			"type": "object",
 			"title": "Ride configuration",
 			"properties": {
-				"rideExtention.languageServer.maxNumberOfProblems": {
+				"rideExtension.languageServer.maxNumberOfProblems": {
 					"scope": "resource",
 					"type": "number",
 					"default": 100,
 					"description": "Controls the maximum number of problems produced by the server."
 				},
-				"rideExtention.LanguageServer.trace.server": {
+				"rideExtension.LanguageServer.trace.server": {
 					"scope": "window",
 					"type": "string",
 					"enum": [
@@ -71,17 +71,17 @@
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server."
 				},
-				"rideExtention.repl.SEED": {
+				"rideExtension.repl.SEED": {
 					"type": "string",
 					"default": "our default example seed for ride extension plugin inside visual studio code",
 					"description": "Seed phrase that is used to create keypair. This keypair will be used as default inside REPL"
 				},
-				"rideExtention.repl.CHAIN_ID": {
+				"rideExtension.repl.CHAIN_ID": {
 					"type": "string",
 					"default": "T",
 					"description": "Network byte. 'T' for testnet, 'W' for mainnet"
 				},
-				"rideExtention.repl.API_BASE": {
+				"rideExtension.repl.API_BASE": {
 					"type": "string",
 					"default": "https://testnodes.wavesnodes.com/",
 					"description": "Node url to send transactions"

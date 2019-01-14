@@ -90,7 +90,7 @@ export class WavesReplPanel {
         }
         // Todo: rename command
         this._panel.webview.postMessage({
-            command: 'ReplSettings',
+            command: 'EditorsContent',
             value: { editors: data, selectedEditor: selected }
         });
     }
