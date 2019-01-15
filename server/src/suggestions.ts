@@ -194,7 +194,7 @@ export const contextFunctions: CompletionItem[] = [
     },
     {
         label: 'wavesBalance',
-        insertText: 'accountBalance(${1:addressOrAlias: Obj(bytes)})',
+        insertText: 'wavesBalance(${1:addressOrAlias: Obj(bytes)})',
         detail: "Returns account balance for address or alias",
         insertTextFormat: InsertTextFormat.Snippet,
         kind: CompletionItemKind.Function
