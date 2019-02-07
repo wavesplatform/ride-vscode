@@ -8,7 +8,7 @@
     "patterns": [
         {
             "name": "keyword.ride",
-            "match": "\\b(let|if|then|else)\\b"
+            "match": "\\b(let|if|then|else|match|case)\\b"
         },
         {
             "include": "#strings"
