@@ -11,13 +11,14 @@
             "match": "\\b(let|if|then|else|match|case)\\b"
         },
         {
-            "include": "#strings"
+            "name": "entity.name.type.ride",
+            "match": "\\b(base64|base58|TransferTransaction|IssueTransaction|ReissueTransaction|BurnTransaction|LeaseTransaction|LeaseCancelTransaction|MassTransferTransaction|CreateAliasTransaction|SetScriptTransaction|SponsorFeeTransaction|ExchangeTransaction|DataTransaction|SetAssetScriptTransaction)\\b"
         },
         {
-            "include": "#base58"
+            "include": "#qstring-single"
         },
         {
-            "include": "#base64"
+            "include": "#qstring-double"
         },
         {
             "include": "#boolean"
@@ -28,33 +29,46 @@
         {
             "include": "#numbers"
         }
+       
     ],
     "repository": {
-        "strings": {
-            "patterns": [
-                {
-                    "begin": "(\")",
-                    "beginCaptures": {
-                        "0": {
-                            "name": "punctuation.definition.string.begin.ride"
-                        }
-                    },
-                    "end": "\"",
-                    "endCaptures": {
-                        "0": {
-                            "name": "punctuation.definition.string.end.ride"
-                        }
-                    },
-                    "name": "string.quoted.double.ride",
-                    "patterns": [
-                        {
-                            "match": "\\\\.",
-                            "name": "constant.character.escape.ride"
-                        }
-                    ]
-                }
-            ]
-        },
+       
+		"qstring-double": {
+			"name": "string.quoted.double.ride",
+			"begin": "\"",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.ride"
+				}
+			},
+			"end": "(\")|((?:[^\\\\\\n])$)",
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.definition.string.end.ride"
+				},
+				"2": {
+					"name": "invalid.illegal.newline.ride"
+				}
+			}
+		},
+		"qstring-single": {
+			"name": "variable.parameter ",
+			"begin": "'",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.ride"
+				}
+			},
+			"end": "(\\')|((?:[^\\\\\\n])$)",
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.definition.string.end.ride"
+				},
+				"2": {
+					"name": "invalid.illegal.newline.ride"
+				}
+			}
+		},
         "boolean": {
             "patterns": [
                 {
@@ -62,63 +76,7 @@
                     "name": "constant.language.ride"
                 }
             ]
-        },
-        "base58": {
-            "patterns": [
-                {
-                    "begin": "\\b(base58)'",
-                    "beginCaptures": {
-                        "0": {
-                            "name": "punctuation.definition.string.base58.begin.ride"
-                        }
-                    },
-                    "end": "(')",
-                    "endCaptures": {
-                        "0": {
-                            "name": "punctuation.definition.string.base58.end.ride"
-                        }
-                    },
-                    "patterns":[
-                        {
-                            "match":"[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+",
-                            "name": "string.ride"
-                        },
-                        {
-                            "match":"[^123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz']+",
-                            "name":"invalid.illegal.character.base58.ride"
-                        }
-                    ]
-                }
-            ]
-        },
-        "base64": {
-            "patterns": [
-                {
-                    "begin": "\\b(base64)'",
-                    "beginCaptures": {
-                        "0": {
-                            "name": "punctuation.definition.string.base64.begin.ride"
-                        }
-                    },
-                    "end": "'",
-                    "endCaptures": {
-                        "0": {
-                            "name": "punctuation.definition.string.base64.end.ride"
-                        }
-                    },
-                    "patterns":[
-                        {
-                            "match":"[A-Za-z0-9+/=]+",
-                            "name": "string.ride"
-                        },
-                        {
-                            "match":"[^A-Za-z0-9+/=']+",
-                            "name":"invalid.illegal.character.base64.ride"
-                        }
-                    ]
-                }
-            ]
-        },
+        },   
         "comments": {
             "patterns": [
                 {

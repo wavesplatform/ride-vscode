@@ -1,0 +1,919 @@
+[
+    {
+"field":"tx",
+"data":[
+    {
+        "label": "id",
+        "kind": 5
+    },
+    {
+        "label": "fee",
+        "kind": 5
+    },
+    {
+        "label": "feeAssetId",
+        "kind": 5
+    },
+    {
+        "label": "timestamp",
+        "kind": 5
+    },
+    {
+        "label": "bodyBytes",
+        "kind": 5
+    },
+    {
+        "label": "sender",
+        "kind": 5
+    },
+    {
+        "label": "quantity",
+        "kind": 5
+    },
+    {
+        "label": "name",
+        "kind": 5
+    },
+    {
+        "label": "description",
+        "kind": 5
+    },
+    {
+        "label": "script",
+        "kind": 5
+    },
+    {
+        "label": "leaseId",
+        "kind": 5
+    },
+    {
+        "label": "buyOrder",
+        "kind": 5
+    },
+    {
+        "label": "sellOrder",
+        "kind": 5
+    },
+    {
+        "label": "price",
+        "kind": 5
+    },
+    {
+        "label": "amount",
+        "kind": 5
+    },
+    {
+        "label": "buyMatcherFee",
+        "kind": 5
+    },
+    {
+        "label": "sellMatcherFee",
+        "kind": 5
+    },
+    {
+        "label": "totalAmount",
+        "kind": 5
+    },
+    {
+        "label": "transfers",
+        "kind": 5
+    },
+    {
+        "label": "transferCount",
+        "kind": 5
+    },
+    {
+        "label": "senderPublicKey",
+        "kind": 5
+    },
+    {
+        "label": "alias",
+        "kind": 5
+    },
+    {
+        "label": "data",
+        "kind": 5
+    },
+    {
+        "label": "assetName",
+        "kind": 5
+    },
+    {
+        "label": "assetDescription",
+        "kind": 5
+    },
+    {
+        "label": "attachment",
+        "kind": 5
+    },
+    {
+        "label": "decimals",
+        "kind": 5
+    },
+    {
+        "label": "chainId",
+        "kind": 5
+    },
+    {
+        "label": "version",
+        "kind": 5
+    },
+    {
+        "label": "reissuable",
+        "kind": 5
+    },
+    {
+        "label": "proofs",
+        "kind": 5
+    },
+    {
+        "label": "transferAssetId",
+        "kind": 5
+    },
+    {
+        "label": "assetId",
+        "kind": 5
+    },
+    {
+        "label": "recipient",
+        "kind": 5
+    },
+    {
+        "label": "minSponsoredAssetFee",
+        "kind": 5
+    }
+]
+    },
+    {
+        "field": "Address",
+        "data": [
+            {
+                "label": "bytes",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "Alias",
+        "data": [
+            {
+                "label": "alias",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "Transfer",
+        "data": [
+            {
+                "label": "recipient",
+                "kind": 5
+            },
+            {
+                "label": "amount",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "Order",
+        "data": [
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "matcherPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "assetPair",
+                "kind": 5
+            },
+            {
+                "label": "orderType",
+                "kind": 5
+            },
+            {
+                "label": "price",
+                "kind": 5
+            },
+            {
+                "label": "amount",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "expiration",
+                "kind": 5
+            },
+            {
+                "label": "matcherFee",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            },
+            {
+                "label": "amountAsset",
+                "kind": 5
+            },
+            {
+                "label": "priceAsset",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "DataEntry",
+        "data": [
+            {
+                "label": "key",
+                "kind": 5
+            },
+            {
+                "label": "value",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "GenesisTransaction",
+        "data": [
+            {
+                "label": "amount",
+                "kind": 5
+            },
+            {
+                "label": "recipient",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "PaymentTransaction",
+        "data": [
+            {
+                "label": "amount",
+                "kind": 5
+            },
+            {
+                "label": "recipient",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "TransferTransaction",
+        "data": [
+            {
+                "label": "feeAssetId",
+                "kind": 5
+            },
+            {
+                "label": "amount",
+                "kind": 5
+            },
+            {
+                "label": "assetId",
+                "kind": 5
+            },
+            {
+                "label": "recipient",
+                "kind": 5
+            },
+            {
+                "label": "attachment",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "IssueTransaction",
+        "data": [
+            {
+                "label": "quantity",
+                "kind": 5
+            },
+            {
+                "label": "name",
+                "kind": 5
+            },
+            {
+                "label": "description",
+                "kind": 5
+            },
+            {
+                "label": "reissuable",
+                "kind": 5
+            },
+            {
+                "label": "decimals",
+                "kind": 5
+            },
+            {
+                "label": "script",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "ReissueTransaction",
+        "data": [
+            {
+                "label": "quantity",
+                "kind": 5
+            },
+            {
+                "label": "assetId",
+                "kind": 5
+            },
+            {
+                "label": "reissuable",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "BurnTransaction",
+        "data": [
+            {
+                "label": "quantity",
+                "kind": 5
+            },
+            {
+                "label": "assetId",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "LeaseTransaction",
+        "data": [
+            {
+                "label": "amount",
+                "kind": 5
+            },
+            {
+                "label": "recipient",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "LeaseCancelTransaction",
+        "data": [
+            {
+                "label": "leaseId",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "MassTransferTransaction",
+        "data": [
+            {
+                "label": "feeAssetId",
+                "kind": 5
+            },
+            {
+                "label": "assetId",
+                "kind": 5
+            },
+            {
+                "label": "totalAmount",
+                "kind": 5
+            },
+            {
+                "label": "transfers",
+                "kind": 5
+            },
+            {
+                "label": "transferCount",
+                "kind": 5
+            },
+            {
+                "label": "attachment",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "CreateAliasTransaction",
+        "data": [
+            {
+                "label": "alias",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "SetScriptTransaction",
+        "data": [
+            {
+                "label": "script",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "SponsorFeeTransaction",
+        "data": [
+            {
+                "label": "assetId",
+                "kind": 5
+            },
+            {
+                "label": "minSponsoredAssetFee",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "ExchangeTransaction",
+        "data": [
+            {
+                "label": "buyOrder",
+                "kind": 5
+            },
+            {
+                "label": "sellOrder",
+                "kind": 5
+            },
+            {
+                "label": "price",
+                "kind": 5
+            },
+            {
+                "label": "amount",
+                "kind": 5
+            },
+            {
+                "label": "buyMatcherFee",
+                "kind": 5
+            },
+            {
+                "label": "sellMatcherFee",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ]
+    },
+    {
+        "field": "DataTransaction",
+        "data": [
+            {
+                "label": "data",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ]
+    }
+]
+
