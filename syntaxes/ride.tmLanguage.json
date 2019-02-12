@@ -8,11 +8,15 @@
     "patterns": [
         {
             "name": "keyword.ride",
-            "match": "\\b(let|if|then|else|match|case)\\b"
+            "match": "\\b(let|if|then|else|match|case|base64|base58)\\b"
         },
         {
             "name": "entity.name.type.ride",
-            "match": "\\b(base64|base58|TransferTransaction|IssueTransaction|ReissueTransaction|BurnTransaction|LeaseTransaction|LeaseCancelTransaction|MassTransferTransaction|CreateAliasTransaction|SetScriptTransaction|SponsorFeeTransaction|ExchangeTransaction|DataTransaction|SetAssetScriptTransaction)\\b"
+            "match": "\\b(TransferTransaction|IssueTransaction|ReissueTransaction|BurnTransaction|LeaseTransaction|LeaseCancelTransaction|MassTransferTransaction|CreateAliasTransaction|SetScriptTransaction|SponsorFeeTransaction|ExchangeTransaction|DataTransaction|SetAssetScriptTransaction)\\b"
+        },
+        {
+            "name": "markup.italic.ride entity.name.type.ride",
+            "match": "\\b(Address|Alias|Transfer|Order|DataEntry|GenesisTransaction|PaymentTransaction)\\b"
         },
         {
             "include": "#qstring-single"
