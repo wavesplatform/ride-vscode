@@ -1,4 +1,4 @@
-# Waves Ride language extention for Visual Studio Code
+# Waves Ride language extention and REPL for Visual Studio Code
 
 Ride is the language used in Waves blockchain to create smart accounts. This extention provides:
 * Syntax highlighting
