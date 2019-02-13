@@ -4,7 +4,7 @@ import {
 } from "vscode-languageserver-types";
 import { globalSuggestions, txFieldsItems, txTypesItems } from './suggestions'
 import { safeCompile } from './safeCompile'
-const fieldsMap = require('../src/adds/addFieldsObject.json');
+const fieldsMap = require('../src/suggestions/suggestionsData.json');
 
 
 export class LspService {
@@ -38,57 +38,51 @@ export class LspService {
         const matchDeclarations = this.findMatchDeclarations(textBefore)
         let result: CompletionItem[] = [];
 
+        let tranzactionsClasses = ['Address', 'Alias', 'Transfer', 'DataEntry', 'GenesisTransaction', 'PaymentTransaction'];
+        let classes = Object.keys(fieldsMap).filter(val => tranzactionsClasses.indexOf(val) === -1)
+
         try {
-            if (character === '.') {
-                let inputString = line.match(/\b(\w*)\b\./g).pop().slice(0, -1);
+            let wordAfterDot = line.match(/([a-zA-z0-9_]+)\.[a-zA-z0-9_]*\b$/)
 
-                if (['buyOrder', 'sellOrder'].indexOf(inputString) > -1) {
-                    result = fieldsMap['Order']
-                } else if (['recipient'].indexOf(inputString) > -1) {
-                    result = [...fieldsMap['Address'], ...fieldsMap['Alias']]
-                } else if (['tx'].indexOf(inputString) > -1) {
-                    let cutout = ['Address', 'Alias', 'Transfer', 'DataEntry', 'GenesisTransaction', 'PaymentTransaction'];//'Order',
-                    let temp: CompletionItem[] = [];
-                    for (let i in fieldsMap) (cutout.indexOf(i) > -1) ? false : temp.push(fieldsMap[i]);
-                    result = intersection(...temp)
-                } else if ([...caseDeclarations].pop() === inputString) {
-                    let temp: CompletionItem[] = [];
-                    let rx = new RegExp(`\\b${Object.keys(fieldsMap).join('\\b|\\b')}\\b`, 'g');
-                    textBefore.match(/\bcase[ \t]*.*/g).pop()
-                        .match(/\bcase[ \t]*\b(.+)\b[ \t]*:[ \t]*(.+)[{+=>]/)[2].match(rx)
-                        .map(value => temp.push(fieldsMap[value]))
-                    result = intersection(...temp)
-                } else {
-                    this.findLetDeclarations(textBefore)
-                        .map((val, _, arr) => {
-                            if (val.name === inputString) {
-                                result = fieldsMap[val.value]
-                                arr.length = 0
-                            }
-                        })
-                }
-
-            } else if (character === ':') {
-                if ([...matchDeclarations].pop() === 'tx') {
-                    let cutout = ['Address', 'Alias', 'Transfer', 'DataEntry', 'GenesisTransaction', 'PaymentTransaction']; //'Order',
-
-                    for (let temp in fieldsMap) {
-                        if (cutout.indexOf(temp) === -1) {
-                            result.push({ label: temp, kind: CompletionItemKind.Class });
-                        }
+            switch (true) {
+                case (character === '.' || wordAfterDot !== null): //autocompletion after clicking on a dot
+                    let inputWord = (wordAfterDot === null) ? line.match(/\b(\w*)\b\./g).pop().slice(0, -1) : wordAfterDot[1];
+                    switch (true) {
+                        case (['buyOrder', 'sellOrder'].indexOf(inputWord) > -1): result = fieldsMap['Order']; //'buyOrder', 'sellOrder'
+                            break;
+                        case (['recipient'].indexOf(inputWord) > -1): result = [...fieldsMap['Address'], ...fieldsMap['Alias']]; //'recipient'
+                            break;
+                        case (['tx'].indexOf(inputWord) > -1): result = intersection(...classes.map(val => fieldsMap[val])); // 'tx'
+                            break;
+                        case ([...caseDeclarations].pop() === inputWord): //case variable
+                            let temp = textBefore.match(/\bcase[ \t]*.*/g).pop()
+                                .match(/\bcase[ \t]*\b(.+)\b[ \t]*:[ \t]*(.+)[{+=>]/)[2]
+                                .match(new RegExp(`\\b${Object.keys(fieldsMap).join('\\b|\\b')}\\b`, 'g'))
+                                .map(value => fieldsMap[value]);
+                            result = intersection(...temp);
+                            break;
+                        default:
+                            this.findLetDeclarations(textBefore).map((val, _, arr) => {
+                                if (val.name === inputWord) {
+                                    result = fieldsMap[val.value];
+                                    arr.length = 0;
+                                }
+                            });
+                            break;
                     }
-                } else {
-                    for (let temp in fieldsMap) {
-                        result.push({ label: temp, kind: CompletionItemKind.Class })
-                    }
-                }
-            } else {
-                result = [
-                    ...getDataByRegexp(textBefore, /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm)
-                        .map(val => ({ label: val.name, kind: CompletionItemKind.Variable })),
-                    ...globalSuggestions,
-                    ...fieldsMap['tx']
-                ]
+                    break;
+                case (character === ':'): //autocompletion after clicking on a dubledot
+                    ([...matchDeclarations].pop() === 'tx') ?
+                        result = classes.map(val => ({ label: val, kind: CompletionItemKind.Class })) : // if match(tx)
+                        result = Object.keys(fieldsMap).map(val => ({ label: val, kind: CompletionItemKind.Class })); //if match(!tx)
+                    break;
+                default:
+                    result = [
+                        ...getDataByRegexp(textBefore, /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm)
+                            .map(val => ({ label: val.name, kind: CompletionItemKind.Variable })),
+                        ...globalSuggestions
+                    ];
+                    break;
             }
         } catch (e) {
             //   console.error(e) 
