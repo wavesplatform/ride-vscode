@@ -48,7 +48,7 @@ export class LspService {
                 case (character === '.' || wordAfterDot !== null): //autocompletion after clicking on a dot
                     let inputWord = (wordAfterDot === null) ? line.match(/\b(\w*)\b\./g).pop().slice(0, -1) : wordAfterDot[1];
                     switch (true) {
-                        case (['buyOrder', 'sellOrder'].indexOf(inputWord) > -1): result = fieldsMap['Order']; //'buyOrder', 'sellOrder'
+                        case (['buyOrder', 'sellOrder'].indexOf(inputWord) > -1): result = fieldsMap['Order']; //ExchangeTransaction:'buyOrder', 'sellOrder'
                             break;
                         case (['recipient'].indexOf(inputWord) > -1): result = [...fieldsMap['Address'], ...fieldsMap['Alias']]; //'recipient'
                             break;
@@ -71,7 +71,7 @@ export class LspService {
                             break;
                     }
                     break;
-                case (character === ':'): //autocompletion after clicking on a dubledot
+                case (character === ':' || line.match(/([a-zA-z0-9_]+)\:[a-zA-z0-9_]*\b$/) !== null): //autocompletion after clicking on a dubledot
                     ([...matchDeclarations].pop() === 'tx') ?
                         result = classes.map(val => ({ label: val, kind: CompletionItemKind.Class })) : // if match(tx)
                         result = Object.keys(fieldsMap).map(val => ({ label: val, kind: CompletionItemKind.Class })); //if match(!tx)
