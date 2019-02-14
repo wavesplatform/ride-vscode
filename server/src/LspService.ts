@@ -38,26 +38,29 @@ export class LspService {
         const matchDeclarations = this.findMatchDeclarations(textBefore)
         let result: CompletionItem[] = [];
 
-        let tranzactionsClasses = ['Address', 'Alias', 'Transfer', 'DataEntry', 'GenesisTransaction', 'PaymentTransaction'];
-        let classes = Object.keys(fieldsMap).filter(val => tranzactionsClasses.indexOf(val) === -1)
+        let nonTranzactionsClasses = ['Address', 'Alias', 'Transfer', 'DataEntry', 'GenesisTransaction', 'PaymentTransaction'];
+        let transactionClasses = Object.keys(fieldsMap).filter(val => nonTranzactionsClasses.indexOf(val) === -1)
 
         try {
-            let wordAfterDot = line.match(/([a-zA-z0-9_]+)\.[a-zA-z0-9_]*\b$/)
+            let wordBrforeDot = line.match(/([a-zA-z0-9_]+)\.[a-zA-z0-9_]*\b$/) // get text after dot (ex: [tx].test)
 
             switch (true) {
-                case (character === '.' || wordAfterDot !== null): //autocompletion after clicking on a dot
-                    let inputWord = (wordAfterDot === null) ? line.match(/\b(\w*)\b\./g).pop().slice(0, -1) : wordAfterDot[1];
+                case (character === '.' || wordBrforeDot !== null): //autocompletion after clicking on a dot
+                    //get word before dot or last word in line
+                    let inputWord = (wordBrforeDot === null) ? line.match(/\b(\w*)\b\./g).pop().slice(0, -1) : wordBrforeDot[1];
                     switch (true) {
-                        case (['buyOrder', 'sellOrder'].indexOf(inputWord) > -1): result = fieldsMap['Order']; //ExchangeTransaction:'buyOrder', 'sellOrder'
+                        case (['buyOrder', 'sellOrder'].indexOf(inputWord) > -1): 
+                            result = fieldsMap['Order']; //ExchangeTransaction:'buyOrder', 'sellOrder'
                             break;
-                        case (['recipient'].indexOf(inputWord) > -1): result = [...fieldsMap['Address'], ...fieldsMap['Alias']]; //'recipient'
+                        case (['recipient'].indexOf(inputWord) > -1): 
+                            result = [...fieldsMap['Address'], ...fieldsMap['Alias']]; //'recipient'
                             break;
-                        case (['tx'].indexOf(inputWord) > -1): result = intersection(...classes.map(val => fieldsMap[val])); // 'tx'
+                        case (['tx'].indexOf(inputWord) > -1): 
+                            result = intersection(...transactionClasses.map(val => fieldsMap[val])); // 'tx'
                             break;
-                        case ([...caseDeclarations].pop() === inputWord): //case variable
-                            let temp = textBefore.match(/\bcase[ \t]*.*/g).pop()
-                                .match(/\bcase[ \t]*\b(.+)\b[ \t]*:[ \t]*(.+)$/)[2]
-                                .match(new RegExp(`\\b${Object.keys(fieldsMap).join('\\b|\\b')}\\b`, 'g'))
+                        case ([...caseDeclarations].pop() === inputWord):                                  //case variable:
+                            let temp = textBefore.match(/\bcase[ \t]*.*/g).pop()                           //get line with last "case" block
+                                .match(new RegExp(`\\b${Object.keys(fieldsMap).join('\\b|\\b')}\\b`, 'g')) //search fields in line 
                                 .map(value => fieldsMap[value]);
                             result = intersection(...temp);
                             break;
@@ -73,12 +76,12 @@ export class LspService {
                     break;
                 case ([':', '|'].indexOf(character) !== -1 || line.match(/([a-zA-z0-9_]+)[ \t]*[|:][ \t]*[a-zA-z0-9_]*$/) !== null): //autocompletion after clicking on a dubledot or pipe
                     ([...matchDeclarations].pop() === 'tx') ?
-                        result = classes.map(val => ({ label: val, kind: CompletionItemKind.Class })) : // if match(tx)
+                        result = transactionClasses.map(val => ({ label: val, kind: CompletionItemKind.Class })) : // if match(tx)
                         result = Object.keys(fieldsMap).map(val => ({ label: val, kind: CompletionItemKind.Class })); //if match(!tx)
                     break;
                 default:
                     result = [
-                        ...getDataByRegexp(textBefore, /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm)
+                        ...getDataByRegexp(textBefore, /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm)// get variables after "let"
                             .map(val => ({ label: val.name, kind: CompletionItemKind.Variable })),
                         ...globalSuggestions
                     ];
@@ -99,10 +102,9 @@ export class LspService {
     }
 
     private findLetDeclarations(text: string): LetDeclarationType[] {
-        let rx = new RegExp(`\\b${Object.keys(fieldsMap).join('\\b|\\b')}\\b`, 'g');
+        let rx = new RegExp(`\\b${Object.keys(fieldsMap).join('\\b|\\b')}\\b`, 'g'); //this regexp search fields
         return [
-            //...getDataByRegexp(text, /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:[ \t]*([^\n]+)/gm),
-            ...getDataByRegexp(text, /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm)
+            ...getDataByRegexp(text, /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm)  //this regexp search variables
         ].filter(val => {
             let match = val.value.match(rx)
             if (match !== null) {
@@ -113,7 +115,7 @@ export class LspService {
     }
 
     private findMatchDeclarations(text: string) {
-        const re = /\bmatch[ \t]*\([ \t]*([a-zA-z0-9_]+)[ \t]*\)/gm;
+        const re = /\bmatch[ \t]*\([ \t]*([a-zA-z0-9_]+)[ \t]*\)/gm; //this regexp search "match" blocks
         const declarations = [];
         let myMatch;
         while ((myMatch = re.exec(text)) !== null) {
@@ -123,7 +125,7 @@ export class LspService {
     }
 
     private findCaseDeclarations(text: string): string[] {
-        const re = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:/gm
+        const re = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:/gm //this regexp search "case" blocks
         const declarations: string[] = []
         let myMatch;
 
