@@ -56,7 +56,7 @@ export class LspService {
                             break;
                         case ([...caseDeclarations].pop() === inputWord): //case variable
                             let temp = textBefore.match(/\bcase[ \t]*.*/g).pop()
-                                .match(/\bcase[ \t]*\b(.+)\b[ \t]*:[ \t]*(.+)[{+=>]/)[2]
+                                .match(/\bcase[ \t]*\b(.+)\b[ \t]*:[ \t]*(.+)$/)[2]
                                 .match(new RegExp(`\\b${Object.keys(fieldsMap).join('\\b|\\b')}\\b`, 'g'))
                                 .map(value => fieldsMap[value]);
                             result = intersection(...temp);
@@ -123,7 +123,7 @@ export class LspService {
     }
 
     private findCaseDeclarations(text: string): string[] {
-        const re = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*):/gm
+        const re = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:/gm
         const declarations: string[] = []
         let myMatch;
 
