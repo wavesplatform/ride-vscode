@@ -71,7 +71,7 @@ export class LspService {
                             break;
                     }
                     break;
-                case (character === ':' || line.match(/([a-zA-z0-9_]+)\:[a-zA-z0-9_]*\b$/) !== null): //autocompletion after clicking on a dubledot
+                case ([':', '|'].indexOf(character) !== -1 || line.match(/([a-zA-z0-9_]+)[ \t]*[|:][ \t]*[a-zA-z0-9_]*$/) !== null): //autocompletion after clicking on a dubledot or pipe
                     ([...matchDeclarations].pop() === 'tx') ?
                         result = classes.map(val => ({ label: val, kind: CompletionItemKind.Class })) : // if match(tx)
                         result = Object.keys(fieldsMap).map(val => ({ label: val, kind: CompletionItemKind.Class })); //if match(!tx)
