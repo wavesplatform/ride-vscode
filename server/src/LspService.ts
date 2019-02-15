@@ -1,9 +1,11 @@
 import {
-    TextDocument,
+    TextDocument, CompletionItemKind,
     Diagnostic, CompletionItem, Position, Range, DiagnosticSeverity, CompletionList
 } from "vscode-languageserver-types";
 import { globalSuggestions, txFieldsItems, txTypesItems } from './suggestions'
 import { safeCompile } from './safeCompile'
+const fieldsMap = require('../src/suggestions/suggestionsData.json');
+
 
 export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
@@ -12,7 +14,7 @@ export class LspService {
         const errorText = result.error
         if (errorText) {
             const errRangesRegxp = /\d+-\d+/gm
-            const errorRanges:string[] = errRangesRegxp.exec(errorText) || []
+            const errorRanges: string[] = errRangesRegxp.exec(errorText) || []
             const errors = errorRanges.map(offsets => {
                 const [start, end] = offsets.split('-').map(offset => document.positionAt(parseInt(offset)))
                 const range = Range.create(start, end)
@@ -32,26 +34,69 @@ export class LspService {
         const character = document.getText().substring(offset - 1, offset)
         const line = document.getText({ start: { line: position.line, character: 0 }, end: position })
         const textBefore = document.getText({ start: { line: 0, character: 0 }, end: position })
-        
-        // Find variable declarations inside case statements and make regex that matches tx. or any case declaration.
-        const caseDeclarations = this.findCaseDeclarations(textBefore)
-        const txFieldRegex = new RegExp(`\\b(${['tx', ...caseDeclarations].join('|')}\\.)`)
-        let result: CompletionItem[] = []
+        const caseDeclarations = this.findCaseDeclarations(textBefore);
+        const matchDeclarations = this.findMatchDeclarations(textBefore)
+        let result: CompletionItem[] = [];
 
-        switch (true) {
-            case line.match(txFieldRegex) !== null:
-                    result = txFieldsItems
-                break;
-            case line.match(/\bcase[ \t]+(.+):[a-zA-Z0-9_]*$/) !== null:
-                    result = txTypesItems
-                break;
-            case line.split(' ')[line.split(' ').length -1].match(/\.|:/) !==null:
-                break;   
-            default:
-                const letDeclarations = this.findLetDeclarations(textBefore).map(label => ({ label }))  
-                result = globalSuggestions.concat(letDeclarations);
+        let nonTranzactionsClasses = ['Address', 'Alias', 'Transfer', 'DataEntry', 'GenesisTransaction', 'PaymentTransaction'];
+        let transactionClasses = Object.keys(fieldsMap).filter(val => nonTranzactionsClasses.indexOf(val) === -1)
+
+        try {
+            let wordBeforeDot = line.match(/([a-zA-z0-9_]+)\.[a-zA-z0-9_]*\b$/)     // get text before dot (ex: [tx].test)
+
+            switch (true) {
+                case (character === '.' || wordBeforeDot !== null):                 //autocompletion after clicking on a dot
+                    
+                    let inputWord = (wordBeforeDot === null)                        //get word before dot or last word in line
+                        ? line.match(/\b(\w*)\b\./g).pop().slice(0, -1) 
+                        : wordBeforeDot[1];
+
+                    switch (true) {
+                        case (['buyOrder', 'sellOrder'].indexOf(inputWord) > -1): 
+                            result = fieldsMap['Order'];                            //ExchangeTransaction:'buyOrder', 'sellOrder'
+                            break;
+                        case (['recipient'].indexOf(inputWord) > -1):               //'recipient'
+                            result = [...fieldsMap['Address'], ...fieldsMap['Alias']]; 
+                            break;
+                        case (['tx'].indexOf(inputWord) > -1):                      // 'tx'
+                            result = intersection(...transactionClasses.map(val => fieldsMap[val])); 
+                            break;
+                        case ([...caseDeclarations].pop() === inputWord):           //case variable:
+                            let temp = textBefore.match(/\bcase[ \t]*.*/g).pop()    //get line with last "case" block
+                                .match(new RegExp(                                  //search fields in line 
+                                    `\\b${Object.keys(fieldsMap).join('\\b|\\b')}\\b`, 'g')
+                                    ) 
+                                .map(value => fieldsMap[value]);
+                            result = intersection(...temp);
+                            break;
+                        default:
+                            this.findLetDeclarations(textBefore).map((val, _, arr) => {
+                                if (val.name === inputWord) {
+                                    result = fieldsMap[val.value];
+                                    arr.length = 0;
+                                }
+                            });
+                            break;
+                    }
+                    break;
+                    //autocompletion after clicking on a colon or pipe
+                case ([':', '|'].indexOf(character) !== -1 || line.match(/([a-zA-z0-9_]+)[ \t]*[|:][ \t]*[a-zA-z0-9_]*$/) !== null): 
+                    ([...matchDeclarations].pop() === 'tx')                         // if match(tx) else match(!tx)
+                        ? result = transactionClasses.map(val => ({ label: val, kind: CompletionItemKind.Class }))  
+                        : result = Object.keys(fieldsMap).map(val => ({ label: val, kind: CompletionItemKind.Class })); 
+                    break;
+                default:
+                    result = [
+                    // get variables after "let" and globalSuggestions
+                        ...getDataByRegexp(textBefore, /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm)
+                            .map(val => ({ label: val.name, kind: CompletionItemKind.Variable })),
+                        ...globalSuggestions
+                    ];
+                    break;
+            }
+        } catch (e) {
+            //   console.error(e) 
         }
-
 
         return {
             isIncomplete: false,
@@ -63,20 +108,32 @@ export class LspService {
         return item
     }
 
-    private findLetDeclarations(text: string): string[] {
-        const re = /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm
-        const declarations: string[] = []
+    private findLetDeclarations(text: string): LetDeclarationType[] {
+        let rx = new RegExp(`\\b${Object.keys(fieldsMap).join('\\b|\\b')}\\b`, 'g');//this regexp looks for fields
+        return [
+                    //this regexp looks for variables
+            ...getDataByRegexp(text, /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm)  
+        ].filter(val => {
+            let match = val.value.match(rx)
+            if (match !== null) {
+                val.value = match[0] || ''
+                return val
+            } else return false
+        })
+    }
+
+    private findMatchDeclarations(text: string) {
+        const re = /\bmatch[ \t]*\([ \t]*([a-zA-z0-9_]+)[ \t]*\)/gm;                //this regexp looks for "match" blocks
+        const declarations = [];
         let myMatch;
-
         while ((myMatch = re.exec(text)) !== null) {
-            declarations.push(myMatch[1])
+            declarations.push(myMatch[1]);
         }
-
-        return declarations
+        return declarations;
     }
 
     private findCaseDeclarations(text: string): string[] {
-        const re = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*):/gm
+        const re = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:/gm                   //this regexp looks for "case" blocks
         const declarations: string[] = []
         let myMatch;
 
@@ -86,4 +143,31 @@ export class LspService {
 
         return declarations
     }
+}
+
+interface LetDeclarationType {
+    name: string
+    value: string
+}
+
+function intersection(...args: any): CompletionItem[] {
+    let out = args[0];
+    for (let i = 1; i < args.length; i++) out = intersect(out, args[i])
+    return out
+}
+
+function intersect(a: CompletionItem[], b: CompletionItem[]) {
+    let list: string[] = [], out: CompletionItem[] = [];
+    a.forEach((val) => list.push(val.label));
+    b.forEach(val => (list.indexOf(val.label) > -1) ? out.push(val) : false);
+    return out
+}
+
+function getDataByRegexp(text: string, re: RegExp): LetDeclarationType[] {
+    const declarations = [];
+    let myMatch;
+    while ((myMatch = re.exec(text)) !== null) {
+        declarations.push({ name: myMatch[1], value: myMatch[2] });
+    }
+    return declarations;
 }
