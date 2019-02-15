@@ -74,7 +74,7 @@ export class LspService {
                             break;
                     }
                     break;
-                case ([':', '|'].indexOf(character) !== -1 || line.match(/([a-zA-z0-9_]+)[ \t]*[|:][ \t]*[a-zA-z0-9_]*$/) !== null): //autocompletion after clicking on a dubledot or pipe
+                case ([':', '|'].indexOf(character) !== -1 || line.match(/([a-zA-z0-9_]+)[ \t]*[|:][ \t]*[a-zA-z0-9_]*$/) !== null): //autocompletion after clicking on a colon or pipe
                     ([...matchDeclarations].pop() === 'tx') ?
                         result = transactionClasses.map(val => ({ label: val, kind: CompletionItemKind.Class })) : // if match(tx)
                         result = Object.keys(fieldsMap).map(val => ({ label: val, kind: CompletionItemKind.Class })); //if match(!tx)
@@ -102,9 +102,9 @@ export class LspService {
     }
 
     private findLetDeclarations(text: string): LetDeclarationType[] {
-        let rx = new RegExp(`\\b${Object.keys(fieldsMap).join('\\b|\\b')}\\b`, 'g'); //this regexp search fields
+        let rx = new RegExp(`\\b${Object.keys(fieldsMap).join('\\b|\\b')}\\b`, 'g'); //this regexp looks for fields
         return [
-            ...getDataByRegexp(text, /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm)  //this regexp search variables
+            ...getDataByRegexp(text, /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm)  //this regexp looks for variables
         ].filter(val => {
             let match = val.value.match(rx)
             if (match !== null) {
@@ -115,7 +115,7 @@ export class LspService {
     }
 
     private findMatchDeclarations(text: string) {
-        const re = /\bmatch[ \t]*\([ \t]*([a-zA-z0-9_]+)[ \t]*\)/gm; //this regexp search "match" blocks
+        const re = /\bmatch[ \t]*\([ \t]*([a-zA-z0-9_]+)[ \t]*\)/gm; //this regexp looks for "match" blocks
         const declarations = [];
         let myMatch;
         while ((myMatch = re.exec(text)) !== null) {
@@ -125,7 +125,7 @@ export class LspService {
     }
 
     private findCaseDeclarations(text: string): string[] {
-        const re = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:/gm //this regexp search "case" blocks
+        const re = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:/gm //this regexp looks for "case" blocks
         const declarations: string[] = []
         let myMatch;
 
