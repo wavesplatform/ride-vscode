@@ -79,14 +79,15 @@ export class LspService {
                             break;
                     }
                     break;
-                //autocompletion after clicking on a colon or pipe
+                    //autocompletion after clicking on a colon or pipe
                 case ([':', '|'].indexOf(character) !== -1 || line.match(/([a-zA-z0-9_]+)[ \t]*[|:][ \t]*[a-zA-z0-9_]*$/) !== null): 
                     ([...matchDeclarations].pop() === 'tx')                         // if match(tx) else match(!tx)
                         ? result = transactionClasses.map(val => ({ label: val, kind: CompletionItemKind.Class }))  
                         : result = Object.keys(fieldsMap).map(val => ({ label: val, kind: CompletionItemKind.Class })); 
                     break;
                 default:
-                    result = [                                                      // get variables after "let" and globalSuggestions
+                    result = [
+                    // get variables after "let" and globalSuggestions
                         ...getDataByRegexp(textBefore, /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm)
                             .map(val => ({ label: val.name, kind: CompletionItemKind.Variable })),
                         ...globalSuggestions
@@ -109,7 +110,8 @@ export class LspService {
 
     private findLetDeclarations(text: string): LetDeclarationType[] {
         let rx = new RegExp(`\\b${Object.keys(fieldsMap).join('\\b|\\b')}\\b`, 'g');//this regexp looks for fields
-        return [                                                                    //this regexp looks for variables
+        return [
+                    //this regexp looks for variables
             ...getDataByRegexp(text, /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm)  
         ].filter(val => {
             let match = val.value.match(rx)
