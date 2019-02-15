@@ -4,7 +4,6 @@
 		"target": "es6",
 		"module": "commonjs",
 		"moduleResolution": "node",
-		"resolveJsonModule": true,
 		"sourceMap": true,
 		"outDir": "out",
         "rootDir": "src",

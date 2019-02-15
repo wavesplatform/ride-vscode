@@ -42,14 +42,14 @@ export class LspService {
         let transactionClasses = Object.keys(fieldsMap).filter(val => nonTranzactionsClasses.indexOf(val) === -1)
 
         try {
-            let wordBrforeDot = line.match(/([a-zA-z0-9_]+)\.[a-zA-z0-9_]*\b$/)     // get text before dot (ex: [tx].test)
+            let wordBeforeDot = line.match(/([a-zA-z0-9_]+)\.[a-zA-z0-9_]*\b$/)     // get text before dot (ex: [tx].test)
 
             switch (true) {
-                case (character === '.' || wordBrforeDot !== null):                 //autocompletion after clicking on a dot
+                case (character === '.' || wordBeforeDot !== null):                 //autocompletion after clicking on a dot
                     
-                    let inputWord = (wordBrforeDot === null)                        //get word before dot or last word in line
+                    let inputWord = (wordBeforeDot === null)                        //get word before dot or last word in line
                         ? line.match(/\b(\w*)\b\./g).pop().slice(0, -1) 
-                        : wordBrforeDot[1];
+                        : wordBeforeDot[1];
 
                     switch (true) {
                         case (['buyOrder', 'sellOrder'].indexOf(inputWord) > -1): 
