@@ -18,7 +18,9 @@ import {
     IConnection,
     Files,
     TextDocumentSyncKind,
-    CompletionList
+    CompletionList,
+    Hover,
+    SignatureHelp
 } from 'vscode-languageserver';
 import * as fs from 'fs'
 import { LspService } from './LspService'
@@ -107,6 +109,10 @@ class LspServer {
                     completionProvider: {
                         resolveProvider: true,
                         triggerCharacters: ['.', ':']
+                    },
+                    hoverProvider : true,
+                    signatureHelpProvider : {
+                        "triggerCharacters": [ '(' ]
                     }
                 }
             }
@@ -153,6 +159,14 @@ class LspServer {
         connection.onCompletion(async (textDocumentPosition: TextDocumentPositionParams): Promise<CompletionItem[] | CompletionList>=>{
             const document = await this.getDocument(textDocumentPosition.textDocument.uri)
             return this.service.completion(document, textDocumentPosition.position)
+        });
+        connection.onHover(async (textDocumentPosition: TextDocumentPositionParams):Promise<Hover>=>{
+            const document = await this.getDocument(textDocumentPosition.textDocument.uri)
+            return this.service.hover(document,  textDocumentPosition.position)
+        });
+        connection.onSignatureHelp(async (textDocumentPosition: TextDocumentPositionParams):Promise<SignatureHelp> => {
+            const document = await this.getDocument(textDocumentPosition.textDocument.uri);
+            return this.service.signatureHelp(document, textDocumentPosition.position);
         });
         connection.onCompletionResolve(service.completionResolve.bind(service));
         // connection.onDefinition(service.definition.bind(service));

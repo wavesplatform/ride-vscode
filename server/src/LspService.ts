@@ -5,6 +5,7 @@ import {
 import { globalSuggestions, txFieldsItems, txTypesItems } from './suggestions'
 import { safeCompile } from './safeCompile'
 const fieldsMap = require('../src/suggestions/suggestionsData.json');
+const funcsMap = require('../src/suggestions/suggestionsFuncs.json');
 
 
 export class LspService {
@@ -104,6 +105,39 @@ export class LspService {
         } as CompletionList
     }
 
+    public hover(document: TextDocument, position: Position) {
+        const word = getWordByPos(document.getText().split('\n')[position.line], position.character);
+        let result = [];
+        if (funcsMap[word])
+            result.push(`**${word}** (\n
+                ${funcsMap[word].params.map((v:string) => `\n * \`${v}\` \n`)}
+                 \n) : ${funcsMap[word].type} \n>_${funcsMap[word].doc}_`);
+        return {
+            contents: result
+        };
+    }
+
+    public signatureHelp(document: TextDocument, position: Position)  {
+        let temp = document.getText({ start: { line: position.line, character: 0 }, end: position }).match(/\b(.+)[ \t]*\(/);
+        const word = temp ? temp[1] : '';
+        let result = []
+        if (funcsMap[word])
+            result.push({
+                label: word,
+                documentation: funcsMap[word].doc,
+                parameters: [{ label:"",
+                    documentation: funcsMap[word].params
+                    .map((v:string,i:number)=> (i ===0 ? `- ${v}` : `\n- ${v}`)).join(', ')
+                }]
+            })
+            let out = {
+                activeParameter: 0,
+                activeSignature: 0,
+                signatures: result,
+            }
+        return out;
+    }
+
     public completionResolve(item: CompletionItem) {
         return item
     }
@@ -170,4 +204,22 @@ function getDataByRegexp(text: string, re: RegExp): LetDeclarationType[] {
         declarations.push({ name: myMatch[1], value: myMatch[2] });
     }
     return declarations;
+}
+
+function getWordByPos(string: string, character: number) {
+    let sep = ['"', '\'', '*', '(', ')', '{', '}', '[', ']', '!', '<', '>', '|', '\\', '/', '.', ',', ':', ';', '&', ' ', '=', '\t']
+    let start = 0, end = string.length
+    for (let i = character; i <= string.length; i++) {
+        if (sep.indexOf(string[i]) > -1) {
+            end = i
+            break
+        }
+    }
+    for (let i = character; i >= 0; i--) {
+        if (sep.indexOf(string[i]) > -1) {
+            start = ++i
+            break
+        }
+    }
+    return string.substring(start, end)
 }

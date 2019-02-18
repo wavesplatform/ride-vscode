@@ -1,0 +1,403 @@
+{
+    "fraction": {
+        "funcs": "fraction",
+        "cost": "1",
+        "doc": "Multiply and dividion with big integer intermediate representation",
+        "params": [
+            "value Int multiplyer",
+            "numerator Int multiplyer",
+            "denominator Int divisor"
+        ],
+        "type": "Int"
+    },
+    "size": {
+        "funcs": "size",
+        "cost": "2",
+        "doc": "Size of list",
+        "params": [
+            "arr LIST[ T] list"
+        ],
+        "type": "Int"
+    },
+    "toBytes": {
+        "funcs": "toBytes",
+        "cost": "1",
+        "doc": "Bytes array representation",
+        "params": [
+            "s String value"
+        ],
+        "type": "ByteVector"
+    },
+    "take": {
+        "funcs": "take",
+        "cost": "1",
+        "doc": "Take string prefix",
+        "params": [
+            "xs String sctring",
+            "number Int prefix size in characters"
+        ],
+        "type": "String"
+    },
+    "drop": {
+        "funcs": "drop",
+        "cost": "1",
+        "doc": "Remmove sring prefix",
+        "params": [
+            "xs String string",
+            "number Int prefix size"
+        ],
+        "type": "String"
+    },
+    "takeRight": {
+        "funcs": "takeRight",
+        "cost": "1",
+        "doc": "Take string suffix",
+        "params": [
+            "@xs String String",
+            "@number Int suffix size in characters"
+        ],
+        "type": "String"
+    },
+    "dropRight": {
+        "funcs": "dropRight",
+        "cost": "1",
+        "doc": "Remove string suffix",
+        "params": [
+            "@xs String string",
+            "@number Int suffix size in characters"
+        ],
+        "type": "String"
+    },
+    "toString": {
+        "funcs": "toString",
+        "cost": "1",
+        "doc": "String representation",
+        "params": [
+            "n Int value"
+        ],
+        "type": "String"
+    },
+    "_isInstanceOf": {
+        "funcs": "_isInstanceOf",
+        "cost": "1",
+        "doc": "Internal function to check value type",
+        "params": [
+            "obj T value",
+            "of String type name"
+        ],
+        "type": "Boolean"
+    },
+    "isDefined": {
+        "funcs": "isDefined",
+        "cost": "",
+        "doc": "Check the value is defined",
+        "params": [
+            "@a OPTION[ T] Option value"
+        ],
+        "type": "Boolean"
+    },
+    "extract": {
+        "funcs": "extract",
+        "cost": "",
+        "doc": "Extract value from option or fail",
+        "params": [
+            "@a OPTION[ T] Optional value"
+        ],
+        "type": "T"
+    },
+    "throw": {
+        "funcs": "throw",
+        "cost": "1",
+        "doc": "Fail script",
+        "params": [
+            "err String Error message"
+        ],
+        "type": "Nothing"
+    },
+    "*": {
+        "funcs": "*",
+        "cost": "1",
+        "doc": "Integer multiplication",
+        "params": [
+            "a Int multiplyer",
+            "b Int multiplyer"
+        ],
+        "type": "Int"
+    },
+    "/": {
+        "funcs": "/",
+        "cost": "1",
+        "doc": "Integer devision",
+        "params": [
+            "a Int divisible",
+            "b Int divisor"
+        ],
+        "type": "Int"
+    },
+    "%": {
+        "funcs": "%",
+        "cost": "1",
+        "doc": "Modulo",
+        "params": [
+            "a Int divisible",
+            "b Int divisor"
+        ],
+        "type": "Int"
+    },
+    "+": {
+        "funcs": "+",
+        "cost": "10",
+        "doc": "Limited bytes vectors concatination",
+        "params": [
+            "a ByteVector prefix",
+            "b ByteVector suffix"
+        ],
+        "type": "ByteVector"
+    },
+    "-": {
+        "funcs": "-",
+        "cost": "",
+        "doc": "Change integer sign",
+        "params": [
+            "@n Int value"
+        ],
+        "type": "Int"
+    },
+    "==": {
+        "funcs": "==",
+        "cost": "1",
+        "doc": "Equality",
+        "params": [
+            "a T value",
+            "b T value"
+        ],
+        "type": "Boolean"
+    },
+    "!=": {
+        "funcs": "!=",
+        "cost": "1",
+        "doc": "Inequality",
+        "params": [
+            "@a T value",
+            "@b T value"
+        ],
+        "type": "Boolean"
+    },
+    "&gt;=": {
+        "funcs": "&gt;=",
+        "cost": "1",
+        "doc": "Integer grater or equal comparation",
+        "params": [
+            "a Int term",
+            "b Int term"
+        ],
+        "type": "Boolean"
+    },
+    "&gt;": {
+        "funcs": "&gt;",
+        "cost": "1",
+        "doc": "Integer grater comparation",
+        "params": [
+            "a Int term",
+            "b Int term"
+        ],
+        "type": "Boolean"
+    },
+    "getElement": {
+        "funcs": "getElement",
+        "cost": "2",
+        "doc": "Get list element by position",
+        "params": [
+            "arr LIST[ T] list",
+            "pos Int element position"
+        ],
+        "type": "T"
+    },
+    "!": {
+        "funcs": "!",
+        "cost": "",
+        "doc": "unary negation",
+        "params": [
+            "@p  Boolean boolean"
+        ],
+        "type": "Boolean"
+    },
+    "keccak256": {
+        "funcs": "keccak256",
+        "cost": "10",
+        "doc": "256 bit Keccak/SHA-3/TIPS-202",
+        "params": [
+            "bytes ByteVector value"
+        ],
+        "type": "ByteVector"
+    },
+    "blake2b256": {
+        "funcs": "blake2b256",
+        "cost": "10",
+        "doc": "256 bit BLAKE",
+        "params": [
+            "bytes ByteVector value"
+        ],
+        "type": "ByteVector"
+    },
+    "sha256": {
+        "funcs": "sha256",
+        "cost": "10",
+        "doc": "256 bit SHA-2",
+        "params": [
+            "bytes ByteVector value"
+        ],
+        "type": "ByteVector"
+    },
+    "sigVerify": {
+        "funcs": "sigVerify",
+        "cost": "100",
+        "doc": "check signature",
+        "params": [
+            "message ByteVector value",
+            "sig ByteVector signature",
+            "pub ByteVector public key"
+        ],
+        "type": "Boolean"
+    },
+    "toBase58String": {
+        "funcs": "toBase58String",
+        "cost": "10",
+        "doc": "Base58 encode",
+        "params": [
+            "bytes ByteVector value"
+        ],
+        "type": "String"
+    },
+    "fromBase58String": {
+        "funcs": "fromBase58String",
+        "cost": "10",
+        "doc": "Base58 decode",
+        "params": [
+            "str String base58 encoded string"
+        ],
+        "type": "ByteVector"
+    },
+    "toBase64String": {
+        "funcs": "toBase64String",
+        "cost": "10",
+        "doc": "Base64 encode",
+        "params": [
+            "bytes ByteVector value"
+        ],
+        "type": "String"
+    },
+    "fromBase64String": {
+        "funcs": "fromBase64String",
+        "cost": "10",
+        "doc": "Base64 decode",
+        "params": [
+            "str String base64 encoded string"
+        ],
+        "type": "ByteVector"
+    },
+    "transactionById": {
+        "funcs": "transactionById",
+        "cost": "100",
+        "doc": "Lookup transaction",
+        "params": [
+            "id ByteVector transaction Id"
+        ],
+        "type": "Unit GenesisTransaction PaymentTransaction TransferTransaction IssueTransaction ReissueTransaction BurnTransaction LeaseTransaction LeaseCancelTransaction MassTransferTransaction CreateAliasTransaction SetScriptTransaction SponsorFeeTransaction ExchangeTransaction DataTransaction"
+    },
+    "transactionHeightById": {
+        "funcs": "transactionHeightById",
+        "cost": "100",
+        "doc": "get height when transaction was stored to blockchain",
+        "params": [
+            "id ByteVector transaction Id"
+        ],
+        "type": "OPTION[ Int]"
+    },
+    "getInteger": {
+        "funcs": "getInteger",
+        "cost": "",
+        "doc": "Extract data by index",
+        "params": [
+            "@data LIST[ DataEntry] DataEntry vector, usally tx.data",
+            "@index Int index"
+        ],
+        "type": "OPTION[ Int]"
+    },
+    "getBoolean": {
+        "funcs": "getBoolean",
+        "cost": "",
+        "doc": "Extract data by index",
+        "params": [
+            "@data LIST[ DataEntry] DataEntry vector, usally tx.data",
+            "@index Int index"
+        ],
+        "type": "OPTION[  Boolean]"
+    },
+    "getBinary": {
+        "funcs": "getBinary",
+        "cost": "",
+        "doc": "Extract data by index",
+        "params": [
+            "@data LIST[ DataEntry] DataEntry vector, usally tx.data",
+            "@index Int index"
+        ],
+        "type": "OPTION ByteVector"
+    },
+    "getString": {
+        "funcs": "getString",
+        "cost": "",
+        "doc": "Extract data by index",
+        "params": [
+            "@data LIST[ DataEntry] DataEntry vector, usally tx.data",
+            "@index Int index"
+        ],
+        "type": "OPTION[ String]"
+    },
+    "addressFromPublicKey": {
+        "funcs": "addressFromPublicKey",
+        "cost": "",
+        "doc": "Convert public key to account address",
+        "params": [
+            "@publicKey ByteVector public key"
+        ],
+        "type": "Address"
+    },
+    "addressFromString": {
+        "funcs": "addressFromString",
+        "cost": "",
+        "doc": "Decode account address",
+        "params": [
+            "@string String string address represntation"
+        ],
+        "type": "OPTION[ Address]"
+    },
+    "addressFromRecipient": {
+        "funcs": "addressFromRecipient",
+        "cost": "100",
+        "doc": "Extract address or lookup alias",
+        "params": [
+            "AddressOrAlias Address Alias address or alias, usually tx.recipient"
+        ],
+        "type": "Address"
+    },
+    "assetBalance": {
+        "funcs": "assetBalance",
+        "cost": "100",
+        "doc": "get asset balance for account",
+        "params": [
+            "addressOrAlias Address Alias account",
+            "assetId OPTION ByteVector assetId (WAVES if none)"
+        ],
+        "type": "Int"
+    },
+    "wavesBalance": {
+        "funcs": "wavesBalance",
+        "cost": "",
+        "doc": "get WAVES balanse for account",
+        "params": [
+            "@addressOrAlias Address Alias account"
+        ],
+        "type": "Int"
+    }
+}
