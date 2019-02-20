@@ -1,11 +1,9 @@
 import {
     TextDocument, CompletionItemKind,
-    Diagnostic, CompletionItem, Position, Range, DiagnosticSeverity, CompletionList
+    Diagnostic, CompletionItem, Position, Range, DiagnosticSeverity, CompletionList, SignatureHelp
 } from "vscode-languageserver-types";
-import { globalSuggestions, txFieldsItems, txTypesItems } from './suggestions'
+import { globalSuggestions, types as fieldsMap, functions as funcsMap } from './suggestions'
 import { safeCompile } from './safeCompile'
-const fieldsMap = require('../src/suggestions/suggestionsData.json');
-const funcsMap = require('../src/suggestions/suggestionsFuncs.json');
 
 
 export class LspService {
@@ -117,24 +115,40 @@ export class LspService {
         };
     }
 
-    public signatureHelp(document: TextDocument, position: Position)  {
-        let temp = document.getText({ start: { line: position.line, character: 0 }, end: position }).match(/\b(.+)[ \t]*\(/);
-        const word = temp ? temp[1] : '';
-        let result = []
-        if (funcsMap[word])
-            result.push({
-                label: word,
-                documentation: funcsMap[word].doc,
-                parameters: [{ label:"",
-                    documentation: funcsMap[word].params
-                    .map((v:string,i:number)=> (i ===0 ? `- ${v}` : `\n- ${v}`)).join(', ')
-                }]
-            })
-            let out = {
-                activeParameter: 0,
+    public signatureHelp(document: TextDocument, position: Position) :SignatureHelp {
+
+        const offset = document.offsetAt( position );
+        const character = document.getText().substring( offset - 1, offset );
+
+        let out: SignatureHelp = { //empty SignatureHelp
+            activeParameter: null,
+            activeSignature: null,
+            signatures: [],
+        };
+
+        if ( character === ")" ) 
+            return out;
+
+        try {
+            const textBefore = document.getText( { start: { line: 0, character: 0 }, end: position } );
+            const lastFunction = textBefore.match( /\b([a-zA-z0-9_]*)\b[ \t]*\(/g ); //get function calls
+            const word = ( lastFunction.pop().slice( 0, -1) ); //get last function call
+            let result = [];
+            if ( funcsMap[word] )
+                result.push({
+                    //get label in format: functionName (parameter1, parameter2 ...)
+                    label: `${word} ( ${ funcsMap[word].params.map( (p: string) => p.split(' ')[0]).join(', ') } ) : ${ funcsMap[word].type }`,
+                    documentation: funcsMap[word].doc,
+                    parameters: funcsMap[word].params.map( (p: string) => ({label: p.split(' ')[0],documentation: p}))
+                });
+            out = {
+                //get comma`s count inside brackets
+                activeParameter: ( textBefore.split(lastFunction.pop()).pop().split(',').length - 1 ) ,
                 activeSignature: 0,
                 signatures: result,
-            }
+            };
+        } catch (e) { }
+
         return out;
     }
 

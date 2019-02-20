@@ -1,0 +1,1252 @@
+{
+    "keywords": ["let", "true", "false", "if", "then", "else"],
+    "types": {
+        "Address": [
+            {
+                "label": "bytes",
+                "kind": 5
+            }
+        ],
+        "Alias": [
+            {
+                "label": "alias",
+                "kind": 5
+            }
+        ],
+        "Transfer": [
+            {
+                "label": "recipient",
+                "kind": 5
+            },
+            {
+                "label": "amount",
+                "kind": 5
+            }
+        ],
+        "Order": [
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "matcherPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "assetPair",
+                "kind": 5
+            },
+            {
+                "label": "orderType",
+                "kind": 5
+            },
+            {
+                "label": "price",
+                "kind": 5
+            },
+            {
+                "label": "amount",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "expiration",
+                "kind": 5
+            },
+            {
+                "label": "matcherFee",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            },
+            {
+                "label": "amountAsset",
+                "kind": 5
+            },
+            {
+                "label": "priceAsset",
+                "kind": 5
+            }
+        ],
+        "DataEntry": [
+            {
+                "label": "key",
+                "kind": 5
+            },
+            {
+                "label": "value",
+                "kind": 5
+            }
+        ],
+        "GenesisTransaction": [
+            {
+                "label": "amount",
+                "kind": 5
+            },
+            {
+                "label": "recipient",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            }
+        ],
+        "PaymentTransaction": [
+            {
+                "label": "amount",
+                "kind": 5
+            },
+            {
+                "label": "recipient",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ],
+        "TransferTransaction": [
+            {
+                "label": "feeAssetId",
+                "kind": 5
+            },
+            {
+                "label": "amount",
+                "kind": 5
+            },
+            {
+                "label": "assetId",
+                "kind": 5
+            },
+            {
+                "label": "recipient",
+                "kind": 5
+            },
+            {
+                "label": "attachment",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ],
+        "IssueTransaction": [
+            {
+                "label": "quantity",
+                "kind": 5
+            },
+            {
+                "label": "name",
+                "kind": 5
+            },
+            {
+                "label": "description",
+                "kind": 5
+            },
+            {
+                "label": "reissuable",
+                "kind": 5
+            },
+            {
+                "label": "decimals",
+                "kind": 5
+            },
+            {
+                "label": "script",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ],
+        "ReissueTransaction": [
+            {
+                "label": "quantity",
+                "kind": 5
+            },
+            {
+                "label": "assetId",
+                "kind": 5
+            },
+            {
+                "label": "reissuable",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ],
+        "BurnTransaction": [
+            {
+                "label": "quantity",
+                "kind": 5
+            },
+            {
+                "label": "assetId",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ],
+        "LeaseTransaction": [
+            {
+                "label": "amount",
+                "kind": 5
+            },
+            {
+                "label": "recipient",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ],
+        "LeaseCancelTransaction": [
+            {
+                "label": "leaseId",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ],
+        "MassTransferTransaction": [
+            {
+                "label": "feeAssetId",
+                "kind": 5
+            },
+            {
+                "label": "assetId",
+                "kind": 5
+            },
+            {
+                "label": "totalAmount",
+                "kind": 5
+            },
+            {
+                "label": "transfers",
+                "kind": 5
+            },
+            {
+                "label": "transferCount",
+                "kind": 5
+            },
+            {
+                "label": "attachment",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ],
+        "CreateAliasTransaction": [
+            {
+                "label": "alias",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ],
+        "SetScriptTransaction": [
+            {
+                "label": "script",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ],
+        "SponsorFeeTransaction": [
+            {
+                "label": "assetId",
+                "kind": 5
+            },
+            {
+                "label": "minSponsoredAssetFee",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ],
+        "ExchangeTransaction": [
+            {
+                "label": "buyOrder",
+                "kind": 5
+            },
+            {
+                "label": "sellOrder",
+                "kind": 5
+            },
+            {
+                "label": "price",
+                "kind": 5
+            },
+            {
+                "label": "amount",
+                "kind": 5
+            },
+            {
+                "label": "buyMatcherFee",
+                "kind": 5
+            },
+            {
+                "label": "sellMatcherFee",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ],
+        "DataTransaction": [
+            {
+                "label": "data",
+                "kind": 5
+            },
+            {
+                "label": "id",
+                "kind": 5
+            },
+            {
+                "label": "fee",
+                "kind": 5
+            },
+            {
+                "label": "timestamp",
+                "kind": 5
+            },
+            {
+                "label": "version",
+                "kind": 5
+            },
+            {
+                "label": "sender",
+                "kind": 5
+            },
+            {
+                "label": "senderPublicKey",
+                "kind": 5
+            },
+            {
+                "label": "bodyBytes",
+                "kind": 5
+            },
+            {
+                "label": "proofs",
+                "kind": 5
+            }
+        ]
+    },
+    "functions": {
+        "fraction": {
+            "funcs": "fraction",
+            "cost": "1",
+            "doc": "Multiply and dividion with big integer intermediate representation",
+            "params": [
+                "value Int multiplyer",
+                "numerator Int multiplyer",
+                "denominator Int divisor"
+            ],
+            "type": "Int"
+        },
+        "size": {
+            "funcs": "size",
+            "cost": "2",
+            "doc": "Size of list",
+            "params": [
+                "arr LIST[ T] list"
+            ],
+            "type": "Int"
+        },
+        "toBytes": {
+            "funcs": "toBytes",
+            "cost": "1",
+            "doc": "Bytes array representation",
+            "params": [
+                "s String value"
+            ],
+            "type": "ByteVector"
+        },
+        "take": {
+            "funcs": "take",
+            "cost": "1",
+            "doc": "Take string prefix",
+            "params": [
+                "xs String sctring",
+                "number Int prefix size in characters"
+            ],
+            "type": "String"
+        },
+        "drop": {
+            "funcs": "drop",
+            "cost": "1",
+            "doc": "Remmove sring prefix",
+            "params": [
+                "xs String string",
+                "number Int prefix size"
+            ],
+            "type": "String"
+        },
+        "takeRight": {
+            "funcs": "takeRight",
+            "cost": "1",
+            "doc": "Take string suffix",
+            "params": [
+                "@xs String String",
+                "@number Int suffix size in characters"
+            ],
+            "type": "String"
+        },
+        "dropRight": {
+            "funcs": "dropRight",
+            "cost": "1",
+            "doc": "Remove string suffix",
+            "params": [
+                "@xs String string",
+                "@number Int suffix size in characters"
+            ],
+            "type": "String"
+        },
+        "toString": {
+            "funcs": "toString",
+            "cost": "1",
+            "doc": "String representation",
+            "params": [
+                "n Int value"
+            ],
+            "type": "String"
+        },
+        "_isInstanceOf": {
+            "funcs": "_isInstanceOf",
+            "cost": "1",
+            "doc": "Internal function to check value type",
+            "params": [
+                "obj T value",
+                "of String type name"
+            ],
+            "type": "Boolean"
+        },
+        "isDefined": {
+            "funcs": "isDefined",
+            "cost": "",
+            "doc": "Check the value is defined",
+            "params": [
+                "@a OPTION[ T] Option value"
+            ],
+            "type": "Boolean"
+        },
+        "extract": {
+            "funcs": "extract",
+            "cost": "",
+            "doc": "Extract value from option or fail",
+            "params": [
+                "@a OPTION[ T] Optional value"
+            ],
+            "type": "T"
+        },
+        "throw": {
+            "funcs": "throw",
+            "cost": "1",
+            "doc": "Fail script",
+            "params": [
+                "err String Error message"
+            ],
+            "type": "Nothing"
+        },
+        "getElement": {
+            "funcs": "getElement",
+            "cost": "2",
+            "doc": "Get list element by position",
+            "params": [
+                "arr LIST[ T] list",
+                "pos Int element position"
+            ],
+            "type": "T"
+        },
+        "keccak256": {
+            "funcs": "keccak256",
+            "cost": "10",
+            "doc": "256 bit Keccak/SHA-3/TIPS-202",
+            "params": [
+                "bytes ByteVector value"
+            ],
+            "type": "ByteVector"
+        },
+        "blake2b256": {
+            "funcs": "blake2b256",
+            "cost": "10",
+            "doc": "256 bit BLAKE",
+            "params": [
+                "bytes ByteVector value"
+            ],
+            "type": "ByteVector"
+        },
+        "sha256": {
+            "funcs": "sha256",
+            "cost": "10",
+            "doc": "256 bit SHA-2",
+            "params": [
+                "bytes ByteVector value"
+            ],
+            "type": "ByteVector"
+        },
+        "sigVerify": {
+            "funcs": "sigVerify",
+            "cost": "100",
+            "doc": "Validated signature for bytes and public key",
+            "params": [
+                "message ByteVector value",
+                "sig ByteVector signature",
+                "pub ByteVector public key"
+            ],
+            "type": "Boolean"
+        },
+        "toBase58String": {
+            "funcs": "toBase58String",
+            "cost": "10",
+            "doc": "Base58 encode",
+            "params": [
+                "bytes ByteVector value"
+            ],
+            "type": "String"
+        },
+        "fromBase58String": {
+            "funcs": "fromBase58String",
+            "cost": "10",
+            "doc": "Base58 decode",
+            "params": [
+                "str String base58 encoded string"
+            ],
+            "type": "ByteVector"
+        },
+        "toBase64String": {
+            "funcs": "toBase64String",
+            "cost": "10",
+            "doc": "Base64 encode",
+            "params": [
+                "bytes ByteVector value"
+            ],
+            "type": "String"
+        },
+        "fromBase64String": {
+            "funcs": "fromBase64String",
+            "cost": "10",
+            "doc": "Base64 decode",
+            "params": [
+                "str String base64 encoded string"
+            ],
+            "type": "ByteVector"
+        },
+        "transactionById": {
+            "funcs": "transactionById",
+            "cost": "100",
+            "doc": "Lookup transaction",
+            "params": [
+                "id ByteVector transaction Id"
+            ],
+            "type": "Unit GenesisTransaction PaymentTransaction TransferTransaction IssueTransaction ReissueTransaction BurnTransaction LeaseTransaction LeaseCancelTransaction MassTransferTransaction CreateAliasTransaction SetScriptTransaction SponsorFeeTransaction ExchangeTransaction DataTransaction"
+        },
+        "transactionHeightById": {
+            "funcs": "transactionHeightById",
+            "cost": "100",
+            "doc": "get height when transaction was stored to blockchain",
+            "params": [
+                "id ByteVector transaction Id"
+            ],
+            "type": "OPTION[ Int]"
+        },
+        "getInteger": {
+            "funcs": "getInteger",
+            "cost": "",
+            "doc": "Extract data by index",
+            "params": [
+                "@data LIST[ DataEntry] DataEntry vector, usally tx.data",
+                "@index Int index"
+            ],
+            "type": "OPTION[ Int]"
+        },
+        "getBoolean": {
+            "funcs": "getBoolean",
+            "cost": "",
+            "doc": "Extract data by index",
+            "params": [
+                "@data LIST[ DataEntry] DataEntry vector, usally tx.data",
+                "@index Int index"
+            ],
+            "type": "OPTION[  Boolean]"
+        },
+        "getBinary": {
+            "funcs": "getBinary",
+            "cost": "",
+            "doc": "Extract data by index",
+            "params": [
+                "@data LIST[ DataEntry] DataEntry vector, usally tx.data",
+                "@index Int index"
+            ],
+            "type": "OPTION ByteVector"
+        },
+        "getString": {
+            "funcs": "getString",
+            "cost": "",
+            "doc": "Extract data by index",
+            "params": [
+                "@data LIST[ DataEntry] DataEntry vector, usally tx.data",
+                "@index Int index"
+            ],
+            "type": "OPTION[ String]"
+        },
+        "addressFromPublicKey": {
+            "funcs": "addressFromPublicKey",
+            "cost": "",
+            "doc": "Convert public key to account address",
+            "params": [
+                "@publicKey ByteVector public key"
+            ],
+            "type": "Address"
+        },
+        "addressFromString": {
+            "funcs": "addressFromString",
+            "cost": "",
+            "doc": "Decode account address",
+            "params": [
+                "@string String string address represntation"
+            ],
+            "type": "OPTION[ Address]"
+        },
+        "addressFromRecipient": {
+            "funcs": "addressFromRecipient",
+            "cost": "100",
+            "doc": "Extract address or lookup alias",
+            "params": [
+                "AddressOrAlias Address Alias address or alias, usually tx.recipient"
+            ],
+            "type": "Address"
+        },
+        "assetBalance": {
+            "funcs": "assetBalance",
+            "cost": "100",
+            "doc": "get asset balance for account",
+            "params": [
+                "addressOrAlias Address Alias account",
+                "assetId OPTION ByteVector assetId (WAVES if none)"
+            ],
+            "type": "Int"
+        },
+        "wavesBalance": {
+            "funcs": "wavesBalance",
+            "cost": "",
+            "doc": "get WAVES balanse for account",
+            "params": [
+                "@addressOrAlias Address Alias account"
+            ],
+            "type": "Int"
+        }
+    },
+    "generalSuggestions": [
+        {
+            "label": "ifelse",
+            "insertText": "if (${1:condition}) then $2 else $3",
+            "insertTextFormat": 2,
+            "kind": 15
+        },
+        {
+            "label": "match",
+            "insertText": "match (${1:tx}) {\n    case t:${2:type} => $0\n    case _ =>\n  }",
+            "insertTextFormat": 2,
+            "kind": 15
+        },
+        {
+            "label": "base58",
+            "insertText": "base58'$0'",
+            "insertTextFormat": 2,
+            "kind": 15
+        },
+        {
+            "label": "base64",
+            "insertText": "base64'$0'",
+            "insertTextFormat": 2,
+            "kind": 15
+        }
+    ],
+    "cryptoFunctions": [
+        {
+            "label": "keccak256",
+            "detail": "Computes the keccak 256 bit hash",
+            "kind": 3
+        },
+        {
+            "label": "blake2b256",
+            "detail": "Computes the blake2b 256 bit hash",
+            "kind": 3
+        },
+        {
+            "label": "sha256",
+            "detail": "Computes the sha 256 bit hash",
+            "kind": 3
+        },
+        {
+            "label": "sigVerify",
+            "detail": "Validated signature for bytes and public key",
+            "kind": 3
+        },
+        {
+            "label": "toBase58String",
+            "insertTextFormat": 2,
+            "kind": 3
+        },
+        {
+            "label": "fromBase58String",
+            "detail": "Decodes base58 string",
+            "kind": 3
+        },
+        {
+            "label": "toBase64String",
+            "detail": "Encodes bytearray to base64 string",
+            "kind": 3
+        },
+        {
+            "label": "fromBase64String",
+            "detail": "Decodes base64 string",
+            "kind": 3
+        }
+    ],
+    "contextFields": [
+        {
+            "label": "height",
+            "kind": 5,
+            "insertText": "height",
+            "detail": "Retrieves current blockchain height"
+        },
+        {
+            "label": "tx",
+            "kind": 5,
+            "insertText": "tx",
+            "detail": "Retrieves current transaction being processed"
+        }
+    ],
+    "contextFunctions": [
+        {
+            "label": "transactionById",
+            "detail": "Retrieves transaction by it's id",
+            "kind": 3
+        },
+        {
+            "label": "addressFromRecipient",
+            "detail": "Retrieves adress from recipient obj",
+            "kind": 3
+        },
+        {
+            "label": "addressFromString",
+            "detail": "Retrieves address from base58 string",
+            "kind": 3
+        },
+        {
+            "label": "addressFromPublicKey",
+            "detail": "Retrieves adress from publicKey bytes",
+            "kind": 3
+        },
+        {
+            "label": "wavesBalance",
+            "detail": "Returns account balance for address or alias",
+            "kind": 3
+        },
+        {
+            "label": "assetBalance",
+            "detail": "Returns asset balance for address or alias",
+            "kind": 3
+        },
+        {
+            "label": "getInteger",
+            "detail": "Gets integer value by key from address data table",
+            "kind": 3
+        },
+        {
+            "label": "getBoolean",
+            "detail": "Gets boolean value by key from address data table",
+            "kind": 3
+        },
+        {
+            "label": "getBinary",
+            "detail": "Gets bytevector value from address data table",
+            "kind": 3
+        },
+        {
+            "label": "getString",
+            "detail": "Gets string value from address data table",
+            "kind": 3
+        },
+        {
+            "label": "getInteger",
+            "detail": "Gets integer value by key from data tx"
+        },
+        {
+            "label": "getBoolean",
+            "detail": "Gets boolean value by key from data tx",
+            "kind": 3
+        },
+        {
+            "label": "getBinary",
+            "detail": "Gets bytevector value by key from data tx",
+            "kind": 3
+        },
+        {
+            "label": "getString",
+            "detail": "Gets string value by key from from data tx",
+            "kind": 3
+        },
+        {
+            "label": "getInteger",
+            "detail": "Gets integer value by index from data tx",
+            "kind": 3
+        },
+        {
+            "label": "getBoolean",
+            "detail": "Gets boolean value by index from data tx",
+            "kind": 3
+        },
+        {
+            "label": "getBinary",
+            "detail": "Gets bytevector value by index from data tx",
+            "kind": 3
+        },
+        {
+            "label": "getString",
+            "detail": "Gets string value by index from from data tx",
+            "kind": 3
+        },
+        {
+            "label": "fraction",
+            "detail": "Multiplies value by numerator and divides by denominator",
+            "kind": 3
+        },
+        {
+            "label": "size",
+            "detail": "Returns size of byte vector or string",
+            "kind": 3
+        },
+        {
+            "label": "toBytes",
+            "detail": "Converts boolean or string or long to byte vector",
+            "kind": 3
+        },
+        {
+            "label": "take",
+            "detail": "Takes first n bytes or characters",
+            "kind": 3
+        },
+        {
+            "label": "drop",
+            "detail": "Drops first n bytes or characters",
+            "kind": 3
+        },
+        {
+            "label": "takeRight",
+            "detail": "Takes last n bytes or characters",
+            "kind": 3
+        },
+        {
+            "label": "dropRight",
+            "detail": "Drops last n bytes or characters",
+            "kind": 3
+        },
+        {
+            "label": "toString",
+            "detail": "Converts boolean or long to string",
+            "kind": 3
+        },
+        {
+            "label": "isDefined",
+            "detail": "Checks if UNION contains value",
+            "kind": 3
+        },
+        {
+            "label": "extract",
+            "detail": "Extracts value from union. Throws if value is unit",
+            "kind": 3
+        },
+        {
+            "label": "throw",
+            "detail": "Throws exception. Explicit script termination",
+            "kind": 3
+        }
+    ]
+}
