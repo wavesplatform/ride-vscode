@@ -1,4 +1,4 @@
-{
+{ 
     "keywords": ["let", "true", "false", "if", "then", "else"],
     "types": {
         "Address": [
