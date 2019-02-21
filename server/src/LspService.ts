@@ -2,7 +2,7 @@ import {
     TextDocument, CompletionItemKind,
     Diagnostic, CompletionItem, Position, Range, DiagnosticSeverity, CompletionList, SignatureHelp
 } from "vscode-languageserver-types";
-import { globalSuggestions, types as fieldsMap, functions as funcsMap } from './suggestions'
+import { globalSuggestions, types as fieldsMap, functions as funcsMap } from './suggestions/index'
 import { safeCompile } from './safeCompile'
 
 
