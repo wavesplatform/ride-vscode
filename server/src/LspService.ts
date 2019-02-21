@@ -107,13 +107,14 @@ export class LspService {
         const word = getWordByPos(document.getText().split('\n')[position.line], position.character);
         let result = [];
         if (funcsMap[word])
-            result.push(`**${word}** (\n
-                ${funcsMap[word].params.map((v:string) => `\n * \`${v}\` \n`)}
-                 \n) : ${funcsMap[word].type} \n>_${funcsMap[word].doc}_`);
+        result.push(`**${word}** (\n
+            ${funcsMap[word].params.map((p:ParamType) => `\n * ${`${p.label}${p.required ? "":"?"}:`+
+                ` ${p.type} - ${p.description}`} \n`)}\n) : ${funcsMap[word].type} \n>_${funcsMap[word].doc}_`);
         return {
             contents: result
         };
     }
+
 
     public signatureHelp(document: TextDocument, position: Position) :SignatureHelp {
 
@@ -137,9 +138,11 @@ export class LspService {
             if ( funcsMap[word] )
                 result.push({
                     //get label in format: functionName (parameter1, parameter2 ...)
-                    label: `${word} ( ${ funcsMap[word].params.map( (p: string) => p.split(' ')[0]).join(', ') } ) : ${ funcsMap[word].type }`,
+                    label: `${word}(${funcsMap[word].params.map((p:ParamType) => `${p.label}${p.required ? "":"?"}:`+
+                        ` ${p.type}`).join(', ')}): ${funcsMap[word].type}`,
                     documentation: funcsMap[word].doc,
-                    parameters: funcsMap[word].params.map( (p: string) => ({label: p.split(' ')[0],documentation: p}))
+                    parameters: funcsMap[word].params.map((p:ParamType) => ({ label: `${p.label}${p.required ? "":"?"}:`+
+                        ` ${p.type}`, documentation: p.description }))
                 });
             out = {
                 //get comma`s count inside brackets
@@ -196,6 +199,14 @@ export class LspService {
 interface LetDeclarationType {
     name: string
     value: string
+}
+
+
+interface ParamType {
+    label: string
+    type: string
+    required: boolean
+    description: string
 }
 
 function intersection(...args: any): CompletionItem[] {
