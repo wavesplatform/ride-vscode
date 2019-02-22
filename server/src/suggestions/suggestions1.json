@@ -9,24 +9,24 @@
     ],
     "functions": {
         "fraction": {
-            "label": "fraction",
+            "name": "fraction",
             "cost": "1",
             "doc": "Multiplies value by numerator and divides by denominator",
             "params": [
                 {
-                    "label": "value",
+                    "name": "value",
                     "type": "Int",
                     "required": true,
                     "doc": "value Int multiplyer"
                 },
                 {
-                    "label": "numerator",
+                    "name": "numerator",
                     "type": "Int",
                     "required": true,
                     "doc": "numerator Int multiplyer"
                 },
                 {
-                    "label": "denominator",
+                    "name": "denominator",
                     "type": "Int",
                     "required": true,
                     "doc": "denominator Int divisor"
@@ -35,12 +35,12 @@
             "type": "Int"
         },
         "size": {
-            "label": "size",
+            "name": "size",
             "cost": "2",
             "doc": "Returns size of byte vector or string",
             "params": [
                 {
-                    "label": "arr",
+                    "name": "arr",
                     "type": "LIST[ T]",
                     "required": true,
                     "doc": "arr LIST[ T] list"
@@ -49,12 +49,12 @@
             "type": "Int"
         },
         "toBytes": {
-            "label": "toBytes",
+            "name": "toBytes",
             "cost": "1",
             "doc": "Converts boolean or string or long to byte vector",
             "params": [
                 {
-                    "label": "s",
+                    "name": "s",
                     "type": "String",
                     "required": true,
                     "doc": "s String value"
@@ -63,18 +63,18 @@
             "type": "ByteVector"
         },
         "take": {
-            "label": "take",
+            "name": "take",
             "cost": "1",
             "doc": "Takes first n bytes or characters",
             "params": [
                 {
-                    "label": "xs",
+                    "name": "xs",
                     "type": "String",
                     "required": true,
                     "doc": "xs String sctring"
                 },
                 {
-                    "label": "number",
+                    "name": "number",
                     "type": "Int",
                     "required": true,
                     "doc": "number Int prefix size in characters"
@@ -83,18 +83,18 @@
             "type": "String"
         },
         "drop": {
-            "label": "drop",
+            "name": "drop",
             "cost": "1",
             "doc": "Drops first n bytes or characters",
             "params": [
                 {
-                    "label": "xs",
+                    "name": "xs",
                     "type": "String",
                     "required": true,
                     "doc": "xs String string"
                 },
                 {
-                    "label": "number",
+                    "name": "number",
                     "type": "Int",
                     "required": true,
                     "doc": "number Int prefix size"
@@ -103,18 +103,18 @@
             "type": "String"
         },
         "takeRight": {
-            "label": "takeRight",
+            "name": "takeRight",
             "cost": "1",
             "doc": "Takes last n bytes or characters",
             "params": [
                 {
-                    "label": "@xs",
+                    "name": "@xs",
                     "type": "String",
                     "required": true,
                     "doc": "@xs String String"
                 },
                 {
-                    "label": "@number",
+                    "name": "@number",
                     "type": "Int",
                     "required": true,
                     "doc": "@number Int suffix size in characters"
@@ -123,18 +123,18 @@
             "type": "String"
         },
         "dropRight": {
-            "label": "dropRight",
+            "name": "dropRight",
             "cost": "1",
             "doc": "Drops last n bytes or characters",
             "params": [
                 {
-                    "label": "@xs",
+                    "name": "@xs",
                     "type": "String",
                     "required": true,
                     "doc": "@xs String string"
                 },
                 {
-                    "label": "@number",
+                    "name": "@number",
                     "type": "Int",
                     "required": true,
                     "doc": "@number Int suffix size in characters"
@@ -143,12 +143,12 @@
             "type": "String"
         },
         "toString": {
-            "label": "toString",
+            "name": "toString",
             "cost": "1",
             "doc": "Converts boolean or long to string",
             "params": [
                 {
-                    "label": "n",
+                    "name": "n",
                     "type": "Int",
                     "required": true,
                     "doc": "n Int value"
@@ -157,18 +157,18 @@
             "type": "String"
         },
         "_isInstanceOf": {
-            "label": "_isInstanceOf",
+            "name": "_isInstanceOf",
             "cost": "1",
             "doc": "Internal function to check value type",
             "params": [
                 {
-                    "label": "obj",
+                    "name": "obj",
                     "type": "T",
                     "required": true,
                     "doc": "obj T value"
                 },
                 {
-                    "label": "of",
+                    "name": "of",
                     "type": "String",
                     "required": true,
                     "doc": "of String type name"
@@ -177,12 +177,12 @@
             "type": "Boolean"
         },
         "isDefined": {
-            "label": "isDefined",
+            "name": "isDefined",
             "cost": "",
             "doc": "Checks if UNION contains value",
             "params": [
                 {
-                    "label": "@a",
+                    "name": "@a",
                     "type": "OPTION[ T]",
                     "required": true,
                     "doc": "@a OPTION[ T] Option value"
@@ -191,12 +191,12 @@
             "type": "Boolean"
         },
         "extract": {
-            "label": "extract",
+            "name": "extract",
             "cost": "",
             "doc": "Extracts value from union. Throws if value is unit",
             "params": [
                 {
-                    "label": "@a",
+                    "name": "@a",
                     "type": "OPTION[ T]",
                     "required": true,
                     "doc": "@a OPTION[ T] Optional value"
@@ -205,12 +205,12 @@
             "type": "T"
         },
         "throw": {
-            "label": "throw",
+            "name": "throw",
             "cost": "1",
             "doc": "Throws exception. Explicit script termination",
             "params": [
                 {
-                    "label": "err",
+                    "name": "err",
                     "type": "String",
                     "required": true,
                     "doc": "err String Error message"
@@ -219,18 +219,18 @@
             "type": "Nothing"
         },
         "getElement": {
-            "label": "getElement",
+            "name": "getElement",
             "cost": "2",
             "doc": "Get list element by position",
             "params": [
                 {
-                    "label": "arr",
+                    "name": "arr",
                     "type": "LIST[ T]",
                     "required": true,
                     "doc": "arr LIST[ T] list"
                 },
                 {
-                    "label": "pos",
+                    "name": "pos",
                     "type": "Int",
                     "required": true,
                     "doc": "pos Int element position"
@@ -239,12 +239,12 @@
             "type": "T"
         },
         "keccak256": {
-            "label": "keccak256",
+            "name": "keccak256",
             "cost": "10",
             "doc": "Computes the keccak 256 bit hash",
             "params": [
                 {
-                    "label": "bytes",
+                    "name": "bytes",
                     "type": "ByteVector",
                     "required": true,
                     "doc": "bytes ByteVector value"
@@ -253,12 +253,12 @@
             "type": "ByteVector"
         },
         "blake2b256": {
-            "label": "blake2b256",
+            "name": "blake2b256",
             "cost": "10",
             "doc": "Computes the blake2b 256 bit hash",
             "params": [
                 {
-                    "label": "bytes",
+                    "name": "bytes",
                     "type": "ByteVector",
                     "required": true,
                     "doc": "bytes ByteVector value"
@@ -267,12 +267,12 @@
             "type": "ByteVector"
         },
         "sha256": {
-            "label": "sha256",
+            "name": "sha256",
             "cost": "10",
             "doc": "Computes the sha 256 bit hash",
             "params": [
                 {
-                    "label": "bytes",
+                    "name": "bytes",
                     "type": "ByteVector",
                     "required": true,
                     "doc": "bytes ByteVector value"
@@ -281,24 +281,24 @@
             "type": "ByteVector"
         },
         "sigVerify": {
-            "label": "sigVerify",
+            "name": "sigVerify",
             "cost": "100",
             "doc": "Validated signature for bytes and public key",
             "params": [
                 {
-                    "label": "message",
+                    "name": "message",
                     "type": "ByteVector",
                     "required": true,
                     "doc": "message ByteVector value"
                 },
                 {
-                    "label": "sig",
+                    "name": "sig",
                     "type": "ByteVector",
                     "required": true,
                     "doc": "sig ByteVector signature"
                 },
                 {
-                    "label": "pub",
+                    "name": "pub",
                     "type": "ByteVector",
                     "required": true,
                     "doc": "pub ByteVector public key"
@@ -307,12 +307,12 @@
             "type": "Boolean"
         },
         "toBase58String": {
-            "label": "toBase58String",
+            "name": "toBase58String",
             "cost": "10",
             "doc": "Encode Base58 string",
             "params": [
                 {
-                    "label": "bytes",
+                    "name": "bytes",
                     "type": "ByteVector",
                     "required": true,
                     "doc": "bytes ByteVector value"
@@ -321,12 +321,12 @@
             "type": "String"
         },
         "fromBase58String": {
-            "label": "fromBase58String",
+            "name": "fromBase58String",
             "cost": "10",
             "doc": "Decodes base58 string",
             "params": [
                 {
-                    "label": "str",
+                    "name": "str",
                     "type": "String",
                     "required": true,
                     "doc": "str String base58 encoded string"
@@ -335,12 +335,12 @@
             "type": "ByteVector"
         },
         "toBase64String": {
-            "label": "toBase64String",
+            "name": "toBase64String",
             "cost": "10",
             "doc": "Encodes bytearray to base64 string",
             "params": [
                 {
-                    "label": "bytes",
+                    "name": "bytes",
                     "type": "ByteVector",
                     "required": true,
                     "doc": "bytes ByteVector value"
@@ -349,12 +349,12 @@
             "type": "String"
         },
         "fromBase64String": {
-            "label": "fromBase64String",
+            "name": "fromBase64String",
             "cost": "10",
             "doc": "Decodes base64 string",
             "params": [
                 {
-                    "label": "str",
+                    "name": "str",
                     "type": "String",
                     "required": true,
                     "doc": "str String base64 encoded string"
@@ -363,12 +363,12 @@
             "type": "ByteVector"
         },
         "transactionById": {
-            "label": "transactionById",
+            "name": "transactionById",
             "cost": "100",
             "doc": "Retrieves transaction by it's id",
             "params": [
                 {
-                    "label": "id",
+                    "name": "id",
                     "type": "ByteVector",
                     "required": true,
                     "doc": "id ByteVector transaction Id"
@@ -377,12 +377,12 @@
             "type": "Unit | Transaction"
         },
         "transactionHeightById": {
-            "label": "transactionHeightById",
+            "name": "transactionHeightById",
             "cost": "100",
             "doc": "get height when transaction was stored to blockchain",
             "params": [
                 {
-                    "label": "id",
+                    "name": "id",
                     "type": "ByteVector",
                     "required": true,
                     "doc": "id ByteVector transaction Id"
@@ -391,18 +391,18 @@
             "type": "OPTION[ Int]"
         },
         "getInteger": {
-            "label": "getInteger",
+            "name": "getInteger",
             "cost": "",
             "doc": "Gets integer value by index from data tx",
             "params": [
                 {
-                    "label": "@data",
+                    "name": "@data",
                     "type": "LIST[ T]",
                     "required": true,
                     "doc": "@data LIST[ DataEntry] DataEntry vector, usally tx.data"
                 },
                 {
-                    "label": "@index",
+                    "name": "@index",
                     "type": "Int",
                     "required": true,
                     "doc": "@index Int index"
@@ -411,18 +411,18 @@
             "type": "OPTION[ Int]"
         },
         "getBoolean": {
-            "label": "getBoolean",
+            "name": "getBoolean",
             "cost": "",
             "doc": "Gets boolean value by index from data tx",
             "params": [
                 {
-                    "label": "@data",
+                    "name": "@data",
                     "type": "LIST[ T]",
                     "required": true,
                     "doc": "@data LIST[ DataEntry] DataEntry vector, usally tx.data"
                 },
                 {
-                    "label": "@index",
+                    "name": "@index",
                     "type": "Int",
                     "required": true,
                     "doc": "@index Int index"
@@ -431,18 +431,18 @@
             "type": "OPTION[  Boolean]"
         },
         "getBinary": {
-            "label": "getBinary",
+            "name": "getBinary",
             "cost": "",
             "doc": "Gets bytevector value by index from data tx",
             "params": [
                 {
-                    "label": "@data",
+                    "name": "@data",
                     "type": "LIST[ T]",
                     "required": true,
                     "doc": "@data LIST[ DataEntry] DataEntry vector, usally tx.data"
                 },
                 {
-                    "label": "@index",
+                    "name": "@index",
                     "type": "Int",
                     "required": true,
                     "doc": "@index Int index"
@@ -451,18 +451,18 @@
             "type": "OPTION ByteVector"
         },
         "getString": {
-            "label": "getString",
+            "name": "getString",
             "cost": "",
             "doc": "Gets string value by index from from data tx",
             "params": [
                 {
-                    "label": "@data",
+                    "name": "@data",
                     "type": "LIST[ T]",
                     "required": true,
                     "doc": "@data LIST[ DataEntry] DataEntry vector, usally tx.data"
                 },
                 {
-                    "label": "@index",
+                    "name": "@index",
                     "type": "Int",
                     "required": true,
                     "doc": "@index Int index"
@@ -471,12 +471,12 @@
             "type": "OPTION[ String]"
         },
         "addressFromPublicKey": {
-            "label": "addressFromPublicKey",
+            "name": "addressFromPublicKey",
             "cost": "",
             "doc": "Retrieves adress from publicKey bytes",
             "params": [
                 {
-                    "label": "@publicKey",
+                    "name": "@publicKey",
                     "type": "ByteVector",
                     "required": true,
                     "doc": "@publicKey ByteVector public key"
@@ -485,12 +485,12 @@
             "type": "Address"
         },
         "addressFromString": {
-            "label": "addressFromString",
+            "name": "addressFromString",
             "cost": "",
             "doc": "Retrieves address from base58 string",
             "params": [
                 {
-                    "label": "@string",
+                    "name": "@string",
                     "type": "String",
                     "required": true,
                     "doc": "@string String string address represntation"
@@ -499,12 +499,12 @@
             "type": "OPTION[ Address]"
         },
         "addressFromRecipient": {
-            "label": "addressFromRecipient",
+            "name": "addressFromRecipient",
             "cost": "100",
             "doc": "Retrieves adress from recipient obj",
             "params": [
                 {
-                    "label": "AddressOrAlias",
+                    "name": "AddressOrAlias",
                     "type": "Address",
                     "required": true,
                     "doc": "AddressOrAlias Address Alias address or alias, usually tx.recipient"
@@ -513,18 +513,18 @@
             "type": "Address"
         },
         "assetBalance": {
-            "label": "assetBalance",
+            "name": "assetBalance",
             "cost": "100",
             "doc": "Returns asset balance for address or alias",
             "params": [
                 {
-                    "label": "addressOrAlias",
+                    "name": "addressOrAlias",
                     "type": "Address",
                     "required": true,
                     "doc": "addressOrAlias Address Alias account"
                 },
                 {
-                    "label": "assetId",
+                    "name": "assetId",
                     "type": "OPTION",
                     "required": true,
                     "doc": "assetId OPTION ByteVector assetId (WAVES if none)"
@@ -533,12 +533,12 @@
             "type": "Int"
         },
         "wavesBalance": {
-            "label": "wavesBalance",
+            "name": "wavesBalance",
             "cost": "",
             "doc": "Returns account balance for address or alias",
             "params": [
                 {
-                    "label": "@addressOrAlias",
+                    "name": "@addressOrAlias",
                     "type": "Address",
                     "required": true,
                     "doc": "@addressOrAlias Address Alias account"
@@ -549,791 +549,791 @@
     },
     "types": {
         "Address": {
-            "label": "Address",
+            "name": "Address",
             "doc": "Address is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "bytes",
+                    "name": "bytes",
                     "doc": "bytes is field of Address"
                 }
             ]
         },
         "Alias": {
-            "label": "Alias",
+            "name": "Alias",
             "doc": "Alias is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "alias",
+                    "name": "alias",
                     "doc": "alias is field of Alias"
                 }
             ]
         },
         "Transfer": {
-            "label": "Transfer",
+            "name": "Transfer",
             "doc": "Transfer is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "recipient",
+                    "name": "recipient",
                     "doc": "recipient is field of Transfer"
                 },
                 {
-                    "label": "amount",
+                    "name": "amount",
                     "doc": "amount is field of Transfer"
                 }
             ]
         },
         "Order": {
-            "label": "Order",
+            "name": "Order",
             "doc": "Order is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "id",
+                    "name": "id",
                     "doc": "id is field of Order"
                 },
                 {
-                    "label": "matcherPublicKey",
+                    "name": "matcherPublicKey",
                     "doc": "matcherPublicKey is field of Order"
                 },
                 {
-                    "label": "assetPair",
+                    "name": "assetPair",
                     "doc": "assetPair is field of Order"
                 },
                 {
-                    "label": "orderType",
+                    "name": "orderType",
                     "doc": "orderType is field of Order"
                 },
                 {
-                    "label": "price",
+                    "name": "price",
                     "doc": "price is field of Order"
                 },
                 {
-                    "label": "amount",
+                    "name": "amount",
                     "doc": "amount is field of Order"
                 },
                 {
-                    "label": "timestamp",
+                    "name": "timestamp",
                     "doc": "timestamp is field of Order"
                 },
                 {
-                    "label": "expiration",
+                    "name": "expiration",
                     "doc": "expiration is field of Order"
                 },
                 {
-                    "label": "matcherFee",
+                    "name": "matcherFee",
                     "doc": "matcherFee is field of Order"
                 },
                 {
-                    "label": "sender",
+                    "name": "sender",
                     "doc": "sender is field of Order"
                 },
                 {
-                    "label": "senderPublicKey",
+                    "name": "senderPublicKey",
                     "doc": "senderPublicKey is field of Order"
                 },
                 {
-                    "label": "bodyBytes",
+                    "name": "bodyBytes",
                     "doc": "bodyBytes is field of Order"
                 },
                 {
-                    "label": "proofs",
+                    "name": "proofs",
                     "doc": "proofs is field of Order"
                 },
                 {
-                    "label": "amountAsset",
+                    "name": "amountAsset",
                     "doc": "amountAsset is field of Order"
                 },
                 {
-                    "label": "priceAsset",
+                    "name": "priceAsset",
                     "doc": "priceAsset is field of Order"
                 }
             ]
         },
         "DataEntry": {
-            "label": "DataEntry",
+            "name": "DataEntry",
             "doc": "DataEntry is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "key",
+                    "name": "key",
                     "doc": "key is field of DataEntry"
                 },
                 {
-                    "label": "value",
+                    "name": "value",
                     "doc": "value is field of DataEntry"
                 }
             ]
         },
         "GenesisTransaction": {
-            "label": "GenesisTransaction",
+            "name": "GenesisTransaction",
             "doc": "GenesisTransaction is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "amount",
+                    "name": "amount",
                     "doc": "amount is field of GenesisTransaction"
                 },
                 {
-                    "label": "recipient",
+                    "name": "recipient",
                     "doc": "recipient is field of GenesisTransaction"
                 },
                 {
-                    "label": "id",
+                    "name": "id",
                     "doc": "id is field of GenesisTransaction"
                 },
                 {
-                    "label": "fee",
+                    "name": "fee",
                     "doc": "fee is field of GenesisTransaction"
                 },
                 {
-                    "label": "timestamp",
+                    "name": "timestamp",
                     "doc": "timestamp is field of GenesisTransaction"
                 },
                 {
-                    "label": "version",
+                    "name": "version",
                     "doc": "version is field of GenesisTransaction"
                 }
             ]
         },
         "PaymentTransaction": {
-            "label": "PaymentTransaction",
+            "name": "PaymentTransaction",
             "doc": "PaymentTransaction is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "amount",
+                    "name": "amount",
                     "doc": "amount is field of PaymentTransaction"
                 },
                 {
-                    "label": "recipient",
+                    "name": "recipient",
                     "doc": "recipient is field of PaymentTransaction"
                 },
                 {
-                    "label": "id",
+                    "name": "id",
                     "doc": "id is field of PaymentTransaction"
                 },
                 {
-                    "label": "fee",
+                    "name": "fee",
                     "doc": "fee is field of PaymentTransaction"
                 },
                 {
-                    "label": "timestamp",
+                    "name": "timestamp",
                     "doc": "timestamp is field of PaymentTransaction"
                 },
                 {
-                    "label": "version",
+                    "name": "version",
                     "doc": "version is field of PaymentTransaction"
                 },
                 {
-                    "label": "sender",
+                    "name": "sender",
                     "doc": "sender is field of PaymentTransaction"
                 },
                 {
-                    "label": "senderPublicKey",
+                    "name": "senderPublicKey",
                     "doc": "senderPublicKey is field of PaymentTransaction"
                 },
                 {
-                    "label": "bodyBytes",
+                    "name": "bodyBytes",
                     "doc": "bodyBytes is field of PaymentTransaction"
                 },
                 {
-                    "label": "proofs",
+                    "name": "proofs",
                     "doc": "proofs is field of PaymentTransaction"
                 }
             ]
         },
         "TransferTransaction": {
-            "label": "TransferTransaction",
+            "name": "TransferTransaction",
             "doc": "TransferTransaction is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "feeAssetId",
+                    "name": "feeAssetId",
                     "doc": "feeAssetId is field of TransferTransaction"
                 },
                 {
-                    "label": "amount",
+                    "name": "amount",
                     "doc": "amount is field of TransferTransaction"
                 },
                 {
-                    "label": "assetId",
+                    "name": "assetId",
                     "doc": "assetId is field of TransferTransaction"
                 },
                 {
-                    "label": "recipient",
+                    "name": "recipient",
                     "doc": "recipient is field of TransferTransaction"
                 },
                 {
-                    "label": "attachment",
+                    "name": "attachment",
                     "doc": "attachment is field of TransferTransaction"
                 },
                 {
-                    "label": "id",
+                    "name": "id",
                     "doc": "id is field of TransferTransaction"
                 },
                 {
-                    "label": "fee",
+                    "name": "fee",
                     "doc": "fee is field of TransferTransaction"
                 },
                 {
-                    "label": "timestamp",
+                    "name": "timestamp",
                     "doc": "timestamp is field of TransferTransaction"
                 },
                 {
-                    "label": "version",
+                    "name": "version",
                     "doc": "version is field of TransferTransaction"
                 },
                 {
-                    "label": "sender",
+                    "name": "sender",
                     "doc": "sender is field of TransferTransaction"
                 },
                 {
-                    "label": "senderPublicKey",
+                    "name": "senderPublicKey",
                     "doc": "senderPublicKey is field of TransferTransaction"
                 },
                 {
-                    "label": "bodyBytes",
+                    "name": "bodyBytes",
                     "doc": "bodyBytes is field of TransferTransaction"
                 },
                 {
-                    "label": "proofs",
+                    "name": "proofs",
                     "doc": "proofs is field of TransferTransaction"
                 }
             ]
         },
         "IssueTransaction": {
-            "label": "IssueTransaction",
+            "name": "IssueTransaction",
             "doc": "IssueTransaction is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "quantity",
+                    "name": "quantity",
                     "doc": "quantity is field of IssueTransaction"
                 },
                 {
-                    "label": "name",
+                    "name": "name",
                     "doc": "name is field of IssueTransaction"
                 },
                 {
-                    "label": "doc",
+                    "name": "doc",
                     "doc": "doc is field of IssueTransaction"
                 },
                 {
-                    "label": "reissuable",
+                    "name": "reissuable",
                     "doc": "reissuable is field of IssueTransaction"
                 },
                 {
-                    "label": "decimals",
+                    "name": "decimals",
                     "doc": "decimals is field of IssueTransaction"
                 },
                 {
-                    "label": "script",
+                    "name": "script",
                     "doc": "script is field of IssueTransaction"
                 },
                 {
-                    "label": "id",
+                    "name": "id",
                     "doc": "id is field of IssueTransaction"
                 },
                 {
-                    "label": "fee",
+                    "name": "fee",
                     "doc": "fee is field of IssueTransaction"
                 },
                 {
-                    "label": "timestamp",
+                    "name": "timestamp",
                     "doc": "timestamp is field of IssueTransaction"
                 },
                 {
-                    "label": "version",
+                    "name": "version",
                     "doc": "version is field of IssueTransaction"
                 },
                 {
-                    "label": "sender",
+                    "name": "sender",
                     "doc": "sender is field of IssueTransaction"
                 },
                 {
-                    "label": "senderPublicKey",
+                    "name": "senderPublicKey",
                     "doc": "senderPublicKey is field of IssueTransaction"
                 },
                 {
-                    "label": "bodyBytes",
+                    "name": "bodyBytes",
                     "doc": "bodyBytes is field of IssueTransaction"
                 },
                 {
-                    "label": "proofs",
+                    "name": "proofs",
                     "doc": "proofs is field of IssueTransaction"
                 }
             ]
         },
         "ReissueTransaction": {
-            "label": "ReissueTransaction",
+            "name": "ReissueTransaction",
             "doc": "ReissueTransaction is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "quantity",
+                    "name": "quantity",
                     "doc": "quantity is field of ReissueTransaction"
                 },
                 {
-                    "label": "assetId",
+                    "name": "assetId",
                     "doc": "assetId is field of ReissueTransaction"
                 },
                 {
-                    "label": "reissuable",
+                    "name": "reissuable",
                     "doc": "reissuable is field of ReissueTransaction"
                 },
                 {
-                    "label": "id",
+                    "name": "id",
                     "doc": "id is field of ReissueTransaction"
                 },
                 {
-                    "label": "fee",
+                    "name": "fee",
                     "doc": "fee is field of ReissueTransaction"
                 },
                 {
-                    "label": "timestamp",
+                    "name": "timestamp",
                     "doc": "timestamp is field of ReissueTransaction"
                 },
                 {
-                    "label": "version",
+                    "name": "version",
                     "doc": "version is field of ReissueTransaction"
                 },
                 {
-                    "label": "sender",
+                    "name": "sender",
                     "doc": "sender is field of ReissueTransaction"
                 },
                 {
-                    "label": "senderPublicKey",
+                    "name": "senderPublicKey",
                     "doc": "senderPublicKey is field of ReissueTransaction"
                 },
                 {
-                    "label": "bodyBytes",
+                    "name": "bodyBytes",
                     "doc": "bodyBytes is field of ReissueTransaction"
                 },
                 {
-                    "label": "proofs",
+                    "name": "proofs",
                     "doc": "proofs is field of ReissueTransaction"
                 }
             ]
         },
         "BurnTransaction": {
-            "label": "BurnTransaction",
+            "name": "BurnTransaction",
             "doc": "BurnTransaction is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "quantity",
+                    "name": "quantity",
                     "doc": "quantity is field of BurnTransaction"
                 },
                 {
-                    "label": "assetId",
+                    "name": "assetId",
                     "doc": "assetId is field of BurnTransaction"
                 },
                 {
-                    "label": "id",
+                    "name": "id",
                     "doc": "id is field of BurnTransaction"
                 },
                 {
-                    "label": "fee",
+                    "name": "fee",
                     "doc": "fee is field of BurnTransaction"
                 },
                 {
-                    "label": "timestamp",
+                    "name": "timestamp",
                     "doc": "timestamp is field of BurnTransaction"
                 },
                 {
-                    "label": "version",
+                    "name": "version",
                     "doc": "version is field of BurnTransaction"
                 },
                 {
-                    "label": "sender",
+                    "name": "sender",
                     "doc": "sender is field of BurnTransaction"
                 },
                 {
-                    "label": "senderPublicKey",
+                    "name": "senderPublicKey",
                     "doc": "senderPublicKey is field of BurnTransaction"
                 },
                 {
-                    "label": "bodyBytes",
+                    "name": "bodyBytes",
                     "doc": "bodyBytes is field of BurnTransaction"
                 },
                 {
-                    "label": "proofs",
+                    "name": "proofs",
                     "doc": "proofs is field of BurnTransaction"
                 }
             ]
         },
         "LeaseTransaction": {
-            "label": "LeaseTransaction",
+            "name": "LeaseTransaction",
             "doc": "LeaseTransaction is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "amount",
+                    "name": "amount",
                     "doc": "amount is field of LeaseTransaction"
                 },
                 {
-                    "label": "recipient",
+                    "name": "recipient",
                     "doc": "recipient is field of LeaseTransaction"
                 },
                 {
-                    "label": "id",
+                    "name": "id",
                     "doc": "id is field of LeaseTransaction"
                 },
                 {
-                    "label": "fee",
+                    "name": "fee",
                     "doc": "fee is field of LeaseTransaction"
                 },
                 {
-                    "label": "timestamp",
+                    "name": "timestamp",
                     "doc": "timestamp is field of LeaseTransaction"
                 },
                 {
-                    "label": "version",
+                    "name": "version",
                     "doc": "version is field of LeaseTransaction"
                 },
                 {
-                    "label": "sender",
+                    "name": "sender",
                     "doc": "sender is field of LeaseTransaction"
                 },
                 {
-                    "label": "senderPublicKey",
+                    "name": "senderPublicKey",
                     "doc": "senderPublicKey is field of LeaseTransaction"
                 },
                 {
-                    "label": "bodyBytes",
+                    "name": "bodyBytes",
                     "doc": "bodyBytes is field of LeaseTransaction"
                 },
                 {
-                    "label": "proofs",
+                    "name": "proofs",
                     "doc": "proofs is field of LeaseTransaction"
                 }
             ]
         },
         "LeaseCancelTransaction": {
-            "label": "LeaseCancelTransaction",
+            "name": "LeaseCancelTransaction",
             "doc": "LeaseCancelTransaction is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "leaseId",
+                    "name": "leaseId",
                     "doc": "leaseId is field of LeaseCancelTransaction"
                 },
                 {
-                    "label": "id",
+                    "name": "id",
                     "doc": "id is field of LeaseCancelTransaction"
                 },
                 {
-                    "label": "fee",
+                    "name": "fee",
                     "doc": "fee is field of LeaseCancelTransaction"
                 },
                 {
-                    "label": "timestamp",
+                    "name": "timestamp",
                     "doc": "timestamp is field of LeaseCancelTransaction"
                 },
                 {
-                    "label": "version",
+                    "name": "version",
                     "doc": "version is field of LeaseCancelTransaction"
                 },
                 {
-                    "label": "sender",
+                    "name": "sender",
                     "doc": "sender is field of LeaseCancelTransaction"
                 },
                 {
-                    "label": "senderPublicKey",
+                    "name": "senderPublicKey",
                     "doc": "senderPublicKey is field of LeaseCancelTransaction"
                 },
                 {
-                    "label": "bodyBytes",
+                    "name": "bodyBytes",
                     "doc": "bodyBytes is field of LeaseCancelTransaction"
                 },
                 {
-                    "label": "proofs",
+                    "name": "proofs",
                     "doc": "proofs is field of LeaseCancelTransaction"
                 }
             ]
         },
         "MassTransferTransaction": {
-            "label": "MassTransferTransaction",
+            "name": "MassTransferTransaction",
             "doc": "MassTransferTransaction is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "feeAssetId",
+                    "name": "feeAssetId",
                     "doc": "feeAssetId is field of MassTransferTransaction"
                 },
                 {
-                    "label": "assetId",
+                    "name": "assetId",
                     "doc": "assetId is field of MassTransferTransaction"
                 },
                 {
-                    "label": "totalAmount",
+                    "name": "totalAmount",
                     "doc": "totalAmount is field of MassTransferTransaction"
                 },
                 {
-                    "label": "transfers",
+                    "name": "transfers",
                     "doc": "transfers is field of MassTransferTransaction"
                 },
                 {
-                    "label": "transferCount",
+                    "name": "transferCount",
                     "doc": "transferCount is field of MassTransferTransaction"
                 },
                 {
-                    "label": "attachment",
+                    "name": "attachment",
                     "doc": "attachment is field of MassTransferTransaction"
                 },
                 {
-                    "label": "id",
+                    "name": "id",
                     "doc": "id is field of MassTransferTransaction"
                 },
                 {
-                    "label": "fee",
+                    "name": "fee",
                     "doc": "fee is field of MassTransferTransaction"
                 },
                 {
-                    "label": "timestamp",
+                    "name": "timestamp",
                     "doc": "timestamp is field of MassTransferTransaction"
                 },
                 {
-                    "label": "version",
+                    "name": "version",
                     "doc": "version is field of MassTransferTransaction"
                 },
                 {
-                    "label": "sender",
+                    "name": "sender",
                     "doc": "sender is field of MassTransferTransaction"
                 },
                 {
-                    "label": "senderPublicKey",
+                    "name": "senderPublicKey",
                     "doc": "senderPublicKey is field of MassTransferTransaction"
                 },
                 {
-                    "label": "bodyBytes",
+                    "name": "bodyBytes",
                     "doc": "bodyBytes is field of MassTransferTransaction"
                 },
                 {
-                    "label": "proofs",
+                    "name": "proofs",
                     "doc": "proofs is field of MassTransferTransaction"
                 }
             ]
         },
         "CreateAliasTransaction": {
-            "label": "CreateAliasTransaction",
+            "name": "CreateAliasTransaction",
             "doc": "CreateAliasTransaction is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "alias",
+                    "name": "alias",
                     "doc": "alias is field of CreateAliasTransaction"
                 },
                 {
-                    "label": "id",
+                    "name": "id",
                     "doc": "id is field of CreateAliasTransaction"
                 },
                 {
-                    "label": "fee",
+                    "name": "fee",
                     "doc": "fee is field of CreateAliasTransaction"
                 },
                 {
-                    "label": "timestamp",
+                    "name": "timestamp",
                     "doc": "timestamp is field of CreateAliasTransaction"
                 },
                 {
-                    "label": "version",
+                    "name": "version",
                     "doc": "version is field of CreateAliasTransaction"
                 },
                 {
-                    "label": "sender",
+                    "name": "sender",
                     "doc": "sender is field of CreateAliasTransaction"
                 },
                 {
-                    "label": "senderPublicKey",
+                    "name": "senderPublicKey",
                     "doc": "senderPublicKey is field of CreateAliasTransaction"
                 },
                 {
-                    "label": "bodyBytes",
+                    "name": "bodyBytes",
                     "doc": "bodyBytes is field of CreateAliasTransaction"
                 },
                 {
-                    "label": "proofs",
+                    "name": "proofs",
                     "doc": "proofs is field of CreateAliasTransaction"
                 }
             ]
         },
         "SetScriptTransaction": {
-            "label": "SetScriptTransaction",
+            "name": "SetScriptTransaction",
             "doc": "SetScriptTransaction is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "script",
+                    "name": "script",
                     "doc": "script is field of SetScriptTransaction"
                 },
                 {
-                    "label": "id",
+                    "name": "id",
                     "doc": "id is field of SetScriptTransaction"
                 },
                 {
-                    "label": "fee",
+                    "name": "fee",
                     "doc": "fee is field of SetScriptTransaction"
                 },
                 {
-                    "label": "timestamp",
+                    "name": "timestamp",
                     "doc": "timestamp is field of SetScriptTransaction"
                 },
                 {
-                    "label": "version",
+                    "name": "version",
                     "doc": "version is field of SetScriptTransaction"
                 },
                 {
-                    "label": "sender",
+                    "name": "sender",
                     "doc": "sender is field of SetScriptTransaction"
                 },
                 {
-                    "label": "senderPublicKey",
+                    "name": "senderPublicKey",
                     "doc": "senderPublicKey is field of SetScriptTransaction"
                 },
                 {
-                    "label": "bodyBytes",
+                    "name": "bodyBytes",
                     "doc": "bodyBytes is field of SetScriptTransaction"
                 },
                 {
-                    "label": "proofs",
+                    "name": "proofs",
                     "doc": "proofs is field of SetScriptTransaction"
                 }
             ]
         },
         "SponsorFeeTransaction": {
-            "label": "SponsorFeeTransaction",
+            "name": "SponsorFeeTransaction",
             "doc": "SponsorFeeTransaction is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "assetId",
+                    "name": "assetId",
                     "doc": "assetId is field of SponsorFeeTransaction"
                 },
                 {
-                    "label": "minSponsoredAssetFee",
+                    "name": "minSponsoredAssetFee",
                     "doc": "minSponsoredAssetFee is field of SponsorFeeTransaction"
                 },
                 {
-                    "label": "id",
+                    "name": "id",
                     "doc": "id is field of SponsorFeeTransaction"
                 },
                 {
-                    "label": "fee",
+                    "name": "fee",
                     "doc": "fee is field of SponsorFeeTransaction"
                 },
                 {
-                    "label": "timestamp",
+                    "name": "timestamp",
                     "doc": "timestamp is field of SponsorFeeTransaction"
                 },
                 {
-                    "label": "version",
+                    "name": "version",
                     "doc": "version is field of SponsorFeeTransaction"
                 },
                 {
-                    "label": "sender",
+                    "name": "sender",
                     "doc": "sender is field of SponsorFeeTransaction"
                 },
                 {
-                    "label": "senderPublicKey",
+                    "name": "senderPublicKey",
                     "doc": "senderPublicKey is field of SponsorFeeTransaction"
                 },
                 {
-                    "label": "bodyBytes",
+                    "name": "bodyBytes",
                     "doc": "bodyBytes is field of SponsorFeeTransaction"
                 },
                 {
-                    "label": "proofs",
+                    "name": "proofs",
                     "doc": "proofs is field of SponsorFeeTransaction"
                 }
             ]
         },
         "ExchangeTransaction": {
-            "label": "ExchangeTransaction",
+            "name": "ExchangeTransaction",
             "doc": "ExchangeTransaction is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "buyOrder",
+                    "name": "buyOrder",
                     "doc": "buyOrder is field of ExchangeTransaction"
                 },
                 {
-                    "label": "sellOrder",
+                    "name": "sellOrder",
                     "doc": "sellOrder is field of ExchangeTransaction"
                 },
                 {
-                    "label": "price",
+                    "name": "price",
                     "doc": "price is field of ExchangeTransaction"
                 },
                 {
-                    "label": "amount",
+                    "name": "amount",
                     "doc": "amount is field of ExchangeTransaction"
                 },
                 {
-                    "label": "buyMatcherFee",
+                    "name": "buyMatcherFee",
                     "doc": "buyMatcherFee is field of ExchangeTransaction"
                 },
                 {
-                    "label": "sellMatcherFee",
+                    "name": "sellMatcherFee",
                     "doc": "sellMatcherFee is field of ExchangeTransaction"
                 },
                 {
-                    "label": "id",
+                    "name": "id",
                     "doc": "id is field of ExchangeTransaction"
                 },
                 {
-                    "label": "fee",
+                    "name": "fee",
                     "doc": "fee is field of ExchangeTransaction"
                 },
                 {
-                    "label": "timestamp",
+                    "name": "timestamp",
                     "doc": "timestamp is field of ExchangeTransaction"
                 },
                 {
-                    "label": "version",
+                    "name": "version",
                     "doc": "version is field of ExchangeTransaction"
                 },
                 {
-                    "label": "sender",
+                    "name": "sender",
                     "doc": "sender is field of ExchangeTransaction"
                 },
                 {
-                    "label": "senderPublicKey",
+                    "name": "senderPublicKey",
                     "doc": "senderPublicKey is field of ExchangeTransaction"
                 },
                 {
-                    "label": "bodyBytes",
+                    "name": "bodyBytes",
                     "doc": "bodyBytes is field of ExchangeTransaction"
                 },
                 {
-                    "label": "proofs",
+                    "name": "proofs",
                     "doc": "proofs is field of ExchangeTransaction"
                 }
             ]
         },
         "DataTransaction": {
-            "label": "DataTransaction",
+            "name": "DataTransaction",
             "doc": "DataTransaction is type",
-            "adds": [
+            "fields": [
                 {
-                    "label": "data",
+                    "name": "data",
                     "doc": "data is field of DataTransaction"
                 },
                 {
-                    "label": "id",
+                    "name": "id",
                     "doc": "id is field of DataTransaction"
                 },
                 {
-                    "label": "fee",
+                    "name": "fee",
                     "doc": "fee is field of DataTransaction"
                 },
                 {
-                    "label": "timestamp",
+                    "name": "timestamp",
                     "doc": "timestamp is field of DataTransaction"
                 },
                 {
-                    "label": "version",
+                    "name": "version",
                     "doc": "version is field of DataTransaction"
                 },
                 {
-                    "label": "sender",
+                    "name": "sender",
                     "doc": "sender is field of DataTransaction"
                 },
                 {
-                    "label": "senderPublicKey",
+                    "name": "senderPublicKey",
                     "doc": "senderPublicKey is field of DataTransaction"
                 },
                 {
-                    "label": "bodyBytes",
+                    "name": "bodyBytes",
                     "doc": "bodyBytes is field of DataTransaction"
                 },
                 {
-                    "label": "proofs",
+                    "name": "proofs",
                     "doc": "proofs is field of DataTransaction"
                 }
             ]
@@ -1341,37 +1341,37 @@
     },
     "globalVariables": {
         "height": {
-            "label": "height",
+            "name": "height",
             "insertText": "height",
             "doc": "Retrieves current blockchain height"
         },
         "tx": {
-            "label": "tx",
+            "name": "tx",
             "insertText": "tx",
             "doc": "Retrieves current transaction being processed"
         }
     },
     "snippets": {
         "ifelse": {
-            "label": "ifelse",
+            "name": "ifelse",
             "insertText": "if (${1:condition}) then $2 else $3",
             "insertTextFormat": 2,
             "kind": 15
         },
         "match": {
-            "label": "match",
+            "name": "match",
             "insertText": "match (${1:tx}) {\n    case t:${2:type} => $0\n    case _ =>\n  }",
             "insertTextFormat": 2,
             "kind": 15
         },
         "base58": {
-            "label": "base58",
+            "name": "base58",
             "insertText": "base58'$0'",
             "insertTextFormat": 2,
             "kind": 15
         },
         "base64": {
-            "label": "base64",
+            "name": "base64",
             "insertText": "base64'$0'",
             "insertTextFormat": 2,
             "kind": 15
