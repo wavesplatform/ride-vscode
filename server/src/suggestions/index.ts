@@ -3,10 +3,8 @@ import { CompletionItemKind, CompletionItem } from 'vscode-languageserver-types'
 import * as suggestions from './suggestions.json'
 
 const nonTranzactionsClasses = ['Address', 'Alias', 'Transfer', 'DataEntry', 'GenesisTransaction', 'PaymentTransaction'];
-export const transactionClasses = Object.keys(suggestions.types).filter(val => nonTranzactionsClasses.indexOf(val) === -1)
 
 const typesData: Record<string, any>  = suggestions.types;
-
 Object.keys(typesData).map(type => {
     typesData[type].label = type;
     Object.keys(typesData[type].fields).map( field => {
@@ -15,6 +13,8 @@ Object.keys(typesData).map(type => {
     })
 })
 
+
+export const transactionClasses = Object.keys(suggestions.types).filter(val => nonTranzactionsClasses.indexOf(val) === -1)
 export const types: Record<string, any> = typesData;//(Object as any).values(suggestions.types)
     // .map((x: any) => ({ ...x, label: x.name, fields: x.fields.map((x: any) => ({...x, label: x.name})) }));
 export const functions: Record<string, any> = suggestions.functions;
