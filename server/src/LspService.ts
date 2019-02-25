@@ -2,7 +2,7 @@ import {
     TextDocument, CompletionItemKind, Diagnostic, CompletionItem, Position, Range, DiagnosticSeverity, CompletionList, SignatureHelp
 } from "vscode-languageserver-types";
 import { transactionClasses, types } from './suggestions/index'
-import { safeCompile } from './safeCompile'
+import { compile } from '@waves/ride-js'
 import * as utils from './utils'
 
 
@@ -10,7 +10,7 @@ import * as utils from './utils'
 export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         let diagnostics: Diagnostic[] = []
-        let result = safeCompile(document.getText())
+        let result = compile(document.getText())
         const errorText = result.error
         if (errorText) {
             const errRangesRegxp = /\d+-\d+/gm

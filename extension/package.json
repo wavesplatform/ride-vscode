@@ -17,12 +17,12 @@
 		"postinstall": "node ./node_modules/vscode/bin/install"
 	},
 	"dependencies": {
-		"@waves/ride-js": "0.15.3",
+		"@waves/ride-js": "0.16.2",
 		"react": "^16.5.2",
 		"react-dom": "^16.5.2",
 		"vscode": "^1.1.22",
 		"vscode-languageclient": "^4.1.4",
-		"waves-repl": "^1.4.12"
+		"waves-repl": "^1.5.1"
 	},
 	"devDependencies": {
 		"@types/react": "^16.4.17",

@@ -22,10 +22,12 @@ export function setupCommunication(){
 
     function file(tabName?: string) {
         if (tabName == null) {
-            return editorsContent.editors[editorsContent.selectedEditor]
+            const file = editorsContent.editors[editorsContent.selectedEditor]
+            return file && file.code
         }
         else {
-            return editorsContent.editors.find(editor => editor.label === tabName)
+            const file = editorsContent.editors.find(editor => editor.label === tabName)
+            return file && file.code
         }
     }
     Repl.updateEnv({ file })
