@@ -3,7 +3,7 @@
 	"description": "Waves Ride language support and REPL for Visual Studio Code",
 	"author": "wavesplatform",
 	"license": "MIT",
-	"version": "0.3.1",
+	"version": "0.4.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/wavesplatform/ride-vscode"
