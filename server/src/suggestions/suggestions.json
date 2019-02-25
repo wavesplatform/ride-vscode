@@ -5,7 +5,8 @@
     "false",
     "if",
     "then",
-    "else"
+    "else",
+    "case"
   ],
 
   "functions": {
@@ -1144,6 +1145,52 @@
         {
           "name": "proofs",
           "detail": "proofs is field of CreateAliasTransaction"
+        }
+      ]
+    },
+    "SetAssetScriptTransaction": {
+      "name": "SetAssetScriptTransaction",
+      "detail": "SetAssetScriptTransaction is type",
+      "fields": [
+        {
+          "name":"assetId",
+          "detail" : "field of SetAssetScriptTransaction"
+        },
+        {
+          "name":"chainId",
+          "detail" : "field of SetAssetScriptTransaction"
+        },
+        {
+          "name":"fee",
+          "detail" : "field of SetAssetScriptTransaction"
+        },
+        {
+          "name":"id",
+          "detail" : "field of SetAssetScriptTransaction"
+        },
+        {
+          "name":"proofs",
+          "detail" : "field of SetAssetScriptTransaction"
+        },
+        {
+          "name":"script",
+          "detail" : "field of SetAssetScriptTransaction"
+        },
+        {
+          "name":"senderPublicKey",
+          "detail" : "field of SetAssetScriptTransaction"
+        },
+        {
+          "name":"timestamp",
+          "detail" : "field of SetAssetScriptTransaction"
+        },
+        {
+          "name":"type",
+          "detail" : "field of SetAssetScriptTransaction"
+        },
+        {
+          "name":"version",
+          "detail" : "field of SetAssetScriptTransaction"
         }
       ]
     },

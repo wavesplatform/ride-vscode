@@ -1,8 +1,7 @@
 import {
-    TextDocument, CompletionItemKind,
-    Diagnostic, CompletionItem, Position, Range, DiagnosticSeverity, CompletionList, SignatureHelp
+    TextDocument, CompletionItemKind, Diagnostic, CompletionItem, Position, Range, DiagnosticSeverity, CompletionList, SignatureHelp
 } from "vscode-languageserver-types";
-import { globalSuggestions, transactionClasses, types } from './suggestions/index'
+import { transactionClasses, types } from './suggestions/index'
 import { safeCompile } from './safeCompile'
 import * as utils from './utils'
 
@@ -52,7 +51,7 @@ export class LspService {
 
                     switch (true) {
                         case (['buyOrder', 'sellOrder'].indexOf(inputWord) > -1):
-                            result = types['Order'].fields;                            //ExchangeTransaction:'buyOrder', 'sellOrder'
+                            result = types['Order'].fields;                         //ExchangeTransaction:'buyOrder', 'sellOrder'
                             break;
                         case (['recipient'].indexOf(inputWord) > -1):               //Transfer:'recipient'
                             result = [...types['Address'].fields, ...types['Alias'].fields];
@@ -60,11 +59,14 @@ export class LspService {
                         case (['tx'].indexOf(inputWord) > -1):                      // 'tx'
                             result = utils.intersection(...transactionClasses.map(val => types[val].fields));
                             break;
-                        case ([...caseDeclarations].pop() === inputWord):           //case variable:
-                            let temp = textBefore.match(/\bcase[ \t]*.*/g).pop()    //get line with last "case" block and search fields in line 
+                        case (caseDeclarations.lastIndexOf(inputWord) > -1):           //case variable:
+                            //get "case" block and search fields in line 
+                            let temp = textBefore.match(/\bcase[ \t]*.*/g)
+                                .filter(value => !(/\bcase[ \t]*_/g).test(value))[caseDeclarations.lastIndexOf(inputWord)]
                                 .match(new RegExp(`\\b${Object.keys(types).join('\\b|\\b')}\\b`, 'g'))
                                 .map(value => types[value].fields);
                             result = utils.intersection(...temp);
+
                             break;
                         default:
                             utils.findLetDeclarations(textBefore).map((val, _, arr) => {
@@ -84,6 +86,10 @@ export class LspService {
                     break;
                 default:
                     result = utils.getCompletionDefaultResult(textBefore);
+                    result.push({
+                        "label": [...caseDeclarations].pop(),
+                        "kind": CompletionItemKind.Variable
+                    })
                     break;
             }
         } catch (e) {
@@ -107,7 +113,7 @@ export class LspService {
         const offset = document.offsetAt(position);
         const character = document.getText().substring(offset - 1, offset);
         const textBefore = document.getText({ start: { line: 0, character: 0 }, end: position });
-        
+
         const lastFunction = (textBefore.match(/\b([a-zA-z0-9_]*)\b[ \t]*\(/g) || [""]).pop(); //get function calls || ""
         const functionArguments = textBefore.split(lastFunction).pop()
 
