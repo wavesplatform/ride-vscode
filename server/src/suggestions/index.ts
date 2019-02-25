@@ -15,11 +15,11 @@ Object.keys(typesData).map(type => {
 
 
 export const transactionClasses = Object.keys(suggestions.types).filter(val => nonTranzactionsClasses.indexOf(val) === -1)
-export const types: Record<string, any> = typesData;//(Object as any).values(suggestions.types)
-    // .map((x: any) => ({ ...x, label: x.name, fields: x.fields.map((x: any) => ({...x, label: x.name})) }));
+export const types: Record<string, any> = typesData;
+
 export const functions: Record<string, any> = suggestions.functions;
 export const globalVariables: Record<string, any> = suggestions.globalVariables;
-
+export const typesRegExp =  new RegExp(`\\b${Object.keys(typesData).join('\\b|\\b')}\\b`, 'g')//this regexp looks for fields
 
 export const globalSuggestions: CompletionItem[] =
     suggestions.keywords.map((label: string) => <CompletionItem>({ label, kind: CompletionItemKind.Keyword }))
