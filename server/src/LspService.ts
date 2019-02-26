@@ -10,9 +10,9 @@ import * as utils from './utils'
 export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         let diagnostics: Diagnostic[] = []
-        let result = compile(document.getText())
-        const errorText = result.error
-        if (errorText) {
+        let resultOrError = compile(document.getText())
+        if ('error' in resultOrError) {
+            const errorText = resultOrError.error
             const errRangesRegxp = /\d+-\d+/gm
             const errorRanges: string[] = errRangesRegxp.exec(errorText) || []
             const errors = errorRanges.map(offsets => {

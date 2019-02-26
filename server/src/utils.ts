@@ -1,6 +1,18 @@
 import { CompletionItem,CompletionItemKind } from "vscode-languageserver-types";
 import { typesRegExp, functions, types, globalVariables, globalSuggestions } from "./suggestions/index"
 
+export interface ParamType {
+    name: string
+    type: string
+    required: boolean
+    detail: string
+}
+
+export interface LetDeclarationType {
+    name: string
+    value: string
+}
+
 //=============================================================
 
 export function getCompletionDefaultResult(textBefore:string){
