@@ -123,7 +123,7 @@ export class LspService {
             fail = true;
 
         return {
-            activeParameter: fail ? null : (functionArguments.split(',').length - 1 || null),
+            activeParameter: fail ? null : functionArguments.split(',').length - 1,
             activeSignature: fail ? null : 0,
             //get result by last function call
             signatures: fail ? null : utils.getSignatureHelpResult((lastFunction.slice(0, -1))),
