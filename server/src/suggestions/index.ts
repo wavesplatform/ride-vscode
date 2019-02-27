@@ -1,34 +1,82 @@
 import { CompletionItemKind, CompletionItem } from 'vscode-languageserver-types';
-// const suggestions = require('../../src/suggestions/suggestions.json');
-import * as suggestions from './suggestions.json'
+// @ts-ignore
+import * as suggestions from './suggestions.json';
 
-const nonTranzactionsClasses = ['Address', 'Alias', 'Transfer', 'DataEntry', 'GenesisTransaction', 'PaymentTransaction'];
+const rideJs = require('@waves/ride-js/src/lang-opt.js');
 
-const typesData: Record<string, any>  = suggestions.types;
-Object.keys(typesData).map(type => {
-    typesData[type].label = type;
-    Object.keys(typesData[type].fields).map( field => {
-        typesData[type].fields[field].label = typesData[type].fields[field].name;
-        typesData[type].fields[field].kind = CompletionItemKind.Field
+//=============================================================================================================
+
+const isString = (value:any) => (value && typeof value === 'string');
+
+const getDocFromArray = (fields: any) => fields
+    .map((x: any) => ((isString(x.typeName) || isString(x.name))) ? x.typeName || x.name : x).join('|');
+
+const getTypeObj = (type: any) => type.fields.map(({name, type}: any) => ({
+    label: name,
+    kind: CompletionItemKind.Field,
+    detail: isString(type) ? type :
+        ((type.typeName || type.listOf) ?
+            type.typeName || (type.listOf.typeName ? type.listOf.typeName : type.listOf) : getDocFromArray(type))
+}));
+
+
+export const types = [...rideJs.getTypes()].map(({name, type, doc}) => ({
+        name,
+        doc: (isString(type) ? type : doc || ''),
+        fields: ((type.fields) ? getTypeObj(type) : isString(type) ? [] : type.map(({typeName, fields}: any) => (
+            {label: typeName, detail: getDocFromArray(fields), kind: CompletionItemKind.Field}
+        )))
+
     })
-})
+);
 
+//this regexp looks for fields
+export const typesRegExp = new RegExp(`\\b${types.map(({name}) => name).join('\\b|\\b')}\\b`, 'g');
 
-export const transactionClasses = Object.keys(suggestions.types).filter(val => nonTranzactionsClasses.indexOf(val) === -1)
-export const types: Record<string, any> = typesData;
+//=============================================================================================================
 
-export const functions: Record<string, any> = suggestions.functions;
-export const globalVariables: Record<string, any> = suggestions.globalVariables;
-export const typesRegExp =  new RegExp(`\\b${Object.keys(typesData).join('\\b|\\b')}\\b`, 'g')//this regexp looks for fields
+export const globalVariables = [
+    ...rideJs.getVarsDoc(),
+    {
+        'name': 'tx',
+        'doc': 'Retrieves current transaction being processed'
+    }
+];
+
+//=============================================================================================================
+
+export const functions: Record<string, any> = rideJs.getFunctionsDoc();
+
+//=============================================================================================================
+
+export const txFields = ['id', 'proofs', 'senderPublicKey', 'timestamp'].map(x => ({
+    label: x,
+    kind: CompletionItemKind.Field
+}));
+
+export const nonTransactionsClasses = ['Address', 'Alias', 'Transfer', 'DataEntry', 'GenesisTransaction', 'PaymentTransaction'];
+
+export const transactionClasses =
+    ['Order', 'TransferTransaction', 'IssueTransaction', 'ReissueTransaction', 'BurnTransaction', 'LeaseTransaction',
+        'LeaseCancelTransaction', 'MassTransferTransaction', 'CreateAliasTransaction', 'SetAssetScriptTransaction',
+        'SetScriptTransaction', 'SponsorFeeTransaction', 'ExchangeTransaction', 'DataTransaction'];
 
 export const globalSuggestions: CompletionItem[] =
-    suggestions.keywords.map((label: string) => <CompletionItem>({ label, kind: CompletionItemKind.Keyword }))
+    suggestions.keywords.map((label: string) => <CompletionItem>({label, kind: CompletionItemKind.Keyword}))
+    //snippets
+        .concat((Object as any).values(suggestions.snippets).map((x: any) => ({
+            ...x,
+            kind: CompletionItemKind.Snippet
+        })))
         //globalVariables
-        .concat((Object as any).values(suggestions.globalVariables)
-            .map((x: any) => ({ ...x, kind: CompletionItemKind.Variable, label: x.name })))
+        .concat(globalVariables.map(({name, doc}: any) => ({
+            label: name,
+            detail: doc,
+            kind: CompletionItemKind.Variable
+        })))
         //functions
-        .concat((Object as any).values(suggestions.functions)
-            .map((x: any) => ({ ...x, kind: CompletionItemKind.Function, label: x.name })))
-        //snippets
-        .concat((Object as any).values(suggestions.snippets)
-            .map((x: any) => ({ ...x, kind: CompletionItemKind.Snippet })))
+        .concat(rideJs.getFunctionsDoc().map(({name, doc}: any) => ({
+            detail: doc,
+            kind: CompletionItemKind.Function,
+            label: name
+        })));
