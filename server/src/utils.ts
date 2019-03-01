@@ -1,12 +1,7 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types';
 import {
-    types,
-    functions,
-    globalVariables,
-    globalSuggestions,
-    typesRegExp,
-    transactionClasses,
-    nonTransactionsClasses
+    types, functions, globalVariables, globalSuggestions, typesRegExp, transactionClasses, Classes,
+    TStructInfo, TArrayInfo, TUnionInfo, TStructField,
 } from './suggestions';
 
 //=============================================================
@@ -40,7 +35,13 @@ export function getCaseCompletionResult(textBefore: string, inputWord: string, c
     let temp = textBefore.match(/\bcase[ \t]*.*/g)
         .filter((value: string) => !(/\bcase[ \t]*_/g).test(value))[caseDeclarations.lastIndexOf(inputWord)]
         .match(new RegExp(typesRegExp, 'g'))
-        .map((value: string) => types[types.map(({name}) => name).indexOf(value)].fields);
+        .map((value: string) => {
+            let elementPos = types.map(({name}) => name).indexOf(value);
+            if (elementPos > -1 && types[elementPos].type === "Struct")
+                return (types[elementPos] as TStructInfo).fields;
+            else
+                return []
+        });
     return intersection(...temp);
 }
 
@@ -50,8 +51,8 @@ export function getLetCompletionResult(textBefore: string, inputWord: string) {
     findLetDeclarations(textBefore).map((val, _, arr) => {
         if (val.name === inputWord) {
             let elementPos = types.map((x: any) => x.name).indexOf(val.value);
-            if (elementPos > -1)
-                out = types[elementPos].fields;
+            if (elementPos > -1 && types[elementPos].type === "Struct")
+                out = (types[elementPos] as TStructInfo).fields;
             arr.length = 0;
         }
     });
@@ -60,23 +61,21 @@ export function getLetCompletionResult(textBefore: string, inputWord: string) {
 
 export function getColonOrPipeCompletionResult(textBefore: string) {
     let out = [];
-    let classes = transactionClasses.map(val => ({label: val, kind: CompletionItemKind.Class}));
-    ([...findMatchDeclarations(textBefore)].pop() === 'tx')                         // if match(tx) else match(!tx)
-        ? out = classes
-        : out = [
-            ...classes,
-            ...nonTransactionsClasses.map(val => ({label: val, kind: CompletionItemKind.Class}))
-        ];
+    ([...findMatchDeclarations(textBefore)].pop() === 'tx') ? out = transactionClasses : out = Classes;
     return out
 }
 
-export function getFieldsByType(type: string) {
-    let out = [];
+export function getFieldsByType(type: string) {//
+    let out: TStructField[] = [];
     let elementPos = types.map(({name}) => name).indexOf(type);
-    if (elementPos > -1)
-        out = types[elementPos].fields;
+    if (elementPos > -1 && types[elementPos].type === "Struct")
+        out = (types[elementPos] as TStructInfo).fields;
     return out
 }
+
+export const getTxFields = () => intersection(...transactionClasses.map(({label}) =>
+    (types[types.map(({name}) => name).indexOf(label)] as TStructInfo).fields));
+
 
 //=============================================================
 
@@ -109,7 +108,25 @@ export function getHoverResult(word: string) {
             `\n) : ${getTypeString(functions[functionsPos].resultType)} \n>_${functions[functionsPos].doc}_`
         );
     } else if (types[typesPos]) {
-        result.push(types[typesPos].doc)
+        let selector;
+        switch (types[typesPos].type) {
+            case  'Primitive':
+                result.push(types[typesPos].name);
+                break;
+            case  'Struct':
+                selector = types[typesPos] as TStructInfo;
+                result.push(`**${selector.name}**:
+                ${selector.fields.map(({label, detail}) => ` \n- ${label}: ${detail}`).join(',')}`);
+                break;
+            case  'Array':
+                selector = types[typesPos] as TArrayInfo;
+                result.push(`**${selector.name}**: [${selector.items.type}:${selector.items.doc}]`);
+                break;
+            case  'Union':
+                selector = types[typesPos] as TUnionInfo;
+                result.push(`**${selector.name}**: ${selector.types.map(({label, detail}) => `\n- ${label}: ${detail}\n`).join('\n')}`);
+                break;
+        }
     } else {
         let elementPos = globalVariables.map((x: any) => x.name).indexOf(word);
         if (elementPos > -1) {

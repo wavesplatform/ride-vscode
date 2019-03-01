@@ -9,7 +9,6 @@ import {
     CompletionList,
     SignatureHelp
 } from 'vscode-languageserver-types';
-import { txFields } from './suggestions';
 import { compile } from '@waves/ride-js';
 import * as utils from './utils';
 
@@ -63,7 +62,7 @@ export class LspService {
                             result = [...utils.getFieldsByType('Address'), ...utils.getFieldsByType('Alias')];
                             break;
                         case (['tx'].indexOf(inputWord) > -1):                      // 'tx'
-                            result = txFields;
+                            result = utils.getTxFields();
                             break;
                         case (caseDeclarations.lastIndexOf(inputWord) > -1):        //case variable:
                             result = utils.getCaseCompletionResult(textBefore, inputWord, caseDeclarations);
