@@ -80,7 +80,7 @@ export class LspService {
                     break;
             }
         } catch (e) {
-            // console.error(e);
+             console.error(e);
         }
 
         return {
@@ -89,7 +89,7 @@ export class LspService {
         } as CompletionList;
     }
 
-    public static hover(document: TextDocument, position: Position) {
+    public hover(document: TextDocument, position: Position) {
         const textBefore = document.getText({start: {line: 0, character: 0}, end: position});
         const match = (/[a-zA-z0-9_]+\.[a-zA-z0-9_.]*$/gm)
             .exec(document.getText({start: {line: position.line, character: 0}, end: position}));
@@ -98,7 +98,7 @@ export class LspService {
         return {contents: utils.getHoverResult(textBefore, word, (match ? match[0] : '').split('.'))};
     }
 
-    public static signatureHelp(document: TextDocument, position: Position): SignatureHelp {
+    public signatureHelp(document: TextDocument, position: Position): SignatureHelp {
 
         const offset = document.offsetAt(position);
         const character = document.getText().substring(offset - 1, offset);
@@ -120,7 +120,7 @@ export class LspService {
         };
     }
 
-    public static completionResolve(item: CompletionItem) {
+    public completionResolve(item: CompletionItem) {
         return item;
     }
 

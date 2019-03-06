@@ -153,17 +153,17 @@ export class LspServer {
         // connection.onCodeAction(service.codeAction.bind(service));
         connection.onCompletion(async (textDocumentPosition: TextDocumentPositionParams): Promise<CompletionItem[] | CompletionList> => {
             const document = await this.getDocument(textDocumentPosition.textDocument.uri)
-            return this.service.completion(document, textDocumentPosition.position)
+            return service.completion(document, textDocumentPosition.position)
         });
         connection.onHover(async (textDocumentPosition: TextDocumentPositionParams): Promise<Hover> => {
             const document = await this.getDocument(textDocumentPosition.textDocument.uri)
-            return this.service.hover(document, textDocumentPosition.position)
+            return service.hover(document, textDocumentPosition.position)
         });
         connection.onSignatureHelp(async (textDocumentPosition: TextDocumentPositionParams): Promise<SignatureHelp> => {
             const document = await this.getDocument(textDocumentPosition.textDocument.uri);
-            return this.service.signatureHelp(document, textDocumentPosition.position);
+            return service.signatureHelp(document, textDocumentPosition.position);
         });
-        connection.onCompletionResolve(service.completionResolve.bind(service));
+        connection.onCompletionResolve(this.service.completionResolve.bind(service));
         // connection.onDefinition(service.definition.bind(service));
         // connection.onImplementation(service.implementation.bind(service));
         // connection.onTypeDefinition(service.typeDefinition.bind(service));
