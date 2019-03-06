@@ -1,11 +1,10 @@
-import {CompletionItem, CompletionItemKind} from 'vscode-languageserver-types';
+import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types';
 import {
     types, functions, globalVariables, globalSuggestions, transactionClasses, classes, typesRegExp, caseRegexp,
     functionsRegExp, letRegexp, isPrimitive, isStruct, isUnion, isList,
     listToString, unionToString, matchRegexp
-    //,TType, TStruct, TList, TUnion, TFunction,TUnionItem, TStructField,
 } from './suggestions';
-import {TType, TStruct, TList, TUnion, TFunction, TUnionItem, TStructField} from '@waves/ride-js'
+import { TType, TStruct, TList, TUnion, TFunction, TUnionItem, TStructField } from '@waves/ride-js'
 
 //======================TYPES==============================
 

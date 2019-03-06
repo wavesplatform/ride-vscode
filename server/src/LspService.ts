@@ -8,7 +8,7 @@ import {
     CompletionList,
     SignatureHelp
 } from 'vscode-languageserver-types';
-import {compile} from '@waves/ride-js';
+import { compile } from '@waves/ride-js';
 import * as utils from './utils';
 
 
@@ -60,9 +60,6 @@ export class LspService {
                         case (variablesDeclarations.filter(({variable}) => variable === firstWordMatch[1]).length > 0):
                             result = utils.getCompletionResult(firstWordMatch[0].split('.'), variablesDeclarations);
                             break;
-                        default:
-                            console.error("Default result")
-                            break;
                     }
                     break;
                 //auto completion after clicking on a colon or pipe
@@ -74,7 +71,7 @@ export class LspService {
                     break;
             }
         } catch (e) {
-             console.error(e);
+             // console.error(e);
         }
 
         return {
@@ -109,7 +106,7 @@ export class LspService {
         return {
             activeParameter: fail ? null : functionArguments.split(',').length - 1,
             activeSignature: fail ? null : 0,
-            //get result by last function call todo fix
+            //get result by last function call
             signatures: fail ? null : utils.getSignatureHelpResult((lastFunction.slice(0, -1))),
         };
     }

@@ -1,4 +1,4 @@
-import {CompletionItemKind, CompletionItem} from 'vscode-languageserver-types';
+import { CompletionItemKind, CompletionItem } from 'vscode-languageserver-types';
 import * as suggestions from './suggestions.json';
 import {
     getTypes,
@@ -15,10 +15,13 @@ import {
 
 //======================Types==============================
 
-// export type TType = TList | TStruct | TUnion | TPrimitive
+export const types = getTypes();
+
+//this regexp looks for fields
+export const typesRegExp = new RegExp(`\\b${types.map(({name}) => name).join('\\b|\\b')}\\b`, 'g');
+
 
 //----------------------TPrimitive-------------------------
-// export type TPrimitive = string;
 
 export const isPrimitive = (item: TType): item is TPrimitive => typeof item === 'string';
 
@@ -26,20 +29,11 @@ export const isString = (item: any): item is string => typeof item === 'string';
 
 
 //----------------------TStruct----------------------------
-// export type TStructField = {name: string, type: TType};
 
-// export type TStruct = {
-//     typeName: string
-//     fields: TStructField[]
-// };
 export const isStruct = (item: TType): item is TStruct => typeof item === 'object' && 'typeName' in item;
 
 
 //----------------------TList------------------------------
-
-// export type TList = {
-//     "listOf": TType
-// };
 
 export const isList = (item: TType): item is TList => typeof item === 'object' && 'listOf' in item;
 
@@ -47,8 +41,6 @@ export const listToString = (type: TList) => `LIST[ ${isStruct(type.listOf) ? ty
 
 
 //----------------------TUnion-----------------------------
-// export type TUnionItem = TStruct | TPrimitive | TList
-// export type TUnion = TUnionItem[]
 
 export const isUnion = (item: TType): item is TUnion => Array.isArray(item);
 
@@ -59,26 +51,6 @@ export const getUnionItemName = (item: TUnionItem): string => {
 };
 
 export const unionToString = (item: TUnion) => item.map(type => getUnionItemName(type)).join('|');
-
-
-//----------------------TFunction--------------------------
-// export type TFunction = {
-//     name: string
-//     doc: string
-//     resultType: TType
-//     args: TFunctionArgument[]
-// };
-//
-// export type TFunctionArgument = {
-//     name: string
-//     type: TType
-//     doc: string
-// };
-
-export const types = getTypes();
-
-//this regexp looks for fields
-export const typesRegExp = new RegExp(`\\b${types.map(({name}) => name).join('\\b|\\b')}\\b`, 'g');
 
 
 //----------------------snippets---------------------------
