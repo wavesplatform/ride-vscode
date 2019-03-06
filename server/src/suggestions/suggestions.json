@@ -8,26 +8,23 @@
     "else",
     "case"
   ],
-  "snippets": {
-    "ifelse": {
+  "snippets": [
+    {
       "label": "ifelse",
       "insertText": "if (${1:condition}) then $2 else $3",
       "insertTextFormat": 2
-    },
-    "match": {
+    },{
       "label": "match",
       "insertText": "match (${1:tx}) {\n    case t:${2:type} => $0\n    case _ =>\n  }",
       "insertTextFormat": 2
-    },
-    "base58": {
+    },{
       "label": "base58",
       "insertText": "base58'$0'",
       "insertTextFormat": 2
-    },
-    "base64": {
+    },{
       "label": "base64",
       "insertText": "base64'$0'",
       "insertTextFormat": 2
     }
-  }
+  ]
 }

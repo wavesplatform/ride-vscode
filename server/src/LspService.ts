@@ -9,7 +9,7 @@ import {
     CompletionList,
     SignatureHelp
 } from 'vscode-languageserver-types';
-import { compile } from '@waves/ride-js';
+import {compile} from '@waves/ride-js';
 import * as utils from './utils';
 
 
@@ -28,11 +28,11 @@ export class LspService {
                     range,
                     severity: DiagnosticSeverity.Error,
                     message: errorText
-                }
+                };
             });
             diagnostics.push(...errors);
         }
-        return diagnostics
+        return diagnostics;
     }
 
     public completion(document: TextDocument, position: Position) {
@@ -42,11 +42,11 @@ export class LspService {
         const line = document.getText({start: {line: position.line, character: 0}, end: position});
 
         const caseDeclarations = utils.findCaseDeclarations(textBefore);
-
         let result: CompletionItem[] = [];
 
         try {
             let wordBeforeDot = line.match(/([a-zA-z0-9_]+)\.[a-zA-z0-9_]*\b$/);     // get text before dot (ex: [tx].test)
+            let firstWordMatch = (/([a-zA-z0-9_]+)\.[a-zA-z0-9_.]*$/gm).exec(line)
 
             switch (true) {
                 case (character === '.' || wordBeforeDot !== null):                 //auto completion after clicking on a dot
@@ -55,17 +55,11 @@ export class LspService {
                         : wordBeforeDot[1];
 
                     switch (true) {
-                        case (['buyOrder', 'sellOrder'].indexOf(inputWord) > -1):  //ExchangeTransaction:'buyOrder', 'sellOrder'
-                            result = utils.getFieldsByType('Order');
-                            break;
-                        case (['recipient'].indexOf(inputWord) > -1):               //Transfer:'recipient'
-                            result = [...utils.getFieldsByType('Address'), ...utils.getFieldsByType('Alias')];
-                            break;
-                        case (['tx'].indexOf(inputWord) > -1):                      // 'tx'
+                        case (['tx'].indexOf(inputWord) > -1):
                             result = utils.getTxFields();
                             break;
-                        case (caseDeclarations.lastIndexOf(inputWord) > -1):        //case variable:
-                            result = utils.getCaseCompletionResult(textBefore, inputWord, caseDeclarations);
+                        case (caseDeclarations.filter(({variable}) => variable === firstWordMatch[1]).length > 0):
+                            result = utils.getCaseCompletionResult(firstWordMatch[0].split('.'), caseDeclarations);
                             break;
                         default:
                             result = utils.getLetCompletionResult(textBefore, inputWord);
@@ -78,26 +72,30 @@ export class LspService {
                     break;
                 default:
                     result = utils.getCompletionDefaultResult(textBefore);
-                    result.push({
-                        'label': [...caseDeclarations].pop(),
-                        'kind': CompletionItemKind.Variable
-                    });
+                    if (caseDeclarations.length > 0)
+                        result.push({
+                            'label': [...caseDeclarations].pop().variable,
+                            'kind': CompletionItemKind.Variable
+                        });
                     break;
             }
         } catch (e) {
-            console.error(e)
+            // console.error(e);
         }
 
         return {
             isIncomplete: false,
             items: result
-        } as CompletionList
+        } as CompletionList;
     }
 
     public static hover(document: TextDocument, position: Position) {
+        const textBefore = document.getText({start: {line: 0, character: 0}, end: position});
+        const match = (/[a-zA-z0-9_]+\.[a-zA-z0-9_.]*$/gm)
+            .exec(document.getText({start: {line: position.line, character: 0}, end: position}));
         const line = document.getText().split('\n')[position.line];
         const word = utils.getWordByPos(line, position.character);
-        return {contents: utils.getHoverResult(word)};
+        return {contents: utils.getHoverResult(textBefore, word, (match ? match[0] : '').split('.'))};
     }
 
     public static signatureHelp(document: TextDocument, position: Position): SignatureHelp {
@@ -117,13 +115,13 @@ export class LspService {
         return {
             activeParameter: fail ? null : functionArguments.split(',').length - 1,
             activeSignature: fail ? null : 0,
-            //get result by last function call
+            //get result by last function call todo fix
             signatures: fail ? null : utils.getSignatureHelpResult((lastFunction.slice(0, -1))),
         };
     }
 
     public static completionResolve(item: CompletionItem) {
-        return item
+        return item;
     }
 
 }
