@@ -1,13 +1,24 @@
-import { CompletionItemKind, CompletionItem } from 'vscode-languageserver-types';
+import {CompletionItemKind, CompletionItem} from 'vscode-languageserver-types';
 import * as suggestions from './suggestions.json';
-import { getTypes, getVarsDoc, getFunctionsDoc } from '@waves/ride-js';
+import {
+    getTypes,
+    getVarsDoc,
+    getFunctionsDoc,
+    TType,
+    TPrimitive,
+    TStruct,
+    TList,
+    TUnionItem,
+    TUnion,
+    TFunction
+} from '@waves/ride-js';
 
 //======================Types==============================
 
-export type TType = TList | TStruct | TUnion | TPrimitive
+// export type TType = TList | TStruct | TUnion | TPrimitive
 
 //----------------------TPrimitive-------------------------
-export type TPrimitive = string;
+// export type TPrimitive = string;
 
 export const isPrimitive = (item: TType): item is TPrimitive => typeof item === 'string';
 
@@ -15,54 +26,54 @@ export const isString = (item: any): item is string => typeof item === 'string';
 
 
 //----------------------TStruct----------------------------
-export type TStructField = {name: string, type: TType};
+// export type TStructField = {name: string, type: TType};
 
-export type TStruct = {
-    typeName: string
-    fields: TStructField[]
-};
+// export type TStruct = {
+//     typeName: string
+//     fields: TStructField[]
+// };
 export const isStruct = (item: TType): item is TStruct => typeof item === 'object' && 'typeName' in item;
 
 
 //----------------------TList------------------------------
 
-export type TList = {
-    "listOf": TType
-};
+// export type TList = {
+//     "listOf": TType
+// };
 
-export const isList = (item: TType): item is TList =>  typeof item === 'object' && 'listOf' in item;
+export const isList = (item: TType): item is TList => typeof item === 'object' && 'listOf' in item;
 
 export const listToString = (type: TList) => `LIST[ ${isStruct(type.listOf) ? type.listOf.typeName : type.listOf}]`;
 
 
 //----------------------TUnion-----------------------------
-export type TUnionItem = TStruct | TPrimitive | TList
-export type TUnion = TUnionItem[]
+// export type TUnionItem = TStruct | TPrimitive | TList
+// export type TUnion = TUnionItem[]
 
 export const isUnion = (item: TType): item is TUnion => Array.isArray(item);
 
 export const getUnionItemName = (item: TUnionItem): string => {
-    if(isStruct(item)) return item.typeName;
-    if(isList(item)) return listToString(item);
+    if (isStruct(item)) return item.typeName;
+    if (isList(item)) return listToString(item);
     return item
 };
 
-export const unionToString = (item: TUnion) =>  item.map(type => getUnionItemName(type)).join('|')
+export const unionToString = (item: TUnion) => item.map(type => getUnionItemName(type)).join('|');
 
 
 //----------------------TFunction--------------------------
-export type TFunction = {
-    name: string
-    doc: string
-    resultType: TType
-    args: TFunctionArgument[]
-};
-
-export type TFunctionArgument = {
-    name: string
-    type: TType
-    doc: string
-};
+// export type TFunction = {
+//     name: string
+//     doc: string
+//     resultType: TType
+//     args: TFunctionArgument[]
+// };
+//
+// export type TFunctionArgument = {
+//     name: string
+//     type: TType
+//     doc: string
+// };
 
 export const types = getTypes();
 
@@ -88,6 +99,8 @@ export const functionsRegExp = new RegExp(`^[!]*(\\b${
 //=========================================================
 
 export const letRegexp = /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm;
+export const caseRegexp = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:(.*)[=>{]/gm;
+export const matchRegexp = /\bmatch[ \t]*\([ \t]*([a-zA-z0-9_]+)[ \t]*\)/gm;
 
 //ContractInvocationTransaction types
 const ignoreTypes = [
@@ -105,7 +118,7 @@ export const globalVariables = getVarsDoc();
 export const classes = (types.filter(({name, type}) => isStruct(type) && ignoreTypes.indexOf(type.typeName) === -1))
     .map(({name}) => ({label: name, kind: CompletionItemKind.Class}));
 
-export const transactionClasses = (types!.find(t => t.name ==='Transaction')!.type as TUnion)
+export const transactionClasses = (types!.find(t => t.name === 'Transaction')!.type as TUnion)
     .filter((item) => isStruct(item) && ignoreTypes.indexOf(item.typeName) === -1)
     .map(({typeName}: any) => ({label: typeName, kind: CompletionItemKind.Class}));
 

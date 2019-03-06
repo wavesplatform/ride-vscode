@@ -1,6 +1,5 @@
 import {
     TextDocument,
-    CompletionItemKind,
     Diagnostic,
     CompletionItem,
     Position,
@@ -36,17 +35,17 @@ export class LspService {
     }
 
     public completion(document: TextDocument, position: Position) {
+
         const offset = document.offsetAt(position);
         const character = document.getText().substring(offset - 1, offset);
         const textBefore = document.getText({start: {line: 0, character: 0}, end: position});
         const line = document.getText({start: {line: position.line, character: 0}, end: position});
-
-        const caseDeclarations = utils.findCaseDeclarations(textBefore);
+        const variablesDeclarations = utils.findDeclarations(textBefore);
         let result: CompletionItem[] = [];
 
         try {
             let wordBeforeDot = line.match(/([a-zA-z0-9_]+)\.[a-zA-z0-9_]*\b$/);     // get text before dot (ex: [tx].test)
-            let firstWordMatch = (/([a-zA-z0-9_]+)\.[a-zA-z0-9_.]*$/gm).exec(line)
+            let firstWordMatch = (/([a-zA-z0-9_]+)\.[a-zA-z0-9_.]*$/gm).exec(line);
 
             switch (true) {
                 case (character === '.' || wordBeforeDot !== null):                 //auto completion after clicking on a dot
@@ -58,11 +57,11 @@ export class LspService {
                         case (['tx'].indexOf(inputWord) > -1):
                             result = utils.txFields;
                             break;
-                        case (caseDeclarations.filter(({variable}) => variable === firstWordMatch[1]).length > 0):
-                            result = utils.getCaseCompletionResult(firstWordMatch[0].split('.'), caseDeclarations);
+                        case (variablesDeclarations.filter(({variable}) => variable === firstWordMatch[1]).length > 0):
+                            result = utils.getCompletionResult(firstWordMatch[0].split('.'), variablesDeclarations);
                             break;
                         default:
-                            result = utils.getLetCompletionResult(textBefore, inputWord);
+                            console.error("Default result")
                             break;
                     }
                     break;
@@ -72,11 +71,6 @@ export class LspService {
                     break;
                 default:
                     result = utils.getCompletionDefaultResult(textBefore);
-                    if (caseDeclarations.length > 0)
-                        result.push({
-                            'label': [...caseDeclarations].pop().variable,
-                            'kind': CompletionItemKind.Variable
-                        });
                     break;
             }
         } catch (e) {
