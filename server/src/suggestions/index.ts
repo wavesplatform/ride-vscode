@@ -106,7 +106,7 @@ export const globalVariables = getVarsDoc();
 export const classes = (types.filter(({name, type}) => isStruct(type) && ignoreTypes.indexOf(type.typeName) === -1))
     .map(({name}) => ({label: name, kind: CompletionItemKind.Class}));
 
-export const transactionClasses = ((types as any)['Transaction'] as TUnion)
+export const transactionClasses = (types!.find(t => t.name ==='Transaction').type as TUnion)
     .filter((item) => isStruct(item) && ignoreTypes.indexOf(item.typeName) === -1)
     .map(({typeName}: TStruct) => ({label: typeName, kind: CompletionItemKind.Class}));
 

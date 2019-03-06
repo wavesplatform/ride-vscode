@@ -1,7 +1,9 @@
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types';
-import { types, functions, globalVariables, globalSuggestions, transactionClasses, classes, typesRegExp,
+import {CompletionItem, CompletionItemKind} from 'vscode-languageserver-types';
+import {
+    types, functions, globalVariables, globalSuggestions, transactionClasses, classes, typesRegExp,
     functionsRegExp, letRegexp, TType, TStruct, TList, TUnion, TFunction, isPrimitive, isStruct, isUnion, isList,
-    TUnionItem, TStructField, listToString, unionToString } from './suggestions';
+    TUnionItem, TStructField, listToString, unionToString
+} from './suggestions';
 
 
 //======================TYPES==============================
@@ -17,15 +19,15 @@ type TVariableDeclaration = {
 
 //----------------------TFunction--------------------------
 const getFunctionArgumentString = (type: TType): string => {
-    if (isPrimitive(type)){
+    if (isPrimitive(type)) {
         return type
-    }else if (isList(type)){
+    } else if (isList(type)) {
         return listToString(type)
-    }else if (isStruct(type)){
+    } else if (isStruct(type)) {
         return type.typeName
-    }else if (isUnion(type)){
+    } else if (isUnion(type)) {
         return type.map((type: TUnionItem) => isStruct(type) ? type.typeName : type).join('|');
-    }else {
+    } else {
         return 'Unknown'
     }
 };
@@ -36,13 +38,13 @@ const getFunctionsByName = (funcName: string): TFunction[] => functions.filter((
 //----------------------Completion-------------------------
 const convertToCompletion = (field: TStructField): CompletionItem => {
     let detail: string = '';
-    if (isPrimitive(field.type)){
-        detail =  field.type
-    }else if (isList(field.type)){
+    if (isPrimitive(field.type)) {
+        detail = field.type
+    } else if (isList(field.type)) {
         detail = listToString(field.type)
-    }else if (isStruct(field.type)){
+    } else if (isStruct(field.type)) {
         detail = field.type.typeName
-    }else if (isUnion(field.type)){
+    } else if (isUnion(field.type)) {
         detail = unionToString(field.type)
     }
 
@@ -75,15 +77,15 @@ const getTypeDoc = (type: TType): string => {
     return typeDoc;
 };
 
-const getTypeByName = (typeName: string): TType => types.find(({name}) => name === typeName).type;
+const getTypeByName = (typeName: string): TType | undefined => {
+    const result = types.find(({name}) => name === typeName)
+    return result && result.type
+};
 
 
 //======================COMPLETION=========================
 
-export const txFields = intersection((types as any)['Transaction'] as TUnion)
-    .map((item) => convertToCompletion(item));
-// Todo: remove
-export const getTxFields = () => intersection((types as any)['Transaction'] as TUnion)
+export const txFields = intersection((types.find(t => t.name === 'Transaction').type as TUnion))
     .map((item) => convertToCompletion(item));
 
 export function getCompletionDefaultResult(textBefore: string) {
@@ -99,18 +101,18 @@ export const getCaseCompletionResult = (inputWords: string[], caseDeclarations: 
 
 function getCaseVariablesHelp(inputWords: string[], caseDeclarations: TVariableDeclaration[]) {
     const typesByNames = (names: string[]): TType[] => types.filter(({name}) => names.indexOf(name) > -1)
-        .map(({type})=> type);
+        .map(({type}) => type);
 
     let declVariable = caseDeclarations.filter(({variable, types}) => variable === inputWords[0] && types !== null)[0];
     if (!declVariable) return [];
     let out = intersection(typesByNames(declVariable.types));
     for (let i = 1; i < inputWords.length - 1; i++) {
-        let actualType = out.filter( item => item.name === inputWords[i] && !isPrimitive(item.type) && !isList(item.type))[0];
-        if (!actualType){
+        let actualType = out.filter(item => item.name === inputWords[i] && !isPrimitive(item.type) && !isList(item.type))[0];
+        if (!actualType) {
             out = []
-        } else if (isStruct(actualType.type)){
+        } else if (isStruct(actualType.type)) {
             out = actualType.type.fields;
-        }else if (isUnion(actualType.type)) {
+        } else if (isUnion(actualType.type)) {
             out = intersection(actualType.type)
         }
     }
@@ -167,7 +169,7 @@ export function getHoverResult(textBefore: string, word: string, inputWords: str
 
     if (hoveredFunctions.length > 0) {
         result = (hoveredFunctions.map((func: TFunction): string => `**${word}** (${func.args.length > 0 ?
-            `\n${func.args.map(({name, type, doc}) => `\n * ${`${name}: ${getFunctionArgumentString(type)} - ${doc}`} \n`)}\n` : 
+            `\n${func.args.map(({name, type, doc}) => `\n * ${`${name}: ${getFunctionArgumentString(type)} - ${doc}`} \n`)}\n` :
             ' '}) : ${getFunctionArgumentString(func.resultType)} \n>_${func.doc}_`));
     } else if (hoveredType) {
         result.push(`**${word}**: ${getTypeDoc(hoveredType)}`)
@@ -224,13 +226,14 @@ export function findCaseDeclarations(text: string): TVariableDeclaration[] {
 function intersection(items: TType[]): TStructField[] {
     let structs: TStruct[] = [];
 
-    let next: TType = items.pop()
-    while (items.length > 0){
-        if(isStruct(next)){
+    let next: TType;
+    while (items.length > 0) {
+        next = items.pop();
+        if (isStruct(next)) {
             structs.push(next)
-        }else if (isUnion(next)){
+        } else if (isUnion(next)) {
             items.push(...next)
-        }else {
+        } else {
             return []
         }
     }

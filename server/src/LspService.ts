@@ -56,7 +56,7 @@ export class LspService {
 
                     switch (true) {
                         case (['tx'].indexOf(inputWord) > -1):
-                            result = utils.getTxFields();
+                            result = utils.txFields;
                             break;
                         case (caseDeclarations.filter(({variable}) => variable === firstWordMatch[1]).length > 0):
                             result = utils.getCaseCompletionResult(firstWordMatch[0].split('.'), caseDeclarations);
