@@ -10,7 +10,7 @@ import {
 
 type TVariableDeclaration = {
     variable: string
-    types?: string[]
+    types: string[]
     value?: string
 }
 
@@ -58,7 +58,7 @@ const convertToCompletion = (field: TStructField): CompletionItem => {
 
 //----------------------Types------------------------------
 const getTypeDoc = (type: TType): string => {
-    let typeDoc;
+    let typeDoc = 'Unknown';
     switch (true) {
         case isPrimitive(type):
             typeDoc = type as string;
@@ -78,14 +78,15 @@ const getTypeDoc = (type: TType): string => {
 };
 
 const getTypeByName = (typeName: string): TType | undefined => {
-    const result = types.find(({name}) => name === typeName)
+    const result = types.find(({name}) => name === typeName);
     return result && result.type
 };
 
 
 //======================COMPLETION=========================
 
-export const txFields = intersection((types.find(t => t.name === 'Transaction').type as TUnion))
+// Todo: remove this constant altogether
+export const txFields = intersection((types.find(t => t.name === 'Transaction')!.type as TUnion))
     .map((item) => convertToCompletion(item));
 
 export function getCompletionDefaultResult(textBefore: string) {
@@ -104,7 +105,7 @@ function getCaseVariablesHelp(inputWords: string[], caseDeclarations: TVariableD
         .map(({type}) => type);
 
     let declVariable = caseDeclarations.filter(({variable, types}) => variable === inputWords[0] && types !== null)[0];
-    if (!declVariable) return [];
+    if (declVariable == null) return [];
     let out = intersection(typesByNames(declVariable.types));
     for (let i = 1; i < inputWords.length - 1; i++) {
         let actualType = out.filter(item => item.name === inputWords[i] && !isPrimitive(item.type) && !isList(item.type))[0];
@@ -207,13 +208,14 @@ export function getWordByPos(string: string, character: number) {
 
 export function findCaseDeclarations(text: string): TVariableDeclaration[] {
     const re = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:.*$/gm;                 //this regexp looks for 'case' blocks
-    const declarations = [];
+    const declarations: TVariableDeclaration[] = [];
     let myMatch;
 
     while ((myMatch = re.exec(text)) !== null) {
+        const matchedTypes = myMatch[0].match(new RegExp(typesRegExp, 'g'))
         declarations.push({
             variable: myMatch[1],
-            types: (myMatch[0].match(new RegExp(typesRegExp, 'g')) as string[])
+            types: matchedTypes == null ? [] : matchedTypes
         })
     }
 
@@ -228,7 +230,7 @@ function intersection(items: TType[]): TStructField[] {
 
     let next: TType;
     while (items.length > 0) {
-        next = items.pop();
+        next = items.pop()!;
         if (isStruct(next)) {
             structs.push(next)
         } else if (isUnion(next)) {
@@ -273,25 +275,27 @@ function findMatchDeclarations(text: string) {
 export function findLetDeclarations(text: string): TVariableDeclaration[] {
 
     const getFuncType = (funcName: string) => {
-        let type = functions.filter(({name}) => name === funcName).pop().resultType;
+        let func = functions.filter(({name}) => name === funcName).pop();
+        let type = func && func.resultType;
         return (typeof type === 'string') ? [type] : (type as (TStruct[])).map((v: TStruct) => v.typeName);
     };
 
     return getDataByRegexp(text, letRegexp)
         .map(({name, value}) => {
             let out: TVariableDeclaration;
+            let match;
             if (Number(value.toString().replace(/_/g, '')).toString() !== 'NaN')
                 out = {variable: name, types: ['Int'], value: value};
-            else if (/\b(base58|base64)\b[ \t]*'(.*)'/.test(value)) {
-                let match = value.match(/\b(base58|base64)\b[ \t]*'(.*)'/);
+            else if ((match = value.match(/\b(base58|base64)\b[ \t]*'(.*)'/)) != null) {
                 out = {variable: name, types: [match[1]], value: match[2]}
-            } else if (functionsRegExp.test(value)) {
-                let match = value.match(functionsRegExp);
+            } else if ((match = value.match(functionsRegExp)) != null) {
                 out = {variable: name, types: getFuncType(match[1])}
-            } else if (typesRegExp.test(value)) {
-                out = {variable: name, types: value.match(typesRegExp)}
+            } else if ((match = value.match(typesRegExp)) != null) {
+                out = {variable: name, types: match}
             } else if (/.*\b&&|==|!=|>=|>\b.*/.test(value)) {
                 out = {variable: name, types: ['Boolean']}
+            } else {
+                out = {variable: name, types: []}
             }
             return out;
         })
