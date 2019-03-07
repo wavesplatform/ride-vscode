@@ -21,9 +21,9 @@ import * as fs from 'fs';
 import { LspService } from './LspService';
 
 export class LspServer {
-    private hasConfigurationCapability: boolean|undefined = false;
-    private hasWorkspaceFolderCapability: boolean|undefined = false;
-    private hasDiagnosticRelatedInformationCapability: boolean|undefined = false;
+    private hasConfigurationCapability: boolean= false;
+    private hasWorkspaceFolderCapability: boolean = false;
+    private hasDiagnosticRelatedInformationCapability: boolean = false;
 
     private service: LspService;
     private documents: { [uri: string]: TextDocument } = {};
@@ -93,13 +93,13 @@ export class LspServer {
             // Does the client support the `workspace/configuration` request?
             // If not, we will fall back using global settings
             this.hasConfigurationCapability =
-                capabilities.workspace && !!capabilities.workspace.configuration;
+                !!capabilities.workspace && !!capabilities.workspace.configuration;
             this.hasWorkspaceFolderCapability =
-                capabilities.workspace && !!capabilities.workspace.workspaceFolders;
+                !!capabilities.workspace && !!capabilities.workspace.workspaceFolders;
             this.hasDiagnosticRelatedInformationCapability =
-                capabilities.textDocument &&
-                capabilities.textDocument.publishDiagnostics &&
-                capabilities.textDocument.publishDiagnostics.relatedInformation;
+                !!capabilities.textDocument &&
+                !!capabilities.textDocument.publishDiagnostics &&
+                !!capabilities.textDocument.publishDiagnostics.relatedInformation;
 
             return {
                 capabilities: {

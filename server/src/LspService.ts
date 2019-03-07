@@ -53,15 +53,16 @@ export class LspService {
                     ? (utils.getLastArrayElement(line.match(/\b(\w*)\b\./g) )).slice(0, -1)
                         : wordBeforeDot[1];
 
-                        if (['tx'].indexOf(inputWord) > -1)
-                            result = utils.txFields;
-                        else if (firstWordMatch.length >= 1 && variablesDeclarations.filter(({variable}) => variable === firstWordMatch[1]).length > 0)
+                        if (['tx'].indexOf(inputWord) > -1){}
+                            // result = utils.txFields;
+                        else if (firstWordMatch.length >= 2 && variablesDeclarations.filter(({variable}) => variable === firstWordMatch[1]).length > 0)
                             result = utils.getCompletionResult((firstWordMatch[0] as string).split('.'), variablesDeclarations);
                     break;
                 //auto completion after clicking on a colon or pipe
                 case ([':', '|'].indexOf(character) !== -1 || line.match(/([a-zA-z0-9_]+)[ \t]*[|:][ \t]*[a-zA-z0-9_]*$/) !== null):
                     result = utils.getColonOrPipeCompletionResult(textBefore);
                     break;
+                    //todo add completion after ] in lists
                 default:
                     result = utils.getCompletionDefaultResult(textBefore);
                     break;
@@ -77,12 +78,11 @@ export class LspService {
     }
 
     public hover(document: TextDocument, position: Position) {
-        const textBefore = document.getText({start: {line: 0, character: 0}, end: position});
         const match = (/[a-zA-z0-9_]+\.[a-zA-z0-9_.]*$/gm)
             .exec(document.getText({start: {line: position.line, character: 0}, end: position}));
         const line = document.getText().split('\n')[position.line];
         const word = utils.getWordByPos(line, position.character);
-        return {contents: utils.getHoverResult(textBefore, word, (match ? match[0] : '').split('.'))};
+        return {contents: utils.getHoverResult(document.getText(), word, (match ? match[0] : '').split('.'))};
     }
 
     public signatureHelp(document: TextDocument, position: Position): SignatureHelp {
