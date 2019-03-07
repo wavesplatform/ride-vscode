@@ -17,10 +17,6 @@ import {
 
 export const types = getTypes();
 
-//this regexp looks for fields
-export const typesRegExp = new RegExp(`\\b${types.map(({name}) => name).join('\\b|\\b')}\\b`, 'g');
-
-
 //----------------------TPrimitive-------------------------
 
 export const isPrimitive = (item: TType): item is TPrimitive => typeof item === 'string';
@@ -64,15 +60,17 @@ type TSnippet = {
 //======================functions==========================
 
 export const functions: TFunction[] = getFunctionsDoc();
-export const functionsRegExp = new RegExp(`^[!]*(\\b${
-    functions.filter(({name}) => ['*', '\\', '/', '%', '+',].indexOf(name) === -1).map(({name}) => name).join('\\b|\\b')
-    }\\b)[ \\t]*\\(`);
+
 
 //=========================================================
 
 export const letRegexp = /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm;
 export const caseRegexp = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:(.*)[=>{]/gm;
 export const matchRegexp = /\bmatch[ \t]*\([ \t]*([a-zA-z0-9_]+)[ \t]*\)/gm;
+export const typesRegExp = new RegExp(`\\b${types.map(({name}) => name).join('\\b|\\b')}\\b`, 'g');
+export const functionsRegExp = new RegExp(`^[!]*(\\b${
+    functions.filter(({name}) => ['*', '\\', '/', '%', '+',].indexOf(name) === -1).map(({name}) => name).join('\\b|\\b')
+    }\\b)[ \\t]*\\(`);
 
 //ContractInvocationTransaction types
 const ignoreTypes = [

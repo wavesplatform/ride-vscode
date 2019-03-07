@@ -65,7 +65,7 @@ const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
             break;
         case isStruct(type):
             typeDoc = isRec ? (type as TStruct).typeName :
-                `**${item.name}**(\n- ` + (type as TStruct).fields
+                `**${(type as TStruct).typeName}**(\n- ` + (type as TStruct).fields
                     .map((v) => `${v.name}: ${getTypeDoc(v, true)}`).join('\n- ') + '\n\n)';
             break;
         case isUnion(type):
@@ -154,7 +154,7 @@ export function getHoverResult(textBefore: string, word: string, inputWords: str
     const declarations = findDeclarations(textBefore);
 
     return getVariablesHelp(inputWords, declarations)
-        .filter(({name}) => name === word).map(item => `**${item.name}**: ` + getTypeDoc(item))
+        .filter(({name}) => name === word).map(item => `**${item.name}**: ` + getTypeDoc(item)) //todo fix
         .concat(declarations.filter(({variable}) => variable === word).map(({types}) => types.join('|')))
         .concat(globalVariables.filter(({name}) => name === word).map(({doc}) => doc))
         .concat(getFunctionsByName(word).map((func: TFunction) => getHoverFunctionDoc(func)))
@@ -202,7 +202,7 @@ export function findDeclarations(text: string): TVariableDeclaration[] {
                 out = {variable: name, types: getFuncType(match[1])}
             } else if ((match = value.match(typesRegExp)) != null) {
                 out = {variable: name, types: match}
-            } else if (/.*\b&&|==|!=|>=|>\b.*/.test(value)) {
+            } else if (/.*\b&&|==|!=|>=|>\b.*/.test(value)) { //todo let b = true hovers
                 out = {variable: name, types: ['Boolean']}
             } else {
                 out = {variable: name, types: []}

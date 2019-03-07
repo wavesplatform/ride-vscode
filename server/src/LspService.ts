@@ -52,8 +52,8 @@ export class LspService {
                     ? (utils.getLastArrayElement(line.match(/\b(\w*)\b\./g) )).slice(0, -1)
                         : wordBeforeDot[1];
 
-                        if (['tx'].indexOf(inputWord) > -1){}
-                            // result = utils.txFields;
+                        if (['tx'].indexOf(inputWord) > -1) //todo add after completion
+                            result = utils.txFields;
                         else if (firstWordMatch.length >= 2 && variablesDeclarations.filter(({variable}) => variable === firstWordMatch[1]).length > 0)
                             result = utils.getCompletionResult((firstWordMatch[0] as string).split('.'), variablesDeclarations);
                     break;
@@ -67,7 +67,7 @@ export class LspService {
                     break;
             }
         } catch (e) {
-             console.error(e);
+             // console.error(e);
         }
 
         return {
@@ -76,7 +76,7 @@ export class LspService {
         } as CompletionList;
     }
 
-    public hover(document: TextDocument, position: Position) {
+    public hover(document: TextDocument, position: Position) { //todo add hover to func args
         const match = (/[a-zA-z0-9_]+\.[a-zA-z0-9_.]*$/gm)
             .exec(document.getText({start: {line: position.line, character: 0}, end: position}));
         const line = document.getText().split('\n')[position.line];
