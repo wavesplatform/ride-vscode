@@ -45,22 +45,18 @@ export class LspService {
 
         try {
             let wordBeforeDot = line.match(/([a-zA-z0-9_]+)\.[a-zA-z0-9_]*\b$/);     // get text before dot (ex: [tx].test)
-            let firstWordMatch = (/([a-zA-z0-9_]+)\.[a-zA-z0-9_.]*$/gm).exec(line);
+            let firstWordMatch = (/([a-zA-z0-9_]+)\.[a-zA-z0-9_.]*$/gm).exec(line) || [];
 
             switch (true) {
                 case (character === '.' || wordBeforeDot !== null):                 //auto completion after clicking on a dot
                     let inputWord = (wordBeforeDot === null)                        //get word before dot or last word in line
-                        ? (line.match(/\b(\w*)\b\./g) || ['']).pop().slice(0, -1)
+                    ? (utils.getLastArrayElement(line.match(/\b(\w*)\b\./g) )).slice(0, -1)
                         : wordBeforeDot[1];
 
-                    switch (true) {
-                        case (['tx'].indexOf(inputWord) > -1):
+                        if (['tx'].indexOf(inputWord) > -1)
                             result = utils.txFields;
-                            break;
-                        case (variablesDeclarations.filter(({variable}) => variable === firstWordMatch[1]).length > 0):
-                            result = utils.getCompletionResult(firstWordMatch[0].split('.'), variablesDeclarations);
-                            break;
-                    }
+                        else if (firstWordMatch.length >= 1 && variablesDeclarations.filter(({variable}) => variable === firstWordMatch[1]).length > 0)
+                            result = utils.getCompletionResult((firstWordMatch[0] as string).split('.'), variablesDeclarations);
                     break;
                 //auto completion after clicking on a colon or pipe
                 case ([':', '|'].indexOf(character) !== -1 || line.match(/([a-zA-z0-9_]+)[ \t]*[|:][ \t]*[a-zA-z0-9_]*$/) !== null):
@@ -94,9 +90,9 @@ export class LspService {
         const offset = document.offsetAt(position);
         const character = document.getText().substring(offset - 1, offset);
         const textBefore = document.getText({start: {line: 0, character: 0}, end: position});
-
-        const lastFunction = (textBefore.match(/\b([a-zA-z0-9_]*)\b[ \t]*\(/g) || ['']).pop(); //get function calls || ''
-        const functionArguments = textBefore.split(lastFunction).pop();
+        
+        const lastFunction = utils.getLastArrayElement(textBefore.match(/\b([a-zA-z0-9_]*)\b[ \t]*\(/g));
+        const functionArguments = utils.getLastArrayElement(textBefore.split(lastFunction || ''));
 
         let fail = false;
 
@@ -107,7 +103,7 @@ export class LspService {
             activeParameter: fail ? null : functionArguments.split(',').length - 1,
             activeSignature: fail ? null : 0,
             //get result by last function call
-            signatures: fail ? null : utils.getSignatureHelpResult((lastFunction.slice(0, -1))),
+            signatures: fail ? [] : utils.getSignatureHelpResult((lastFunction.slice(0, -1))),
         };
     }
 

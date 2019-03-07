@@ -17,37 +17,37 @@ import {
     Hover,
     SignatureHelp
 } from 'vscode-languageserver';
-import * as fs from 'fs'
-import { LspService } from './LspService'
+import * as fs from 'fs';
+import { LspService } from './LspService';
 
 export class LspServer {
-    private hasConfigurationCapability: boolean = false;
-    private hasWorkspaceFolderCapability: boolean = false;
-    private hasDiagnosticRelatedInformationCapability: boolean = false;
+    private hasConfigurationCapability: boolean|undefined = false;
+    private hasWorkspaceFolderCapability: boolean|undefined = false;
+    private hasDiagnosticRelatedInformationCapability: boolean|undefined = false;
 
-    private service: LspService
-    private documents: { [uri: string]: TextDocument } = {}
+    private service: LspService;
+    private documents: { [uri: string]: TextDocument } = {};
 
     constructor(private connection: IConnection) {
-        this.service = new LspService()
+        this.service = new LspService();
 
         // Bind connection events to server methods
         // Init
-        this.bindInit(connection)
-        this.bindCallbacks(connection)
+        this.bindInit(connection);
+        this.bindCallbacks(connection);
 
         // Listen
-        this.connection.listen()
+        this.connection.listen();
     }
 
     private async getDocument(uri: string) {
-        let document = this.documents[uri]
+        let document = this.documents[uri];
         if (!document) {
-            const path = Files.uriToFilePath(uri)
+            const path = Files.uriToFilePath(uri) || './';
             document = await new Promise<TextDocument>((resolve) => {
                 fs.access(path, (err) => {
                     if (err) {
-                        resolve(null)
+                        resolve(undefined)
                     } else {
                         fs.readFile(path, (_, data) => {
                             resolve(TextDocument.create(uri, "ride", 1, data.toString()))
@@ -62,23 +62,27 @@ export class LspServer {
     private applyChanges(document: TextDocument, didChangeTextDocumentParams: DidChangeTextDocumentParams): TextDocument {
         let buffer = document.getText();
         let changes = didChangeTextDocumentParams.contentChanges;
+
         for (let i = 0; i < changes.length; i++) {
             if (!changes[i].range && !changes[i].rangeLength) {
                 // no ranges defined, the text is the entire document then
                 buffer = changes[i].text;
                 break;
             }
-
-            let offset = document.offsetAt(changes[i].range.start);
-            let end = null;
-            if (changes[i].range.end) {
-                end = document.offsetAt(changes[i].range.end);
-            } else {
-                end = offset + changes[i].rangeLength;
+            let offset, end, range = changes[i].range;
+            if (range !== undefined){
+                offset = document.offsetAt(range.start);
+                end = null;
+                if (range.end) {
+                    end = document.offsetAt(range.end);
+                } else {
+                    end = offset + (changes[i].rangeLength || 0);
+                }
             }
-            buffer = buffer.substring(0, offset) + changes[i].text + buffer.substring(end);
+
+            buffer = buffer.substring(0, offset) + changes[i].text + buffer.substring(end || 0);
         }
-        const changedDocument = TextDocument.create(didChangeTextDocumentParams.textDocument.uri, document.languageId, didChangeTextDocumentParams.textDocument.version, buffer);
+        const changedDocument = TextDocument.create(didChangeTextDocumentParams.textDocument.uri, document.languageId, didChangeTextDocumentParams.textDocument.version || 0, buffer);
         return changedDocument
     }
 
@@ -133,30 +137,30 @@ export class LspServer {
         connection.onDidOpenTextDocument((didOpenTextDocumentParams: DidOpenTextDocumentParams): void => {
             let document = TextDocument.create(didOpenTextDocumentParams.textDocument.uri, didOpenTextDocumentParams.textDocument.languageId, didOpenTextDocumentParams.textDocument.version, didOpenTextDocumentParams.textDocument.text);
             this.documents[didOpenTextDocumentParams.textDocument.uri] = document;
-            const diagnostics = service.validateTextDocument(document)
-            this.sendDiagnostics(document.uri, diagnostics)
+            const diagnostics = service.validateTextDocument(document);
+            this.sendDiagnostics(document.uri, diagnostics);
         });
         connection.onDidCloseTextDocument((didCloseTextDocumentParams: DidCloseTextDocumentParams): void => {
             delete this.documents[didCloseTextDocumentParams.textDocument.uri];
         });
         connection.onDidChangeTextDocument((didChangeTextDocumentParams: DidChangeTextDocumentParams): void => {
             const document = this.documents[didChangeTextDocumentParams.textDocument.uri];
-            const changedDocument = this.applyChanges(document, didChangeTextDocumentParams)
+            const changedDocument = this.applyChanges(document, didChangeTextDocumentParams);
             this.documents[didChangeTextDocumentParams.textDocument.uri] = changedDocument;
             if (document.getText() !== changedDocument.getText()) {
-                const diagnostics = service.validateTextDocument(changedDocument)
-                this.sendDiagnostics(document.uri, diagnostics)
+                const diagnostics = service.validateTextDocument(changedDocument);
+                this.sendDiagnostics(document.uri, diagnostics);
             }
         });
 
         // Lsp callbacks
         // connection.onCodeAction(service.codeAction.bind(service));
         connection.onCompletion(async (textDocumentPosition: TextDocumentPositionParams): Promise<CompletionItem[] | CompletionList> => {
-            const document = await this.getDocument(textDocumentPosition.textDocument.uri)
+            const document = await this.getDocument(textDocumentPosition.textDocument.uri);
             return service.completion(document, textDocumentPosition.position)
         });
         connection.onHover(async (textDocumentPosition: TextDocumentPositionParams): Promise<Hover> => {
-            const document = await this.getDocument(textDocumentPosition.textDocument.uri)
+            const document = await this.getDocument(textDocumentPosition.textDocument.uri);
             return service.hover(document, textDocumentPosition.position)
         });
         connection.onSignatureHelp(async (textDocumentPosition: TextDocumentPositionParams): Promise<SignatureHelp> => {

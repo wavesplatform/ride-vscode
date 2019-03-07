@@ -66,7 +66,7 @@ const getTypeDoc = (type: TType): string => {
         case isStruct(type):
             typeDoc = (type as TStruct).fields.map(({name}) => name).join(', ');
             break;
-        case isUnion(type):// todo show all fields on hover type?
+        case isUnion(type):
             typeDoc = (type as TUnion).map(field => isStruct(field) ? field.typeName : field).join('|');
             break;
         case isList(type):
@@ -165,17 +165,49 @@ export function getWordByPos(string: string, character: number) {
     for (let i = character; i <= string.length; i++) {
         if (sep.indexOf(string[i]) > -1) {
             end = i;
-            break
+            break;
         }
     }
     for (let i = character; i >= 0; i--) {
         if (sep.indexOf(string[i]) > -1) {
             start = ++i;
-            break
+            break;
         }
     }
     return string.substring(start, end);
 }
+
+
+export function findDeclarations(text: string): TVariableDeclaration[] {
+
+    const getFuncType = (funcName: string) => {
+        let func = functions.filter(({name}) => name === funcName).pop();
+        let type = func && func.resultType;
+        return (typeof type === 'string') ? [type] : (type as (TStruct[])).map((v: TStruct) => v.typeName);
+    };
+
+    return [...getDataByRegexp(text, letRegexp), ...getDataByRegexp(text, caseRegexp)]
+        .map(({name, value}) => {
+            let out: TVariableDeclaration;
+            let match;
+            if (Number(value.toString().replace(/_/g, '')).toString() !== 'NaN')
+                out = {variable: name, types: ['Int'], value: value};
+            else if ((match = value.match(/\b(base58|base64)\b[ \t]*'(.*)'/)) != null) {
+                out = {variable: name, types: ['ByteVector'], value: match[2]}
+            } else if ((match = value.match(functionsRegExp)) != null) {
+                out = {variable: name, types: getFuncType(match[1])}
+            } else if ((match = value.match(typesRegExp)) != null) {
+                out = {variable: name, types: match}
+            } else if (/.*\b&&|==|!=|>=|>\b.*/.test(value)) {
+                out = {variable: name, types: ['Boolean']}
+            } else {
+                out = {variable: name, types: []}
+            }
+            return out;
+        })
+}
+
+export const getLastArrayElement = (arr: string[] | null): string => arr !== null ? arr.pop() || '' : '';
 
 
 //======================non-exported functions=============
@@ -216,32 +248,3 @@ function getDataByRegexp(text: string, re: RegExp) {
     return declarations;
 }
 
-
-export function findDeclarations(text: string): TVariableDeclaration[] {
-
-    const getFuncType = (funcName: string) => {
-        let func = functions.filter(({name}) => name === funcName).pop();
-        let type = func && func.resultType;
-        return (typeof type === 'string') ? [type] : (type as (TStruct[])).map((v: TStruct) => v.typeName);
-    };
-
-    return [...getDataByRegexp(text, letRegexp), ...getDataByRegexp(text, caseRegexp)]
-        .map(({name, value}) => {
-            let out: TVariableDeclaration;
-            let match;
-            if (Number(value.toString().replace(/_/g, '')).toString() !== 'NaN')
-                out = {variable: name, types: ['Int'], value: value};
-            else if ((match = value.match(/\b(base58|base64)\b[ \t]*'(.*)'/)) != null) {
-                out = {variable: name, types: [match[1]], value: match[2]}
-            } else if ((match = value.match(functionsRegExp)) != null) {
-                out = {variable: name, types: getFuncType(match[1])}
-            } else if ((match = value.match(typesRegExp)) != null) {
-                out = {variable: name, types: match}
-            } else if (/.*\b&&|==|!=|>=|>\b.*/.test(value)) {
-                out = {variable: name, types: ['Boolean']}
-            } else {
-                out = {variable: name, types: []}
-            }
-            return out;
-        })
-}
