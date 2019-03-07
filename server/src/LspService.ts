@@ -46,7 +46,6 @@ export class LspService {
         try {
             let wordBeforeDot = line.match(/([a-zA-z0-9_]+)\.[a-zA-z0-9_]*\b$/);     // get text before dot (ex: [tx].test)
             let firstWordMatch = (/([a-zA-z0-9_]+)\.[a-zA-z0-9_.]*$/gm).exec(line) || [];
-
             switch (true) {
                 case (character === '.' || wordBeforeDot !== null):                 //auto completion after clicking on a dot
                     let inputWord = (wordBeforeDot === null)                        //get word before dot or last word in line
@@ -68,7 +67,7 @@ export class LspService {
                     break;
             }
         } catch (e) {
-             // console.error(e);
+             console.error(e);
         }
 
         return {

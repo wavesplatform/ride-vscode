@@ -55,12 +55,6 @@ const convertToCompletion = (field: TStructField): CompletionItem => {
     };
 };
 
-//todo set ExchangeTransaction for hover
-// ExchangeTransaction(
-//     proofs: List[Bytevector],
-//     buyOrder: Order,
-//
-// )
 //----------------------Types------------------------------
 const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
     const type = item.type;
@@ -72,7 +66,7 @@ const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
         case isStruct(type):
             typeDoc = isRec ? (type as TStruct).typeName :
                 `**${item.name}**(\n- ` + (type as TStruct).fields
-                    .map((v) => `${v.name}: ${getTypeDoc(v, true)}`).join('\n- ') + '\n)';
+                    .map((v) => `${v.name}: ${getTypeDoc(v, true)}`).join('\n- ') + '\n\n)';
             break;
         case isUnion(type):
             typeDoc = (type as TUnion).map(field => isStruct(field) ? field.typeName : field).join('|');
@@ -147,6 +141,11 @@ export function getSignatureHelpResult(word: string) {
 //======================Hover==============================
 
 export function getHoverResult(textBefore: string, word: string, inputWords: string[]) {
+//todo
+//  case t:TransferTransaction =>
+//  let txId = t.attachment
+//  add hover txId
+
 
     const getHoverFunctionDoc = (func: TFunction) => `**${func.name}** (${func.args.length > 0 ?
         `\n${func.args.map(({name, type, doc}) => `\n * ${`${name}: ${getFunctionArgumentString(type)} - ${doc}`} \n`)}\n` :
@@ -154,13 +153,12 @@ export function getHoverResult(textBefore: string, word: string, inputWords: str
 
     const declarations = findDeclarations(textBefore);
 
-    let out = getVariablesHelp(inputWords, declarations)
+    return getVariablesHelp(inputWords, declarations)
         .filter(({name}) => name === word).map(item => `**${item.name}**: ` + getTypeDoc(item))
         .concat(declarations.filter(({variable}) => variable === word).map(({types}) => types.join('|')))
         .concat(globalVariables.filter(({name}) => name === word).map(({doc}) => doc))
         .concat(getFunctionsByName(word).map((func: TFunction) => getHoverFunctionDoc(func)))
         .concat(types.filter(({name}) => name === word).map(item => getTypeDoc(item)));
-    return out
 }
 
 //======================exported functions=================
