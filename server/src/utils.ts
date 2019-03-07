@@ -154,7 +154,7 @@ export function getHoverResult(textBefore: string, word: string, inputWords: str
     const declarations = findDeclarations(textBefore);
 
     return getVariablesHelp(inputWords, declarations)
-        .filter(({name}) => name === word).map(item => `**${item.name}**: ` + getTypeDoc(item)) //todo fix
+        .filter(({name}) => name === word).map(item => `**${item.name}**: ` + getTypeDoc(item))
         .concat(declarations.filter(({variable}) => variable === word).map(({types}) => types.join('|')))
         .concat(globalVariables.filter(({name}) => name === word).map(({doc}) => doc))
         .concat(getFunctionsByName(word).map((func: TFunction) => getHoverFunctionDoc(func)))
