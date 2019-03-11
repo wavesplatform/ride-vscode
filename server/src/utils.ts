@@ -148,7 +148,6 @@ export function getHoverResult(textBefore: string, word: string, inputWords: str
 //  add hover txId
 
 
-
     const getHoverFunctionDoc = (func: TFunction) => `**${func.name}** (${func.args.length > 0 ?
         `\n${func.args.map(({name, type, doc}) => `\n * ${`${name}: ${getFunctionArgumentString(type)} - ${doc}`} \n`)}\n` :
         ' '}) : ${getFunctionArgumentString(func.resultType)} \n>_${func.doc}_`;
@@ -205,7 +204,9 @@ export function findDeclarations(text: string): TVariableDeclaration[] {
                 let extractData = (value.match(/extract[ \t]*\(([a-zA-z0-9_.]*)\)/) || []);
                 out = {
                     variable: name,
-                    types: extractData[1] ? getVariablesHelp(extractData[1].split('.'),result,true).map(({name}) => name) : getFuncType(match[1])
+                    types: extractData[1] ? 
+                        getVariablesHelp(extractData[1].split('.'),result,true).map(({name}) => name) :
+                        getFuncType(match[1])
                 } 
             } else if ((match = value.match(typesRegExp)) != null) {
                 out = {variable: name, types: match}
