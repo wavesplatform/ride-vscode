@@ -1,142 +1,255 @@
-import { CompletionItem,CompletionItemKind } from "vscode-languageserver-types";
-import { typesRegExp, functions, types, globalVariables, globalSuggestions } from "./suggestions/index"
+import {CompletionItem, CompletionItemKind} from 'vscode-languageserver-types';
+import {
+    types, functions, globalVariables, globalSuggestions, transactionClasses, classes, typesRegExp, caseRegexp,
+    functionsRegExp, letRegexp, isPrimitive, isStruct, isUnion, isList,
+    listToString, unionToString, matchRegexp
+} from './suggestions';
+import {TType, TStruct, TList, TUnion, TFunction, TUnionItem, TStructField} from '@waves/ride-js'
 
-export interface ParamType {
-    name: string
-    type: string
-    required: boolean
-    detail: string
+//======================TYPES==============================
+
+type TVariableDeclaration = {
+    variable: string
+    types: string[]
+    value?: string
 }
 
-export interface LetDeclarationType {
-    name: string
-    value: string
-}
 
-//=============================================================
+//======================HELPERS============================
 
-export function getCompletionDefaultResult(textBefore:string){
-    return [
-        // get variables after "let" and globalSuggestions
-        ...getDataByRegexp(textBefore, /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm)
-            .map(val => ({ label: val.name, kind: CompletionItemKind.Variable })),
-        ...globalSuggestions
-    ]
-}
+//----------------------TFunction--------------------------
+const getFunctionArgumentString = (type: TType): string => {
+    if (isPrimitive(type)) {
+        return type
+    } else if (isList(type)) {
+        return listToString(type)
+    } else if (isStruct(type)) {
+        return type.typeName
+    } else if (isUnion(type)) {
+        return type.map((type: TUnionItem) => isStruct(type) ? type.typeName : type).join('|');
+    } else {
+        return 'Unknown'
+    }
+};
 
-//=============================================================
+const getFunctionsByName = (funcName: string): TFunction[] => functions.filter(({name}: TFunction) => name === funcName);
 
-export function getSignatureHelpResult(word: string) {
-    return (functions[word] !== undefined) ?
-        //get label in format: functionName (parameter1, parameter2 ...)
-        [{
-            label: `${word}(${functions[word].params.map((p: ParamType) => `${p.name}${p.required ? "" : "?"}:` +
-                ` ${p.type}`).join(', ')}): ${functions[word].type}`,
-            documentation: functions[word].detail,
-            parameters: functions[word].params.map((p: ParamType) => ({
-                label: `${p.name}${p.required ? "" : "?"}:` +
-                    ` ${p.type}`, documentation: p.detail
-            }))
-        }] :
-        [];
-}
 
-//=============================================================
-
-export function getHoverResult(word: string) {
-    let result = []
-    if (functions[word]) {
-        result.push(
-            `**${word}** (\n
-            ${functions[word].params.map((p: ParamType) => `\n * ${`${p.name}${p.required ? "" : "?"}:` +
-                ` ${p.type} - ${p.detail}`} \n`)}\n) : ${functions[word].type} \n>_${functions[word].detail}_`
-        );
-    } else if (types[word]) {
-        result.push(types[word].detail)
-    } else if (globalVariables[word]) {
-        result.push(globalVariables[word].detail)
+//----------------------Completion-------------------------
+const convertToCompletion = (field: TStructField): CompletionItem => {
+    let detail: string = '';
+    if (isPrimitive(field.type)) {
+        detail = field.type
+    } else if (isList(field.type)) {
+        detail = listToString(field.type)
+    } else if (isStruct(field.type)) {
+        detail = field.type.typeName
+    } else if (isUnion(field.type)) {
+        detail = unionToString(field.type)
     }
 
-    return result;
+    return {
+        label: field.name,
+        detail,
+        kind: CompletionItemKind.Field
+    };
+};
+
+//----------------------Types------------------------------
+const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
+    const type = item.type;
+    let typeDoc = 'Unknown';
+    switch (true) {
+        case isPrimitive(type):
+            typeDoc = type as string;
+            break;
+        case isStruct(type):
+            typeDoc = isRec ? (type as TStruct).typeName :
+                `**${(type as TStruct).typeName}**(\n- ` + (type as TStruct).fields
+                    .map((v) => `${v.name}: ${getTypeDoc(v, true)}`).join('\n- ') + '\n\n)';
+            break;
+        case isUnion(type):
+            typeDoc = (type as TUnion).map(field => isStruct(field) ? field.typeName : field).join('|');
+            break;
+        case isList(type):
+            typeDoc = `LIST[ ` +
+                `${((type as TList).listOf as TStruct).typeName || (type as TList).listOf}]`;
+            break;
+    }
+    return typeDoc;
+};
+
+
+//======================COMPLETION=========================
+
+// Todo: remove this constant altogether
+export const txFields = intersection((types.find(t => t.name === 'Transaction')!.type as TUnion))
+    .map((item) => convertToCompletion(item));
+
+export const getCompletionDefaultResult = (textBefore: string) =>
+    [
+        // get variables after 'let' and globalSuggestions
+        ...getDataByRegexp(textBefore, letRegexp).map(val => ({label: val.name, kind: CompletionItemKind.Variable})),
+        ...getDataByRegexp(textBefore, caseRegexp).filter((_, i, arr) => arr.length === (i + 1))
+            .map(val => ({label: val.name, kind: CompletionItemKind.Variable})),
+        ...globalSuggestions,
+    ];
+
+
+export const getCompletionResult = (inputWords: string[], declarations: TVariableDeclaration[]) =>
+    getVariablesHelp(inputWords, declarations).map((item: any) => convertToCompletion(item));
+
+function getVariablesHelp(inputWords: string[], declarations: TVariableDeclaration[]) {
+    const typesByNames = (names: string[]): TType[] => types.filter(({name}) => names.indexOf(name) > -1)
+        .map(({type}) => type);
+
+    let declVariable = declarations.filter(({variable, types}) => variable === inputWords[0] && types !== null)[0];
+    if (declVariable == null) return [];
+    let out = intersection(typesByNames(declVariable.types));
+    for (let i = 1; i < inputWords.length - 1; i++) {
+        let actualType = out.filter(item => item.name === inputWords[i] && !isPrimitive(item.type) && !isList(item.type))[0];
+        if (!actualType) {
+            out = []
+        } else if (isStruct(actualType.type)) {
+            out = actualType.type.fields;
+        } else if (isUnion(actualType.type)) {
+            out = intersection(actualType.type)
+        }
+    }
+    return out;
 }
 
-//=============================================================
+
+export const getColonOrPipeCompletionResult = (textBefore: string) =>
+    ([...getDataByRegexp(textBefore, matchRegexp)].map(({name}) => name).indexOf('tx') > -1) ? transactionClasses : classes;
 
 
-export function intersection(...args: any): CompletionItem[] {
-    let out = args[0];
-    for (let i = 1; i < args.length; i++) out = intersect(out, args[i])
-    return out
+//======================SignatureHelp======================
+
+export function getSignatureHelpResult(word: string) {
+    let func = getFunctionsByName(word);
+    return func.map((func: TFunction) => ({
+        label: `${word}(${func.args.map(({name, type}) =>
+            `${name}: ${getFunctionArgumentString(type)}`).join(', ')}): ${getFunctionArgumentString(func.resultType)}`,
+        documentation: func.doc,
+        parameters: func.args.map(({name, type, doc}) => ({
+            label: `${name}: ${getFunctionArgumentString(type)}`, documentation: doc
+        }))
+    }))
 }
+
+//======================Hover==============================
+
+export function getHoverResult(textBefore: string, word: string, inputWords: string[]) {
+//todo
+//  case t:TransferTransaction =>
+//  let txId = t.attachment
+//  add hover txId
+
+
+    const getHoverFunctionDoc = (func: TFunction) => `**${func.name}** (${func.args.length > 0 ?
+        `\n${func.args.map(({name, type, doc}) => `\n * ${`${name}: ${getFunctionArgumentString(type)} - ${doc}`} \n`)}\n` :
+        ' '}) : ${getFunctionArgumentString(func.resultType)} \n>_${func.doc}_`;
+
+    const declarations = findDeclarations(textBefore);
+
+    return getVariablesHelp(inputWords, declarations)
+        .filter(({name}) => name === word).map(item => `**${item.name}**: ` + getTypeDoc(item))
+        .concat(declarations.filter(({variable}) => variable === word).map(({types}) => types.join('|')))
+        .concat(globalVariables.filter(({name}) => name === word).map(({doc}) => doc))
+        .concat(getFunctionsByName(word).map((func: TFunction) => getHoverFunctionDoc(func)))
+        .concat(types.filter(({name}) => name === word).map(item => getTypeDoc(item)));
+}
+
+//======================exported functions=================
 
 export function getWordByPos(string: string, character: number) {
-    let sep = ['"', '\'', '*', '(', ')', '{', '}', '[', ']', '!', '<', '>', '|', '\\', '/', '.', ',', ':', ';', '&', ' ', '=', '\t']
-    let start = 0, end = string.length
+    let sep = ['"', '\'', '*', '(', ')', '{', '}', '[', ']', '!', '<', '>', '|', '\\', '/', '.', ',', ':', ';', '&', ' ', '=', '\t'];
+    let start = 0, end = string.length;
     for (let i = character; i <= string.length; i++) {
         if (sep.indexOf(string[i]) > -1) {
-            end = i
-            break
+            end = i;
+            break;
         }
     }
     for (let i = character; i >= 0; i--) {
         if (sep.indexOf(string[i]) > -1) {
-            start = ++i
-            break
+            start = ++i;
+            break;
         }
     }
-    return string.substring(start, end)
+    return string.substring(start, end);
 }
 
-export function findLetDeclarations(text: string): LetDeclarationType[] {
-    return [
-        //this regexp looks for variables
-        ...getDataByRegexp(text, /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm)
-    ].filter(val => {
-        let match = val.value.match(typesRegExp)
-        if (match !== null) {
-            val.value = match[0] || ''
-            return val
-        } else return false
-    })
+
+export function findDeclarations(text: string): TVariableDeclaration[] {
+
+    const getFuncType = (funcName: string) => {
+        let func = functions.filter(({name}) => name === funcName).pop();
+        let type = func && func.resultType;
+        return (typeof type === 'string') ? [type] : (type as (TStruct[])).map((v: TStruct) => v.typeName);
+    };
+    //todo add string and unit
+    return [...getDataByRegexp(text, letRegexp), ...getDataByRegexp(text, caseRegexp)]
+        .map(({name, value}) => {
+            let out: TVariableDeclaration;
+            let match;
+            if (Number(value.toString().replace(/_/g, '')).toString() !== 'NaN')
+                out = {variable: name, types: ['Int'], value: value};
+            else if ((match = value.match(/\b(base58|base64)\b[ \t]*'(.*)'/)) != null) {
+                out = {variable: name, types: ['ByteVector'], value: match[2]}
+            } else if ((match = value.match(functionsRegExp)) != null) {
+                out = {variable: name, types: getFuncType(match[1])}
+            } else if ((match = value.match(typesRegExp)) != null) {
+                out = {variable: name, types: match}
+            } else if (/.*\b&&|==|!=|>=|>\b.*/.test(value)) { //todo let b = true hovers
+                out = {variable: name, types: ['Boolean']}
+            } else {
+                out = {variable: name, types: []}
+            }
+            return out;
+        })
 }
 
-export function findMatchDeclarations(text: string) {
-    const re = /\bmatch[ \t]*\([ \t]*([a-zA-z0-9_]+)[ \t]*\)/gm;                //this regexp looks for "match" blocks
+export const getLastArrayElement = (arr: string[] | null): string => arr !== null ? arr.pop() || '' : '';
+
+
+//======================non-exported functions=============
+
+function intersection(types: TType[]): TStructField[] {
+    const items = [...types];
+    let structs: TStruct[] = [];
+
+    let next: TType;
+    while (items.length > 0) {
+        next = items.pop()!;
+        if (isStruct(next)) {
+            structs.push(next)
+        } else if (isUnion(next)) {
+            items.push(...next)
+        } else {
+            return []
+        }
+    }
+    const firstArg = structs[0];
+    let out = firstArg.fields;
+    for (let i = 1; i < structs.length; i++) out = intersect(out, structs[i].fields);
+    return out;
+}
+
+function intersect(a: TStructField[], b: TStructField[]) {
+    let list: string[] = [], out: TStructField[] = [];
+    a.forEach((val) => list.push(val.name));
+    b.forEach(val => (list.indexOf(val.name) > -1) ? out.push(val) : false);
+    return out;
+}
+
+function getDataByRegexp(text: string, re: RegExp) {
     const declarations = [];
     let myMatch;
     while ((myMatch = re.exec(text)) !== null) {
-        declarations.push(myMatch[1]);
+        declarations.push({name: myMatch[1], value: myMatch[2]});
     }
     return declarations;
-}
-
-export function findCaseDeclarations(text: string): string[] {
-    const re = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:/gm                   //this regexp looks for "case" blocks
-    const declarations: string[] = []
-    let myMatch;
-
-    while ((myMatch = re.exec(text)) !== null) {
-        declarations.push(myMatch[1])
-    }
-
-    return declarations
-}
-
-//=============================================================
-
-function getDataByRegexp(text: string, re: RegExp): LetDeclarationType[] {
-    const declarations = [];
-    let myMatch;
-    while ((myMatch = re.exec(text)) !== null) {
-        declarations.push({ name: myMatch[1], value: myMatch[2] });
-    }
-    return declarations;
-}
-
-function intersect(a: CompletionItem[], b: CompletionItem[]) {
-    let list: string[] = [], out: CompletionItem[] = [];
-    a.forEach((val) => list.push(val.label));
-    b.forEach(val => (list.indexOf(val.label) > -1) ? out.push(val) : false);
-    return out
 }
 

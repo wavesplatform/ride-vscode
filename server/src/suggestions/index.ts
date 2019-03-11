@@ -1,34 +1,101 @@
 import { CompletionItemKind, CompletionItem } from 'vscode-languageserver-types';
-// const suggestions = require('../../src/suggestions/suggestions.json');
-import * as suggestions from './suggestions.json'
+import * as suggestions from './suggestions.json';
+import {
+    getTypes,
+    getVarsDoc,
+    getFunctionsDoc,
+    TType,
+    TPrimitive,
+    TStruct,
+    TList,
+    TUnionItem,
+    TUnion,
+    TFunction
+} from '@waves/ride-js';
 
-const nonTranzactionsClasses = ['Address', 'Alias', 'Transfer', 'DataEntry', 'GenesisTransaction', 'PaymentTransaction'];
+//======================Types==============================
 
-const typesData: Record<string, any>  = suggestions.types;
-Object.keys(typesData).map(type => {
-    typesData[type].label = type;
-    Object.keys(typesData[type].fields).map( field => {
-        typesData[type].fields[field].label = typesData[type].fields[field].name;
-        typesData[type].fields[field].kind = CompletionItemKind.Field
-    })
-})
+export const types = getTypes();
+
+//----------------------TPrimitive-------------------------
+
+export const isPrimitive = (item: TType): item is TPrimitive => typeof item === 'string';
+
+export const isString = (item: any): item is string => typeof item === 'string';
 
 
-export const transactionClasses = Object.keys(suggestions.types).filter(val => nonTranzactionsClasses.indexOf(val) === -1)
-export const types: Record<string, any> = typesData;
+//----------------------TStruct----------------------------
 
-export const functions: Record<string, any> = suggestions.functions;
-export const globalVariables: Record<string, any> = suggestions.globalVariables;
-export const typesRegExp =  new RegExp(`\\b${Object.keys(typesData).join('\\b|\\b')}\\b`, 'g')//this regexp looks for fields
+export const isStruct = (item: TType): item is TStruct => typeof item === 'object' && 'typeName' in item;
 
-export const globalSuggestions: CompletionItem[] =
-    suggestions.keywords.map((label: string) => <CompletionItem>({ label, kind: CompletionItemKind.Keyword }))
-        //globalVariables
-        .concat((Object as any).values(suggestions.globalVariables)
-            .map((x: any) => ({ ...x, kind: CompletionItemKind.Variable, label: x.name })))
-        //functions
-        .concat((Object as any).values(suggestions.functions)
-            .map((x: any) => ({ ...x, kind: CompletionItemKind.Function, label: x.name })))
-        //snippets
-        .concat((Object as any).values(suggestions.snippets)
-            .map((x: any) => ({ ...x, kind: CompletionItemKind.Snippet })))
+
+//----------------------TList------------------------------
+
+export const isList = (item: TType): item is TList => typeof item === 'object' && 'listOf' in item;
+
+export const listToString = (type: TList) => `LIST[ ${isStruct(type.listOf) ? type.listOf.typeName : type.listOf}]`;
+
+
+//----------------------TUnion-----------------------------
+
+export const isUnion = (item: TType): item is TUnion => Array.isArray(item);
+
+export const getUnionItemName = (item: TUnionItem): string => {
+    if (isStruct(item)) return item.typeName;
+    if (isList(item)) return listToString(item);
+    return item
+};
+
+export const unionToString = (item: TUnion) => item.map(type => getUnionItemName(type)).join('|');
+
+
+//----------------------snippets---------------------------
+
+type TSnippet = {
+    label: string
+    insertText: string
+    insertTextFormat: number
+}
+
+//======================functions==========================
+
+export const functions: TFunction[] = getFunctionsDoc();
+
+
+//=========================================================
+
+export const letRegexp = /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm;
+export const caseRegexp = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:(.*)[=>{]/gm;
+export const matchRegexp = /\bmatch[ \t]*\([ \t]*([a-zA-z0-9_]+)[ \t]*\)/gm;
+export const typesRegExp = new RegExp(`\\b${types.map(({name}) => name).join('\\b|\\b')}\\b`, 'g');
+export const functionsRegExp = new RegExp(`^[!]*(\\b${
+    functions.filter(({name}) => ['*', '\\', '/', '%', '+',].indexOf(name) === -1).map(({name}) => name).join('\\b|\\b')
+    }\\b)[ \\t]*\\(`);
+
+//ContractInvocationTransaction types
+const ignoreTypes = [
+    'ContractInvocationTransaction',
+    'WriteSet',
+    'AttachedPayment',
+    'ContractTransfer',
+    'TransferSet',
+    'ContractResult',
+    'Invocation'
+];
+
+export const globalVariables = getVarsDoc();
+
+export const classes = (types.filter(({name, type}) => isStruct(type) && ignoreTypes.indexOf(type.typeName) === -1))
+    .map(({name}) => ({label: name, kind: CompletionItemKind.Class}));
+
+export const transactionClasses = (types!.find(t => t.name === 'Transaction')!.type as TUnion)
+    .filter((item) => isStruct(item) && ignoreTypes.indexOf(item.typeName) === -1)
+    .map(({typeName}: any) => ({label: typeName, kind: CompletionItemKind.Class}));
+
+
+export const globalSuggestions: CompletionItem[] = [
+    ...suggestions.keywords.map((label: string) => <CompletionItem>({label, kind: CompletionItemKind.Keyword})),
+    ...suggestions.snippets.map(({label}: TSnippet) => ({label, kind: CompletionItemKind.Snippet})),
+    ...globalVariables.map(({name, doc}) => ({label: name, detail: doc, kind: CompletionItemKind.Variable,})),
+    ...functions.map(({name, doc}) => ({detail: doc, kind: CompletionItemKind.Function, label: name}))
+];
