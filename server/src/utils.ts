@@ -99,14 +99,15 @@ export const getCompletionDefaultResult = (textBefore: string) =>
 export const getCompletionResult = (inputWords: string[], declarations: TVariableDeclaration[]) =>
     getVariablesHelp(inputWords, declarations).map((item: any) => convertToCompletion(item));
 
-function getVariablesHelp(inputWords: string[], declarations: TVariableDeclaration[]) {
+function getVariablesHelp(inputWords: string[], declarations: TVariableDeclaration[], isNext?: boolean) {
     const typesByNames = (names: string[]): TType[] => types.filter(({name}) => names.indexOf(name) > -1)
         .map(({type}) => type);
 
     let declVariable = declarations.filter(({variable, types}) => variable === inputWords[0] && types !== null)[0];
     if (declVariable == null) return [];
     let out = intersection(typesByNames(declVariable.types));
-    for (let i = 1; i < inputWords.length - 1; i++) {
+    let len = isNext ? inputWords.length : inputWords.length - 1
+    for (let i = 1; i < len; i++) {
         let actualType = out.filter(item => item.name === inputWords[i] && !isPrimitive(item.type) && !isList(item.type))[0];
         if (!actualType) {
             out = []
@@ -145,6 +146,7 @@ export function getHoverResult(textBefore: string, word: string, inputWords: str
 //  case t:TransferTransaction =>
 //  let txId = t.attachment
 //  add hover txId
+
 
 
     const getHoverFunctionDoc = (func: TFunction) => `**${func.name}** (${func.args.length > 0 ?
@@ -190,7 +192,8 @@ export function findDeclarations(text: string): TVariableDeclaration[] {
         return (typeof type === 'string') ? [type] : (type as (TStruct[])).map((v: TStruct) => v.typeName);
     };
     //todo add string and unit
-    return [...getDataByRegexp(text, letRegexp), ...getDataByRegexp(text, caseRegexp)]
+    let result:TVariableDeclaration[] = [];
+    [ ...getDataByRegexp(text, caseRegexp), ...getDataByRegexp(text, letRegexp)]
         .map(({name, value}) => {
             let out: TVariableDeclaration;
             let match;
@@ -199,7 +202,11 @@ export function findDeclarations(text: string): TVariableDeclaration[] {
             else if ((match = value.match(/\b(base58|base64)\b[ \t]*'(.*)'/)) != null) {
                 out = {variable: name, types: ['ByteVector'], value: match[2]}
             } else if ((match = value.match(functionsRegExp)) != null) {
-                out = {variable: name, types: getFuncType(match[1])}
+                let extractData = (value.match(/extract[ \t]*\(([a-zA-z0-9_.]*)\)/) || []);
+                out = {
+                    variable: name,
+                    types: extractData[1] ? getVariablesHelp(extractData[1].split('.'),result,true).map(({name}) => name) : getFuncType(match[1])
+                } 
             } else if ((match = value.match(typesRegExp)) != null) {
                 out = {variable: name, types: match}
             } else if (/.*\b&&|==|!=|>=|>\b.*/.test(value)) { //todo let b = true hovers
@@ -207,11 +214,12 @@ export function findDeclarations(text: string): TVariableDeclaration[] {
             } else {
                 out = {variable: name, types: []}
             }
-            return out;
+            result.push(out);
         })
+    return result;
 }
 
-export const getLastArrayElement = (arr: string[] | null): string => arr !== null ? arr.pop() || '' : '';
+export const getLastArrayElement = (arr: string[] | null): string => arr !== null ? [...arr].pop() || '' : '';
 
 
 //======================non-exported functions=============
