@@ -24,7 +24,7 @@
         },
         {
             "name": "markup.bold.ride entity.other.attribute-name.ride",
-            "match": "@(Verifier|Callable)()*"
+            "match": "@(Verifier|Callable)"
         },
         {
             "name": "markup.italic.ride entity.name.type.ride",
