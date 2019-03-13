@@ -3,13 +3,13 @@
 	"description": "Language server for Wavesplatfor RIDE language",
 	"version": "0.4.2",
 	"author": "Wavesplatform",
-    "license": "MIT",
-    "main": "src/index.ts",
-    "types": "src/index.ts",
-    "private": true,
+	"license": "MIT",
+	"main": "src/index.ts",
+	"types": "src/index.ts",
+	"private": true,
 	"scripts": {
-        "publish-server": "tsc && node ./scripts/copyPackageJson.js && cd out && npm publish"
-    },
+		"publish-server": "tsc && node ./scripts/copyPackageJson.js && cd out && npm publish"
+	},
 	"engines": {
 		"node": "*"
 	},
@@ -18,7 +18,7 @@
 		"url": "https://github.com/wavesplatform/ride-vscode/tree/master/server"
 	},
 	"dependencies": {
-		"@waves/ride-js": "^0.16.2",
+		"@waves/ride-js": "^0.17.0",
 		"vscode-languageserver": "^4.1.3"
 	}
 }
