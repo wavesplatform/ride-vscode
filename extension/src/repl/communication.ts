@@ -1,4 +1,4 @@
-import { Repl } from 'waves-repl'
+import { Repl } from '@waves/waves-repl';
 
 export function setupCommunication(){
     // Try to aquire vscode api and send command, asking for current settings
