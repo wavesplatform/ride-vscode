@@ -1,6 +1,6 @@
-import { Repl } from 'waves-repl'
+import { Repl } from '@waves/waves-repl';
 
-export function setupCommunication(){
+export function setupCommunication(repl: Repl){
     // Try to aquire vscode api and send command, asking for current settings
     try {
         const vscode = eval('acquireVsCodeApi()')
@@ -30,7 +30,7 @@ export function setupCommunication(){
             return file && file.code
         }
     }
-    Repl.updateEnv({ file })
+    repl.updateEnv({ file })
 
 
     // Listen for vscode messages
@@ -38,7 +38,7 @@ export function setupCommunication(){
         const message = evt.data
         if (message.command === 'ReplSettings') {
             console.log(message)
-            Repl.updateEnv(message.value)
+            repl.updateEnv(message.value)
         }
         if (message.command === 'EditorsContent') {
             editorsContent = message.value
