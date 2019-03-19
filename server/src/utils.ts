@@ -184,10 +184,17 @@ export function getWordByPos(string: string, character: number) {
 
 export function findDeclarations(text: string): TVariableDeclaration[] {
 
-    const getFuncType = (funcName: string) => {
+    const getFuncType = (funcName: string):string[] => {
         let func = functions.filter(({name}) => name === funcName).pop();
         let type = func && func.resultType;
-        return (typeof type === 'string') ? [type] : (type as (TStruct[])).map((v: TStruct) => v.typeName);
+        let result: string[] = [];
+        if (typeof type === 'string')
+            result = [type];
+        else if (type && isStruct(type))
+            result = [type.typeName];
+        else if (Array.isArray(type))
+            result = (type as (TStruct[])).map((v: TStruct) => v.typeName);
+        return result;
     };
     //todo add string and unit
     return [...getDataByRegexp(text, letRegexp), ...getDataByRegexp(text, caseRegexp)]
