@@ -226,7 +226,9 @@ export const getLastArrayElement = (arr: string[] | null): string => arr !== nul
 function intersection(types: TType[]): TStructField[] {
     const items = [...types];
     let structs: TStruct[] = [];
-
+    if (types === []){
+        return [];
+    }
     let next: TType;
     while (items.length > 0) {
         next = items.pop()!;
