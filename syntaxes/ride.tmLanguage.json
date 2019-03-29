@@ -16,7 +16,7 @@
         },
         {
             "name": "entity.name.type.ride",
-            "match": "\\b(WriteSet|TransferSet|TransferTransaction|IssueTransaction|ReissueTransaction|BurnTransaction|LeaseTransaction|LeaseCancelTransaction|MassTransferTransaction|CreateAliasTransaction|SetScriptTransaction|SponsorFeeTransaction|ExchangeTransaction|DataTransaction|SetAssetScriptTransaction)\\b"
+            "match": "\\b(TransferTransaction|IssueTransaction|ReissueTransaction|BurnTransaction|LeaseTransaction|LeaseCancelTransaction|MassTransferTransaction|CreateAliasTransaction|SetScriptTransaction|SponsorFeeTransaction|ExchangeTransaction|DataTransaction|SetAssetScriptTransaction)\\b"
         },
         {
             "name": "markup.bold.ride entity.name.type.ride",
