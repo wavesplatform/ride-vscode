@@ -269,6 +269,10 @@ export function findDeclarations(text: string): TVariableDeclaration[] {
                 out = { variable: name, types: match }
             } else if (/.*\b&&|==|!=|>=|>\b.*/.test(value)) { //todo let b = true hovers
                 out = { variable: name, types: ['Boolean'] }
+            } else if ((match = value.match(/^[ \t]*\[(.+)\][ \t]*$/)) != null) {
+                out = { variable: name, types: ['LIST'] }
+            } else if ((match = value.match(/^[ \t]*\"(.+)\"[ \t]*/)) != null) {
+                out = { variable: name, types: ['string'] }
             } else {
                 out = { variable: name, types: [] }
             }
@@ -280,12 +284,13 @@ export function findDeclarations(text: string): TVariableDeclaration[] {
 export const getLastArrayElement = (arr: string[] | null): string => arr !== null ? [...arr].pop() || '' : '';
 
 
+
 //======================non-exported functions=============
 
 function intersection(types: TType[]): TStructField[] {
     const items = [...types];
     let structs: TStruct[] = [];
-    if (types === []){
+    if (types === []) {
         return [];
     }
     let next: TType;
