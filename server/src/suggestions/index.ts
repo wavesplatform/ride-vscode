@@ -73,23 +73,21 @@ export const functionsRegExp = new RegExp(`^[!]*(\\b${
     }\\b)[ \\t]*\\(`);
 
 //ContractInvocationTransaction types
-const ignoreTypes = [
-    'ContractInvocationTransaction',
-    'WriteSet',
-    'AttachedPayment',
-    'ContractTransfer',
-    'TransferSet',
-    'ContractResult',
-    'Invocation'
-];
+// const ignoreTypes = [
+//     'ContractInvocationTransaction',
+//     'WriteSet',
+//     'AttachedPayment',
+//     'ContractTransfer',
+//     'TransferSet',
+//     'ContractResult',
+//     'Invocation'
+// ];
 
 export const globalVariables = getVarsDoc();
 
-export const classes = (types.filter(({name, type}) => isStruct(type) && ignoreTypes.indexOf(type.typeName) === -1))
-    .map(({name}) => ({label: name, kind: CompletionItemKind.Class}));
+export const classes = types.map(({name}) => ({label: name, kind: CompletionItemKind.Class}));
 
 export const transactionClasses = (types!.find(t => t.name === 'Transaction')!.type as TUnion)
-    .filter((item) => isStruct(item) && ignoreTypes.indexOf(item.typeName) === -1)
     .map(({typeName}: any) => ({label: typeName, kind: CompletionItemKind.Class}));
 
 

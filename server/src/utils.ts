@@ -154,6 +154,9 @@ export const checkPostfixFunction = (variablesDeclarations: TVarDecl[], inputWor
 };
 
 
+console.error(JSON.stringify(types,null,4));
+
+
 //======================SignatureHelp======================
 
 export function getSignatureHelpResult(word: string, isShift: boolean) {
