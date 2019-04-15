@@ -8,12 +8,15 @@ import {
     CompletionList,
     SignatureHelp
 } from 'vscode-languageserver-types';
-import { compile } from '@waves/ride-js';
+import { compile, scriptInfo } from '@waves/ride-js';
 import * as utils from './utils';
 
 
 export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
+        const version = scriptInfo(document.getText()).stdLibVersion || undefined
+        utils.suggestions.updateSuggestions(version)
+
         let diagnostics: Diagnostic[] = [];
         let resultOrError = compile(document.getText());
         if ('error' in resultOrError) {
@@ -35,7 +38,7 @@ export class LspService {
     }
 
     public completion(document: TextDocument, position: Position) {
-
+        utils.printLogs()
         const offset = document.offsetAt(position);
         const character = document.getText().substring(offset - 1, offset);
         const textBefore = document.getText({start: {line: 0, character: 0}, end: position});
@@ -67,7 +70,7 @@ export class LspService {
                     break;
             }
         } catch (e) {
-             // console.error(e);
+             console.error(e);
         }
 
         return {
