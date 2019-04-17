@@ -10,12 +10,12 @@ import {
     TList,
     TUnionItem,
     TUnion,
-    TFunction
+    TFunction,
 } from '@waves/ride-js';
 
 //======================Types==============================
 
-export const types = getTypes();
+export const types = getTypes(3);
 
 //----------------------TPrimitive-------------------------
 
@@ -59,7 +59,7 @@ type TSnippet = {
 
 //======================functions==========================
 
-export const functions: TFunction[] = getFunctionsDoc();
+export const functions: TFunction[] = getFunctionsDoc(3);
 
 
 //=========================================================
@@ -83,7 +83,7 @@ export const functionsRegExp = new RegExp(`^[!]*(\\b${
 //     'Invocation'
 // ];
 
-export const globalVariables = getVarsDoc();
+export const globalVariables = getVarsDoc(3);
 
 export const classes = types.map(({name}) => ({label: name, kind: CompletionItemKind.Class}));
 

@@ -16,6 +16,7 @@ export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         let diagnostics: Diagnostic[] = [];
         let resultOrError = compile(document.getText());
+        
         if ('error' in resultOrError) {
             const errorText = resultOrError.error;
             const errRangesRegxp = /\d+-\d+/gm;
