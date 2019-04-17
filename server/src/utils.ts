@@ -17,9 +17,6 @@ export const suggestions = new suggestionData
 
 const {regexps, types, functions, globalVariables, globalSuggestions, classes, transactionClasses} = suggestions
 
-export const printLogs = () => console.error(JSON.stringify(types, null, 4));
-
-
 //======================TYPES==============================
 
 type TVariableDeclaration = {

@@ -16,7 +16,6 @@ export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         const version = scriptInfo(document.getText()).stdLibVersion || undefined
         utils.suggestions.updateSuggestions(version)
-        utils.printLogs()
 
         let diagnostics: Diagnostic[] = [];
         let resultOrError = compile(document.getText());
@@ -39,7 +38,6 @@ export class LspService {
     }
 
     public completion(document: TextDocument, position: Position) {
-        utils.printLogs()
         const offset = document.offsetAt(position);
         const character = document.getText().substring(offset - 1, offset);
         const textBefore = document.getText({ start: { line: 0, character: 0 }, end: position });
@@ -70,7 +68,7 @@ export class LspService {
                     break;
             }
         } catch (e) {
-            console.error(e);
+            // console.error(e);
         }
 
         return {
