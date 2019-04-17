@@ -111,20 +111,16 @@ export const getCompletionResult = (inputWords: string[], declarations: TVarDecl
     getVariablesHelp(inputWords, declarations).map((item: any) => convertToCompletion(item));
 
 
-function getVariablesHelp(inputWords: string[], declarations: TVarDecl[], isExtract?: boolean): TStructField[] {
-
+function getVariablesHelp(inputWords: string[], declarations: TVarDecl[], isNext?: boolean): TStructField[] {
     let declVariable = declarations.find(({ variable, type }) => variable === inputWords[0] && type !== null);
     if (declVariable == null || !declVariable.type) return [];
     let out = intersection(isUnion(declVariable.type) ? declVariable.type : [declVariable.type]);
 
-    let len = isExtract ? inputWords.length : inputWords.length - 1;
+    let len = isNext ? inputWords.length : inputWords.length - 1;
     for (let i = 1; i < len; i++) {
         let actualType = out.find(item => item.name === inputWords[i] && !isPrimitive(item.type) && !isList(item.type));
 
         if (!actualType) return [];
-        if (i === len - 1 && isExtract && isUnion(actualType.type)) {
-            actualType.type = actualType.type.filter(type => (type as TStruct).typeName !== 'Unit');
-        }
         if (isStruct(actualType.type)) out = actualType.type.fields;
         if (isUnion(actualType.type)) out = intersection(actualType.type)
 
@@ -211,8 +207,24 @@ export function getWordByPos(string: string, character: number) {
     return string.substring(start, end);
 }
 
+function getExtractType(inputWords: string[], declarations: TVarDecl[]): TType {
+    let declVariable = declarations.find(({ variable, type }) => variable === inputWords[0] && type !== null);
+    if (declVariable == null || !declVariable.type) return [];
+    let out = intersection(isUnion(declVariable.type) ? declVariable.type : [declVariable.type]);
+    for (let i = 1; i < inputWords.length ; i++) {
+        let actualType = out.find(item => item.name === inputWords[i] && !isPrimitive(item.type) && !isList(item.type));
+        if (!actualType) return [];
+        if (i === inputWords.length - 1 && isUnion(actualType.type)) {
+            return actualType.type.filter(type => (type as TStruct).typeName !== 'Unit');
+        }
+        if (isStruct(actualType.type)) out = actualType.type.fields;
+        if (isUnion(actualType.type)) out = intersection(actualType.type)
 
-const getExtactDoc = (value: string, type: string): TType => {
+    }
+    return {typeName: 'TYPEPARAM(84)', fields: out};
+}
+
+const getExtactDoc = (value: string, type: string, variables: TVarDecl[]): TType => {
     let extractData = value.match(/extract[ \t]*\(([a-zA-z0-9_.()]*)\)/) || [];
     let out: TType = type, match: RegExpMatchArray | null;
     if (extractData[1] && (match = extractData[1].match(functionsRegExp)) != null) {
@@ -221,9 +233,7 @@ const getExtactDoc = (value: string, type: string): TType => {
             out = resultType.filter(type => (type as TStruct)!.typeName !== 'Unit')
         }
     } else {
-        // out = extractData[1]
-        // ? getVariablesHelp(extractData[1].split('.'), result, true)
-        // : type
+        out = getExtractType(extractData[1].split('.'), variables); 
     }
     return out
 };
@@ -275,8 +285,8 @@ function defineType(name: string, value: string, variables: TVarDecl[]): TVarDec
     } else if ((match = value.match(/^[ \t]*"(.+)"[ \t]*/)) != null) {
         out.type = 'String';
     } else if ((match = value.match(functionsRegExp)) != null) {
-        out.type = functions.find(({ name }) => name === match![1])!.resultType;
-        if (out.type === 'TYPEPARAM(84)') out.type = getExtactDoc(value, out.type) //TODO fix exrtact
+        out.type = functions.find(({ name }) => name === match![1])!.resultType;        
+        if (out.type === 'TYPEPARAM(84)') out.type = getExtactDoc(value, out.type, variables)
     } else if ((match = value.match(typesRegExp)) != null) {
         out.type = types.find(type => match != null && type.name === match[0])!.type;
     } else if ((match = value.match(/^[ \t]*\[(.+)][ \t]*$/)) != null) {
