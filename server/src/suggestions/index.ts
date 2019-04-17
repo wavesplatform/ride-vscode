@@ -81,9 +81,9 @@ export class suggestionData  {
         this.transactionClasses.length = 0
         this.globalSuggestions.length = 0
 
-        this.types.push(...getTypes())
-        this.functions.push(...getFunctionsDoc());
-        this.globalVariables.push(...getVarsDoc());
+        this.types.push(...types)
+        this.functions.push(...functions);
+        this.globalVariables.push(...globalVariables);
     
         this.regexps.typesRegExp = new RegExp(`\\b${types.map(({name}) => name).join('\\b|\\b')}\\b`, 'g');
         this.regexps.functionsRegExp = new RegExp(`^[!]*(\\b${

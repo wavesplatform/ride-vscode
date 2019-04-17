@@ -13,12 +13,11 @@ import {
 } from './suggestions';
 import { TFunction, TList, TStruct, TStructField, TType, TUnion, TUnionItem } from '@waves/ride-js'
 
-
 export const suggestions = new suggestionData
 
 const {regexps, types, functions, globalVariables, globalSuggestions, classes, transactionClasses} = suggestions
 
-export const printLogs = () => console.error(regexps);
+export const printLogs = () => console.error(JSON.stringify(types, null, 4));
 
 
 //======================TYPES==============================
