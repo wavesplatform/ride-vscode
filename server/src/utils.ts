@@ -133,9 +133,12 @@ export const getColonOrPipeCompletionResult = (textBefore: string) =>
     ([...getDataByRegexp(textBefore, matchRegexp)].map(({ name }) => name).indexOf('tx') > -1) ? transactionClasses : classes;
 
 export const checkPostfixFunction = (variablesDeclarations: TVarDecl[], inputWord: string) => {
+    console.error(inputWord, variablesDeclarations);
+
     let variable = variablesDeclarations.find(({ variable }) => variable === inputWord);
-    return functions.filter(({ name, args }) => {
+    return functions.filter(({ args }) => {
         if (!args[0] || !variable || !variable.type) return false;
+        
         let type = variable.type;
 
         if (isPrimitive(type) && isPrimitive(args[0].type) && type === args[0].type) return true;
@@ -145,7 +148,7 @@ export const checkPostfixFunction = (variablesDeclarations: TVarDecl[], inputWor
             if (isStruct(currentType) && type.typeName === currentType.typeName) {
                 return true;
             }
-        }
+        }        
         if (args[0].type === 'PARAMETERIZEDUNION(List(TYPEPARAM(84), Unit))' && isUnion(type)) {
             return type.some(item => isStruct(item) && item.typeName === 'Unit')
         }
@@ -210,7 +213,7 @@ export function getWordByPos(string: string, character: number) {
     return string.substring(start, end);
 }
 
-const getExtactDoc = (value: string, type: string, variables: TVarDecl[]): TType => {
+const getExtactDoc = (value: string, type: string, variables: TVarDecl[]): TType => {    
     let extractData = value.match(/(.+)\.extract/) ||
         value.match(/extract[ \t]*\([ \t]*([a-zA-z0-9_.()]*)[ \t]*\)/) || [];
     let out: TType = type, match: RegExpMatchArray | null;
@@ -259,9 +262,8 @@ export function findDeclarations(text: string): TVarDecl[] {
 }
 
 function getType(inputWords: string[], declarations: TVarDecl[], isExtract?: boolean): TStructField {
-
     const extractUnit = (type: TType): TType => isExtract && isUnion(type)
-        ? type.filter((item) => isStruct(item) && item.typeName !== 'Unit')
+        ? type.filter((item) => !(isStruct(item) && item.typeName === 'Unit'))
         : type;
     let declVariable = declarations.find(({ variable, type }) => variable === inputWords[0] && type !== null);
     if (declVariable == null || !declVariable.type) return { name: 'Unknown', type: 'Unknown' };
@@ -271,6 +273,8 @@ function getType(inputWords: string[], declarations: TVarDecl[], isExtract?: boo
         if (isStruct(out.type)) actualType = out.type.fields.find(type => type.name === inputWords[i])
         if (actualType && actualType.type) out = { ...actualType, type: extractUnit(actualType.type) }
         // if (isUnion(out)) out = intersection(actualType.type)
+        
+        
     }
     return out;
 }
