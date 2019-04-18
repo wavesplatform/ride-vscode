@@ -271,10 +271,7 @@ function getType(inputWords: string[], declarations: TVarDecl[], isExtract?: boo
     for (let i = 1; i < inputWords.length; i++) {
         let actualType
         if (isStruct(out.type)) actualType = out.type.fields.find(type => type.name === inputWords[i])
-        if (actualType && actualType.type) out = { ...actualType, type: extractUnit(actualType.type) }
-        // if (isUnion(out)) out = intersection(actualType.type)
-        
-        
+        if (actualType && actualType.type) out = { ...actualType, type: extractUnit(actualType.type) }        
     }
     return out;
 }
@@ -289,7 +286,7 @@ function defineType(name: string, value: string, variables: TVarDecl[]): TVarDec
         out.type = 'Int';
     } else if ((match = value.match(/\b(base58|base64)\b[ \t]*'(.*)'/)) != null) {
         out.type = 'ByteVector';
-    } else if (/.*\b&&|==|!=|>=|>\b.*/.test(value) || /\btrue|false\b/.test(value)) { //todo let b = true hovers
+    } else if (/.*\b&&|==|!=|>=|>\b.*/.test(value) || /\btrue|false\b/.test(value)) { 
         out.type = 'Boolean';
     } else if ((match = value.match(/^[ \t]*"(.+)"[ \t]*/)) != null) {
         out.type = 'String';
