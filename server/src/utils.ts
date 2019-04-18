@@ -18,8 +18,9 @@ import {
     typesRegExp,
     unionToString
 } from './suggestions';
-import { TFunction, TList, TStruct, TStructField, TType, TUnion, scriptInfo } from '@waves/ride-js'
-import { type } from 'os';
+import { TFunction, TList, TStruct, TStructField, TType, TUnion, scriptInfo, TPrimitive } from '@waves/ride-js'
+
+
 
 //======================TYPES==============================
 type TVarDecl = {
@@ -133,8 +134,7 @@ export const getColonOrPipeCompletionResult = (textBefore: string) =>
 
 export const checkPostfixFunction = (variablesDeclarations: TVarDecl[], inputWord: string) => {
     let variable = variablesDeclarations.find(({ variable }) => variable === inputWord);
-
-    return functions.filter(({ args }) => {
+    return functions.filter(({ name, args }) => {
         if (!args[0] || !variable || !variable.type) return false;
         let type = variable.type;
 
@@ -145,6 +145,9 @@ export const checkPostfixFunction = (variablesDeclarations: TVarDecl[], inputWor
             if (isStruct(currentType) && type.typeName === currentType.typeName) {
                 return true;
             }
+        }
+        if (args[0].type === 'PARAMETERIZEDUNION(List(TYPEPARAM(84), Unit))' && isUnion(type)) {
+            return type.some(item => isStruct(item) && item.typeName === 'Unit')
         }
         return false;
     })
@@ -207,33 +210,18 @@ export function getWordByPos(string: string, character: number) {
     return string.substring(start, end);
 }
 
-function getExtractType(inputWords: string[], declarations: TVarDecl[]): TType {
-    let declVariable = declarations.find(({ variable, type }) => variable === inputWords[0] && type !== null);
-    if (declVariable == null || !declVariable.type) return [];
-    let out = intersection(isUnion(declVariable.type) ? declVariable.type : [declVariable.type]);
-    for (let i = 1; i < inputWords.length ; i++) {
-        let actualType = out.find(item => item.name === inputWords[i] && !isPrimitive(item.type) && !isList(item.type));
-        if (!actualType) return [];
-        if (i === inputWords.length - 1 && isUnion(actualType.type)) {
-            return actualType.type.filter(type => (type as TStruct).typeName !== 'Unit');
-        }
-        if (isStruct(actualType.type)) out = actualType.type.fields;
-        if (isUnion(actualType.type)) out = intersection(actualType.type)
-
-    }
-    return {typeName: 'TYPEPARAM(84)', fields: out};
-}
-
 const getExtactDoc = (value: string, type: string, variables: TVarDecl[]): TType => {
-    let extractData = value.match(/extract[ \t]*\(([a-zA-z0-9_.()]*)\)/) || [];
+    let extractData = value.match(/(.+)\.extract/) ||
+        value.match(/extract[ \t]*\([ \t]*([a-zA-z0-9_.()]*)[ \t]*\)/) || [];
     let out: TType = type, match: RegExpMatchArray | null;
+    if (extractData.length < 2) return out;
     if (extractData[1] && (match = extractData[1].match(functionsRegExp)) != null) {
         let resultType = functions.find(({ name }) => name === match![1])!.resultType;
         if (resultType && isUnion(resultType)) {
             out = resultType.filter(type => (type as TStruct)!.typeName !== 'Unit')
         }
     } else {
-        out = getExtractType(extractData[1].split('.'), variables); 
+        out = getType(extractData[1].split('.'), variables, true).type;
     }
     return out
 };
@@ -254,10 +242,10 @@ export function findDeclarations(text: string): TVarDecl[] {
 
     if (scriptType === 1) {
         let type = types.find(item => item.name === 'Address');
-        result.push({ variable: 'this', type: type? type.type : 'Unknown' });
+        result.push({ variable: 'this', type: type ? type.type : 'Unknown' });
     }
 
-    if (scriptType === 2) result.push({ variable: 'this', type: ["ByteVector",{"typeName": "Unit", "fields": []}] }); //assetId
+    if (scriptType === 2) result.push({ variable: 'this', type: ["ByteVector", { "typeName": "Unit", "fields": [] }] }); //assetId
 
     [
         ...getDataByRegexp(text, caseRegexp),
@@ -268,6 +256,23 @@ export function findDeclarations(text: string): TVarDecl[] {
         .map(({ name, value }) => result.push(defineType(name, value, result) || { variable: name }));
 
     return result;
+}
+
+function getType(inputWords: string[], declarations: TVarDecl[], isExtract?: boolean): TStructField {
+
+    const extractUnit = (type: TType): TType => isExtract && isUnion(type)
+        ? type.filter((item) => isStruct(item) && item.typeName !== 'Unit')
+        : type;
+    let declVariable = declarations.find(({ variable, type }) => variable === inputWords[0] && type !== null);
+    if (declVariable == null || !declVariable.type) return { name: 'Unknown', type: 'Unknown' };
+    let out = { name: declVariable.variable, type: extractUnit(declVariable.type) };
+    for (let i = 1; i < inputWords.length; i++) {
+        let actualType
+        if (isStruct(out.type)) actualType = out.type.fields.find(type => type.name === inputWords[i])
+        if (actualType && actualType.type) out = { ...actualType, type: extractUnit(actualType.type) }
+        // if (isUnion(out)) out = intersection(actualType.type)
+    }
+    return out;
 }
 
 function defineType(name: string, value: string, variables: TVarDecl[]): TVarDecl {
@@ -285,8 +290,7 @@ function defineType(name: string, value: string, variables: TVarDecl[]): TVarDec
     } else if ((match = value.match(/^[ \t]*"(.+)"[ \t]*/)) != null) {
         out.type = 'String';
     } else if ((match = value.match(functionsRegExp)) != null) {
-        out.type = functions.find(({ name }) => name === match![1])!.resultType;        
-        if (out.type === 'TYPEPARAM(84)') out.type = getExtactDoc(value, out.type, variables)
+        out.type = functions.find(({ name }) => name === match![1])!.resultType;
     } else if ((match = value.match(typesRegExp)) != null) {
         out.type = types.find(type => match != null && type.name === match[0])!.type;
     } else if ((match = value.match(/^[ \t]*\[(.+)][ \t]*$/)) != null) {
@@ -294,17 +298,22 @@ function defineType(name: string, value: string, variables: TVarDecl[]): TVarDec
             .map(type => defineType("", type, variables).type));
         out.type = (uniqueType.length === 1) ? { listOf: uniqueType[0] } : { listOf: "any" };
     } else if ((split = value.split('.')).length > 1) {
-        const fields = getVariablesHelp(split, variables, true);
-        out.type = { typeName: fields.map(type => getTypeDoc(type, true)).join('|'), fields }
+        const type = getType(split, variables);
+        out.type = type.type
+        if ((match = getLastArrayElement(split).match(functionsRegExp)) != null) {
+            let func = functions.find(({ name }) => match != null && name === match[1])
+            if (func) out.type = func.resultType
+        }
     } else if (value === 'Callable') {
         let type = types.find(item => item.name === 'Invocation');
         out = { variable: name, type: type != null ? type.type : out.type }
-    } else if (value === 'Verifier') {
+    }
+    else if (value === 'Verifier') {
         let type = types.find(item => item.name === 'Transaction');
         out = { variable: name, type: type != null ? type.type : out.type }
     }
 
-
+    if (out.type === 'TYPEPARAM(84)') out.type = getExtactDoc(value, out.type, variables)
 
     return out
 }
