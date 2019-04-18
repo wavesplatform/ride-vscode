@@ -133,12 +133,10 @@ export const getColonOrPipeCompletionResult = (textBefore: string) =>
     ([...getDataByRegexp(textBefore, matchRegexp)].map(({ name }) => name).indexOf('tx') > -1) ? transactionClasses : classes;
 
 export const checkPostfixFunction = (variablesDeclarations: TVarDecl[], inputWord: string) => {
-    console.error(inputWord, variablesDeclarations);
-
     let variable = variablesDeclarations.find(({ variable }) => variable === inputWord);
     return functions.filter(({ args }) => {
         if (!args[0] || !variable || !variable.type) return false;
-        
+
         let type = variable.type;
 
         if (isPrimitive(type) && isPrimitive(args[0].type) && type === args[0].type) return true;
@@ -148,7 +146,7 @@ export const checkPostfixFunction = (variablesDeclarations: TVarDecl[], inputWor
             if (isStruct(currentType) && type.typeName === currentType.typeName) {
                 return true;
             }
-        }        
+        }
         if (args[0].type === 'PARAMETERIZEDUNION(List(TYPEPARAM(84), Unit))' && isUnion(type)) {
             return type.some(item => isStruct(item) && item.typeName === 'Unit')
         }
@@ -213,7 +211,7 @@ export function getWordByPos(string: string, character: number) {
     return string.substring(start, end);
 }
 
-const getExtactDoc = (value: string, type: string, variables: TVarDecl[]): TType => {    
+const getExtactDoc = (value: string, type: string, variables: TVarDecl[]): TType => {
     let extractData = value.match(/(.+)\.extract/) ||
         value.match(/extract[ \t]*\([ \t]*([a-zA-z0-9_.()]*)[ \t]*\)/) || [];
     let out: TType = type, match: RegExpMatchArray | null;
@@ -251,10 +249,10 @@ export function findDeclarations(text: string): TVarDecl[] {
     if (scriptType === 2) result.push({ variable: 'this', type: ["ByteVector", { "typeName": "Unit", "fields": [] }] }); //assetId
 
     [
+        ...getDataByRegexp(text, /@(Verifier|Callable)[ \t]*\((.+)\)/g)
+            .map(item => ({ ...item, name: item.value, value: item.name })),
         ...getDataByRegexp(text, caseRegexp),
         ...getDataByRegexp(text, letRegexp),
-        ...getDataByRegexp(text, /@(Verifier|Callable)[ \t]*\((.+)\)/g)
-            .map(item => ({ ...item, name: item.value, value: item.name }))
     ]
         .map(({ name, value }) => result.push(defineType(name, value, result) || { variable: name }));
 
@@ -271,7 +269,7 @@ function getType(inputWords: string[], declarations: TVarDecl[], isExtract?: boo
     for (let i = 1; i < inputWords.length; i++) {
         let actualType
         if (isStruct(out.type)) actualType = out.type.fields.find(type => type.name === inputWords[i])
-        if (actualType && actualType.type) out = { ...actualType, type: extractUnit(actualType.type) }        
+        if (actualType && actualType.type) out = { ...actualType, type: extractUnit(actualType.type) }
     }
     return out;
 }
@@ -286,7 +284,7 @@ function defineType(name: string, value: string, variables: TVarDecl[]): TVarDec
         out.type = 'Int';
     } else if ((match = value.match(/\b(base58|base64)\b[ \t]*'(.*)'/)) != null) {
         out.type = 'ByteVector';
-    } else if (/.*\b&&|==|!=|>=|>\b.*/.test(value) || /\btrue|false\b/.test(value)) { 
+    } else if (/.*\b&&|==|!=|>=|>\b.*/.test(value) || /\btrue|false\b/.test(value)) {
         out.type = 'Boolean';
     } else if ((match = value.match(/^[ \t]*"(.+)"[ \t]*/)) != null) {
         out.type = 'String';
