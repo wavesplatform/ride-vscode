@@ -15,7 +15,7 @@ import * as utils from './utils';
 export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         const version = scriptInfo(document.getText()).stdLibVersion || undefined
-        utils.suggestions.updateSuggestions(version)
+        utils.Suggestions.updateSuggestions(version)
 
         let diagnostics: Diagnostic[] = [];
         let resultOrError = compile(document.getText());

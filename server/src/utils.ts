@@ -8,14 +8,14 @@ import {
     letRegexp,
     listToString,
     matchRegexp,
-    suggestionData,
+    SuggestionData,
     unionToString
 } from './suggestions';
 import { TFunction, TList, TStruct, TStructField, TType, TUnion, TUnionItem } from '@waves/ride-js'
 
-export const suggestions = new suggestionData
+export const Suggestions = new SuggestionData
 
-const {regexps, types, functions, globalVariables, globalSuggestions, classes, transactionClasses} = suggestions
+const {regexps, types, functions, globalVariables, globalSuggestions, classes, transactionClasses} = Suggestions
 
 //======================TYPES==============================
 

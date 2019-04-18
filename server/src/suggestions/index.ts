@@ -57,7 +57,7 @@ export const letRegexp = /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([
 export const caseRegexp = /\bcase[suggestionData.]/gm;
 export const matchRegexp = /\bmatch[ \t]*\([ \t]*([a-zA-z0-9_]+)[ \t]*\)/gm;
 
-export class suggestionData  {
+export class SuggestionData  {
     types: TStructField[] = getTypes();
     functions: TFunction[] = getFunctionsDoc();
     globalVariables: IVarDoc[] = getVarsDoc();
