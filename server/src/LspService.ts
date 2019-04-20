@@ -14,8 +14,12 @@ import * as utils from './utils';
 
 export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
-        const version = scriptInfo(document.getText()).stdLibVersion || undefined
-        utils.Suggestions.updateSuggestions(version)
+        try{
+            const version = scriptInfo(document.getText()).stdLibVersion;        
+            utils.Suggestions.updateSuggestions(version);
+        }catch(e){
+            utils.Suggestions.updateSuggestions();
+        }
 
         let diagnostics: Diagnostic[] = [];
         let resultOrError = compile(document.getText());
@@ -74,7 +78,7 @@ export class LspService {
                     break;
             }
         } catch (e) {
-             // console.error(e);
+            //  console.error(e);
         }
 
         return {

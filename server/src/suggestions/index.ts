@@ -70,18 +70,19 @@ export class SuggestionData  {
     globalSuggestions: CompletionItem[] = [];
     
     updateSuggestions = ( stdlibVersion?: number, isTokenContext?: boolean) => {
+    
         const types = getTypes(stdlibVersion, isTokenContext);
         const functions = getFunctionsDoc(stdlibVersion, isTokenContext);
         const globalVariables = getVarsDoc(stdlibVersion, isTokenContext);
     
-        this.types.length = 0
-        this.functions.length = 0
-        this.globalVariables.length = 0
-        this.classes.length = 0
-        this.transactionClasses.length = 0
-        this.globalSuggestions.length = 0
+        this.types.length = 0;
+        this.functions.length = 0;
+        this.globalVariables.length = 0;
+        this.classes.length = 0;
+        this.transactionClasses.length = 0;
+        this.globalSuggestions.length = 0;
 
-        this.types.push(...types)
+        this.types.push(...types);
         this.functions.push(...functions);
         this.globalVariables.push(...globalVariables);
     
