@@ -1,11 +1,6 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types';
 import {
     caseRegexp,
-    classes,
-    functions,
-    functionsRegExp,
-    globalSuggestions,
-    globalVariables,
     isList,
     isPrimitive,
     isStruct,
@@ -13,18 +8,18 @@ import {
     letRegexp,
     listToString,
     matchRegexp,
-    transactionClasses,
-    types,
-    typesRegExp,
+    SuggestionData,
     unionToString
 } from './suggestions';
-import { TFunction, TList, TStruct, TStructField, TType, TUnion, scriptInfo, TPrimitive } from '@waves/ride-js'
+import { TFunction, TList, TStruct, TStructField, TType, TUnion, scriptInfo } from '@waves/ride-js'
 
+export const Suggestions = new SuggestionData
 
+const {regexps, types, functions, globalVariables, globalSuggestions, classes, transactionClasses} = Suggestions
 
 //======================TYPES==============================
 type TVarDecl = {
-    variable: string
+    variable: string,
     type: TType
 }
 //======================HELPERS============================
@@ -129,6 +124,7 @@ function getVariablesHelp(inputWords: string[], declarations: TVarDecl[], isNext
     return out;
 }
 
+
 export const getColonOrPipeCompletionResult = (textBefore: string) =>
     ([...getDataByRegexp(textBefore, matchRegexp)].map(({ name }) => name).indexOf('tx') > -1) ? transactionClasses : classes;
 
@@ -157,11 +153,8 @@ export const checkPostfixFunction = (variablesDeclarations: TVarDecl[], inputWor
 
 //======================SignatureHelp======================
 
-export function getSignatureHelpResult(word: string, isShift: boolean) {
-    let func = getFunctionsByName(word).map(func => ({
-        ...func,
-        args: func.args.filter((_, i) => !(isShift && i === 0))
-    }));
+export function getSignatureHelpResult(word: string) {
+    let func = getFunctionsByName(word);
     return func.map((func: TFunction) => ({
         label: `${word}(${func.args.map(({ name, type }) =>
             `${name}: ${getFunctionArgumentString(type)}`).join(', ')}): ${getFunctionArgumentString(func.resultType)}`,
@@ -175,6 +168,7 @@ export function getSignatureHelpResult(word: string, isShift: boolean) {
 //======================Hover==============================
 
 export function getHoverResult(textBefore: string, word: string, inputWords: string[]) {
+
 
     const getHoverFunctionDoc = (func: TFunction) => `**${func.name}** (${func.args.length > 0 ?
         `\n${func.args.map(({ name, type, doc }) => `\n * ${`${name}: ${getFunctionArgumentString(type)} - ${doc}`} \n`)}\n` :
@@ -216,7 +210,7 @@ const getExtactDoc = (value: string, type: string, variables: TVarDecl[]): TType
         value.match(/extract[ \t]*\([ \t]*([a-zA-z0-9_.()]*)[ \t]*\)/) || [];
     let out: TType = type, match: RegExpMatchArray | null;
     if (extractData.length < 2) return out;
-    if (extractData[1] && (match = extractData[1].match(functionsRegExp)) != null) {
+    if (extractData[1] && (match = extractData[1].match(regexps.functionsRegExp)) != null) {
         let resultType = functions.find(({ name }) => name === match![1])!.resultType;
         if (resultType && isUnion(resultType)) {
             out = resultType.filter(type => (type as TStruct)!.typeName !== 'Unit')
@@ -288,9 +282,9 @@ function defineType(name: string, value: string, variables: TVarDecl[]): TVarDec
         out.type = 'Boolean';
     } else if ((match = value.match(/^[ \t]*"(.+)"[ \t]*/)) != null) {
         out.type = 'String';
-    } else if ((match = value.match(functionsRegExp)) != null) {
+    } else if ((match = value.match(regexps.functionsRegExp)) != null) {
         out.type = functions.find(({ name }) => name === match![1])!.resultType;
-    } else if ((match = value.match(typesRegExp)) != null) {
+    } else if ((match = value.match(regexps.typesRegExp)) != null) {
         out.type = types.find(type => match != null && type.name === match[0])!.type;
     } else if ((match = value.match(/^[ \t]*\[(.+)][ \t]*$/)) != null) {
         let uniqueType = unique(match[1].split(',')
@@ -299,7 +293,7 @@ function defineType(name: string, value: string, variables: TVarDecl[]): TVarDec
     } else if ((split = value.split('.')).length > 1) {
         const type = getType(split, variables);
         out.type = type.type
-        if ((match = getLastArrayElement(split).match(functionsRegExp)) != null) {
+        if ((match = getLastArrayElement(split).match(regexps.functionsRegExp)) != null) {
             let func = functions.find(({ name }) => match != null && name === match[1])
             if (func) out.type = func.resultType
         }
@@ -325,7 +319,7 @@ export const getLastArrayElement = (arr: string[] | null): string => arr !== nul
 function intersection(types: TType[]): TStructField[] {
     const items = [...types];
     let structs: TStruct[] = [];
-    if (types === []) {
+    if (types === []){
         return [];
     }
     let next: TType;
