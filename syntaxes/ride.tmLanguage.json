@@ -8,7 +8,7 @@
     "patterns": [
         {
           "name": "keyword.ride",
-          "match": "\\b(let|if|then|else|ifelse|match|case|base64|base58|func)\\b"
+          "match": "\\b(this|let|if|then|else|ifelse|match|case|base64|base58|func)\\b"
         },
         {
           "name": "entity.name.function.ride",
@@ -16,7 +16,7 @@
         },
         {
             "name": "entity.name.type.ride",
-            "match": "\\b(WriteSet|TransferSet|TransferTransaction|IssueTransaction|ReissueTransaction|BurnTransaction|LeaseTransaction|LeaseCancelTransaction|MassTransferTransaction|CreateAliasTransaction|SetScriptTransaction|SponsorFeeTransaction|ExchangeTransaction|DataTransaction|SetAssetScriptTransaction)\\b"
+            "match": "\\b(Transaction|WriteSet|TransferSet|TransferTransaction|IssueTransaction|ReissueTransaction|BurnTransaction|LeaseTransaction|LeaseCancelTransaction|MassTransferTransaction|CreateAliasTransaction|SetScriptTransaction|SponsorFeeTransaction|ExchangeTransaction|DataTransaction|SetAssetScriptTransaction)\\b"
         },
         {
             "name": "markup.bold.ride entity.name.type.ride",
