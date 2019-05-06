@@ -15,7 +15,7 @@ import * as utils from './utils';
 export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         try{
-            const version = scriptInfo(document.getText()).stdLibVersion;        
+            const version = scriptInfo(document.getText()).stdLibVersion;
             utils.Suggestions.updateSuggestions(version);
         }catch(e){
             utils.Suggestions.updateSuggestions();
@@ -70,7 +70,7 @@ export class LspService {
                     break;
                 //auto completion after clicking on a colon or pipe
                 case ([':', '|'].indexOf(character) !== -1 || line.match(/([a-zA-z0-9_]+)[ \t]*[|:][ \t]*[a-zA-z0-9_]*$/) !== null):
-                    result = utils.getColonOrPipeCompletionResult(textBefore);
+                    result = utils.getColonOrPipeCompletionResult(textBefore, variablesDeclarations);
                     break;
                     //todo add completion after ] in lists
                 default:
