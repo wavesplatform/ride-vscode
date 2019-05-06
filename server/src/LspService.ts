@@ -1,12 +1,12 @@
 import {
-    TextDocument,
+    CompletionItem, CompletionItemKind,
+    CompletionList,
     Diagnostic,
-    CompletionItem,
+    DiagnosticSeverity,
     Position,
     Range,
-    DiagnosticSeverity,
-    CompletionList,
-    SignatureHelp
+    SignatureHelp,
+    TextDocument
 } from 'vscode-languageserver-types';
 import { compile, scriptInfo } from '@waves/ride-js';
 import * as utils from './utils';
@@ -14,10 +14,10 @@ import * as utils from './utils';
 
 export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
-        try{
+        try {
             const version = scriptInfo(document.getText()).stdLibVersion;
             utils.Suggestions.updateSuggestions(version);
-        }catch(e){
+        } catch (e) {
             utils.Suggestions.updateSuggestions();
         }
 
@@ -56,7 +56,7 @@ export class LspService {
             switch (true) {
                 case (character === '.' || wordBeforeDot !== null):                 //auto completion after clicking on a dot
                     let inputWord = (wordBeforeDot === null)                        //get word before dot or last word in line
-                    ? (utils.getLastArrayElement(line.match(/\b(\w*)\b\./g) )).slice(0, -1)
+                        ? (utils.getLastArrayElement(line.match(/\b(\w*)\b\./g))).slice(0, -1)
                         : wordBeforeDot[1];
 
                     if (['tx'].indexOf(inputWord) > -1) { //todo add after completion
@@ -72,7 +72,13 @@ export class LspService {
                 case ([':', '|'].indexOf(character) !== -1 || line.match(/([a-zA-z0-9_]+)[ \t]*[|:][ \t]*[a-zA-z0-9_]*$/) !== null):
                     result = utils.getColonOrPipeCompletionResult(textBefore, variablesDeclarations);
                     break;
-                    //todo add completion after ] in lists
+                case(['@'].indexOf(character) !== -1):
+                    result = [
+                        {label: 'Callable', kind: CompletionItemKind.Interface},
+                        {label: 'Verifier', kind: CompletionItemKind.Interface}
+                    ];
+                    break;
+                //todo add completion after ] in lists
                 default:
                     result = utils.getCompletionDefaultResult(textBefore);
                     break;
@@ -103,7 +109,7 @@ export class LspService {
         const textBefore = document.getText({start: {line: 0, character: 0}, end: position});
         const line = document.getText({start: {line: position.line, character: 0}, end: position});
 
-        const isPostfix  = /[a-zA-z0-9_]+.\b([a-zA-z0-9_]+)\b[ \t]*\(/.test(line);
+        const isPostfix = /[a-zA-z0-9_]+.\b([a-zA-z0-9_]+)\b[ \t]*\(/.test(line);
 
         const lastFunction = utils.getLastArrayElement(textBefore.match(/\b([a-zA-z0-9_]*)\b[ \t]*\(/g));
         const functionArguments = utils.getLastArrayElement(textBefore.split(lastFunction || ''));
