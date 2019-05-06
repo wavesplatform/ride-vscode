@@ -1,5 +1,6 @@
 import {
-    CompletionItem, CompletionItemKind,
+    CompletionItem, 
+    CompletionItemKind,
     CompletionList,
     Diagnostic,
     DiagnosticSeverity,
