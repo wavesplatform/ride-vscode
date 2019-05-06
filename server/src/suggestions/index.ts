@@ -54,8 +54,8 @@ export const unionToString = (item: TUnion) => item.map(type => getUnionItemName
 //----------------------------------------------------------
 
 export const letRegexp = /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm;
-export const caseRegexp = /\bcase[suggestionData.]/gm;
-export const matchRegexp = /\bmatch[ \t]*\([ \t]*([a-zA-z0-9_]+)[ \t]*\)/gm;
+export const caseRegexp = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:(.*)=>*{*/gm;
+export const matchRegexp = /\bmatch[ \t(]+\b(.+)\b[ \t)]*[{=]*/gm;
 
 export class SuggestionData  {
     types: TStructField[] = getTypes();

@@ -69,7 +69,7 @@ export class LspService {
                     }
                     break;
                 //auto completion after clicking on a colon or pipe
-                case ([':', '|'].indexOf(character) !== -1 || line.match(/([a-zA-z0-9_]+)[ \t]*[|:][ \t]*[a-zA-z0-9_]*$/) !== null):
+                case (line.match(/([a-zA-z0-9_]+)[ \t]*[|:][ \t]*[a-zA-z0-9_]*$/) !== null):
                     result = utils.getColonOrPipeCompletionResult(textBefore, variablesDeclarations);
                     break;
                     //todo add completion after ] in lists
