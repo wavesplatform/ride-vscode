@@ -107,7 +107,7 @@ export class LspServer {
                     // Tell the client that the server supports code completion
                     completionProvider: {
                         resolveProvider: true,
-                        triggerCharacters: ['.', ':', '|']
+                        triggerCharacters: ['.', ':', '|','@']
                     },
                     hoverProvider: true,
                     signatureHelpProvider: {
