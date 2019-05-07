@@ -3,10 +3,13 @@ import * as suggestions from './suggestions.json';
 import {
     getFunctionsDoc,
     getTypes,
-    getVarsDoc, IVarDoc, TFunction,
+    getVarsDoc,
+    IVarDoc,
+    TFunction,
     TList,
     TPrimitive,
-    TStruct, TStructField,
+    TStruct,
+    TStructField,
     TType,
     TUnion,
     TUnionItem,
@@ -57,7 +60,9 @@ export const letRegexp = /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([
 export const caseRegexp = /\bcase[suggestionData.]/gm;
 export const matchRegexp = /\bmatch[ \t]*\([ \t]*([a-zA-z0-9_]+)[ \t]*\)/gm;
 
-export class SuggestionData  {
+const defaultClasses = ['WriteSet', 'TransferSet', 'ScriptResult'];
+
+export class SuggestionData {
     types: TStructField[] = getTypes();
     functions: TFunction[] = getFunctionsDoc();
     globalVariables: IVarDoc[] = getVarsDoc();
@@ -68,13 +73,14 @@ export class SuggestionData  {
     classes: CompletionItem[] = [];
     transactionClasses: CompletionItem[] = [];
     globalSuggestions: CompletionItem[] = [];
-    
-    updateSuggestions = ( stdlibVersion?: number, isTokenContext?: boolean) => {
-    
+
+    updateSuggestions = (stdlibVersion?: number, isTokenContext?: boolean) => {
+
         const types = getTypes(stdlibVersion, isTokenContext);
         const functions = getFunctionsDoc(stdlibVersion, isTokenContext);
         const globalVariables = getVarsDoc(stdlibVersion, isTokenContext);
-    
+
+
         this.types.length = 0;
         this.functions.length = 0;
         this.globalVariables.length = 0;
@@ -85,7 +91,7 @@ export class SuggestionData  {
         this.types.push(...types);
         this.functions.push(...functions);
         this.globalVariables.push(...globalVariables);
-    
+
         this.regexps.typesRegExp = new RegExp(`\\b${types.map(({name}) => name).join('\\b|\\b')}\\b`, 'g');
         this.regexps.functionsRegExp = new RegExp(`^[!]*(\\b${
             functions.filter(({name}) => ['*', '\\', '/', '%', '+',].indexOf(name) === -1).map(({name}) => name).join('\\b|\\b')
@@ -94,15 +100,16 @@ export class SuggestionData  {
         this.classes.push(...types.map(({name}) => ({label: name, kind: CompletionItemKind.Class})));
         this.transactionClasses.push(...(types!.find(t => t.name === 'Transaction')!.type as TUnion)
             .map(({typeName}: any) => ({label: typeName, kind: CompletionItemKind.Class})));
-    
-    
+
         this.globalSuggestions.push(
             ...suggestions.keywords.map((label: string) => <CompletionItem>({label, kind: CompletionItemKind.Keyword})),
             ...suggestions.snippets.map(({label}: TSnippet) => ({label, kind: CompletionItemKind.Snippet})),
-            ...globalVariables.map(({name, doc}) => ({label: name, detail: doc, kind: CompletionItemKind.Variable,})),
-            ...functions.map(({name, doc}) => ({detail: doc, kind: CompletionItemKind.Function, label: name}))
+            ...globalVariables.map(({name, doc}) => ({label: name, detail: doc, kind: CompletionItemKind.Variable})),
+            ...functions.map(({name, doc}) => ({detail: doc, kind: CompletionItemKind.Function, label: name})),
+            ...types.filter(({name}) => defaultClasses.indexOf(name) !== -1)
+                .map(({name}) => ({kind: CompletionItemKind.Class, label: name}))
         )
-    
+
     };
 
 }
