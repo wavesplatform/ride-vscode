@@ -47,7 +47,14 @@ export class LspService {
         const character = document.getText().substring(offset - 1, offset);
         const textBefore = document.getText({start: {line: 0, character: 0}, end: position});
         const line = document.getText({start: {line: position.line, character: 0}, end: position});
-        const variablesDeclarations = utils.findDeclarations(textBefore);
+
+        // const variablesDeclarations = utils.findDeclarations(textBefore);
+        const declarations = utils.findContextDeclarations(textBefore);
+
+        const variablesDeclarations = utils.getDefinedVariables(
+            declarations.filter(decl => position.line + 1 >= decl.start.row && position.line + 1 <= decl.end.row)
+        );
+
         let result: CompletionItem[] = [];
 
 
@@ -60,7 +67,7 @@ export class LspService {
                         ? (utils.getLastArrayElement(line.match(/\b(\w*)\b\./g))).slice(0, -1)
                         : wordBeforeDot[1];
 
-                    if (['tx'].indexOf(inputWord) > -1) { //todo add after completion
+                    if (~['tx'].indexOf(inputWord)) { //todo add after completion
                         result = utils.txFields;
                     } else if (firstWordMatch.length >= 2 && variablesDeclarations.filter(({variable}) => variable === firstWordMatch[1]).length > 0) {
                         result = [
@@ -81,7 +88,7 @@ export class LspService {
                     break;
                 //todo add completion after ] in lists
                 default:
-                    result = utils.getCompletionDefaultResult(textBefore);
+                    result = utils.getCompletionDefaultResult(variablesDeclarations);
                     break;
             }
         } catch (e) {
@@ -128,7 +135,7 @@ export class LspService {
         };
     }
 
-    public completionResolve(item: CompletionItem) {
+    public  completionResolve(item: CompletionItem) {
         return item;
     }
 

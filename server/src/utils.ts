@@ -18,10 +18,24 @@ export const Suggestions = new SuggestionData;
 const {regexps, types, functions, globalVariables, globalSuggestions, classes, transactionClasses} = Suggestions;
 
 //======================TYPES==============================
+type TPosition = {
+    row: number
+    col: number
+};
+
+
 type TVarDecl = {
     variable: string,
-    type: TType
+    type: TType,
+};
+
+type TContext = {
+    vars: TVarDecl[]
+    start: TPosition
+    end: TPosition
+    children: TContext[]
 }
+
 //======================HELPERS============================
 
 //----------------------TFunction--------------------------
@@ -93,12 +107,9 @@ const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
 export const txFields = intersection((types.find(t => t.name === 'Transaction')!.type as TUnion))
     .map((item) => convertToCompletion(item));
 
-export const getCompletionDefaultResult = (textBefore: string) =>
+export const getCompletionDefaultResult = (variablesDeclarations: TVarDecl[]) =>
     [
-        // get variables after 'let' and globalSuggestions
-        ...getDataByRegexp(textBefore, letRegexp).map(val => ({label: val.name, kind: CompletionItemKind.Variable})),
-        ...getDataByRegexp(textBefore, caseRegexp).filter((_, i, arr) => arr.length === (i + 1))
-            .map(val => ({label: val.name, kind: CompletionItemKind.Variable})),
+        ...variablesDeclarations.map(item => ({label: item.variable, kind: CompletionItemKind.Variable})),
         ...globalSuggestions,
     ];
 
@@ -188,7 +199,7 @@ export function getHoverResult(textBefore: string, word: string, inputWords: str
         `\n${func.args.map(({name, type, doc}) => `\n * ${`${name}: ${getFunctionArgumentString(type)} - ${doc}`} \n`)}\n` :
         ' '}) : ${getFunctionArgumentString(func.resultType)} \n>_${func.doc}_`;
 
-    const declarations = findDeclarations(textBefore);
+    const declarations = getDefinedVariables(findContextDeclarations(textBefore));
 
     return getVariablesHelp(inputWords, findDeclarations(textBefore))
         .filter(({name}) => name === word).map(item => `**${item.name}**: ` + getTypeDoc(item))
@@ -205,13 +216,13 @@ export function getWordByPos(string: string, character: number) {
     let sep = ['"', '\'', '*', '(', ')', '{', '}', '[', ']', '!', '<', '>', '|', '\\', '/', '.', ',', ':', ';', '&', ' ', '=', '\t'];
     let start = 0, end = string.length;
     for (let i = character; i <= string.length; i++) {
-        if (sep.indexOf(string[i]) > -1) {
+        if (~sep.indexOf(string[i])) {
             end = i;
             break;
         }
     }
     for (let i = character; i >= 0; i--) {
-        if (sep.indexOf(string[i]) > -1) {
+        if (~sep.indexOf(string[i])) {
             start = ++i;
             break;
         }
@@ -245,6 +256,7 @@ const unique = (arr: any) => {
     return Object.keys(obj).map(type => JSON.parse(type));
 };
 
+
 export function findDeclarations(text: string): TVarDecl[] {
     let result: TVarDecl[] = [];
     const scriptType = scriptInfo(text).scriptType;
@@ -263,6 +275,89 @@ export function findDeclarations(text: string): TVarDecl[] {
         ...getDataByRegexp(text, letRegexp),
     ]
         .map(({name, value}) => result.push(defineType(name, value, result) || {variable: name}));
+
+    return result;
+}
+
+
+export function getDefinedVariables(vars: TContext[]) {
+    const out: TVarDecl[] = [];
+    vars.forEach(item => out.push(...item.vars));
+    return out
+}
+
+const contextFrames = (text: string): TContext[] => {
+    const re = /func[ \t]*(.*)\([ \t]*(.*)[ \t]*\)[ \t]*=[ \t]*{/g;
+    const rows = text.split('\n');
+    const out = getDataByRegexp(text, re).map(func => {
+        const regexp = new RegExp(`([a-zA-z0-9_]+)[ \\t]*:[ \\t]*(${Suggestions.regexps.typesRegExp.source})`, 'g');
+
+        let out: TContext = {
+            vars: getDataByRegexp(func.value, regexp).map(({name, value}): TVarDecl =>
+                ({variable: name, type: types.find(type => type.name === value)!.type})
+            ),
+            start: {row: func.row, col: 0},
+            end: {row: rows.length, col: 0},
+            children: []
+        };
+        let bracket = 1;
+        let isStop = false;
+        for (let i = func.row; i < rows.length; i++) {
+            for (let j = 0; j < rows[i].length; j++) {
+                if (rows[i][j] === '{') bracket++;
+                if (rows[i][j] === '}') bracket--;
+                if (bracket === 0) {
+                    out.end.row = i + 1;
+                    out.end.col = rows[i].length;
+                    isStop = true;
+                    break;
+                }
+            }
+            if (isStop) break;
+        }
+        return out;
+    });
+    return [
+        {
+            vars: [],
+            start: {row: 0, col: 0},
+            end: {row: rows.length, col: rows[rows.length - 1].length},
+            children: [],
+        },
+        ...out
+    ]
+};
+
+export function findContextDeclarations(text: string): TContext[] {
+    const scriptType = scriptInfo(text).scriptType;
+    const result = contextFrames(text);
+    if (scriptType === 1) {
+        let type = types.find(item => item.name === 'Address');
+        result[0].vars.push({variable: 'this', type: type ? type.type : 'Unknown'});
+    }
+
+    if (scriptType === 2) result[0].vars.push({
+        variable: 'this',
+        type: ["ByteVector", {"typeName": "Unit", "fields": []}]
+    }); //assetId
+
+
+    [
+        ...getDataByRegexp(text, /@(Verifier|Callable)[ \t]*\((.+)\)/g)
+            .map(item => ({...item, name: item.value, value: item.name})),
+        ...getDataByRegexp(text, caseRegexp),
+        ...getDataByRegexp(text, letRegexp),
+    ]
+        .forEach(item => { //by variables
+            let isPushed = false;
+            for (let i = 1; i < result.length; i++) {
+                if (item.row >= result[i].start.row && item.row <= result[i].end.row) {
+                    result[i].vars.push(defineType(item.name, item.value, getDefinedVariables(result)) || {variable: item.name});
+                    isPushed = true;
+                }
+            }
+            if (!isPushed) result[0].vars.push(defineType(item.name, item.value, getDefinedVariables(result)) || {variable: item.name});
+        });
 
     return result;
 }
@@ -355,7 +450,7 @@ function intersection(types: TType[]): TStructField[] {
 function intersect(a: TStructField[], b: TStructField[]) {
     let list: string[] = [], out: TStructField[] = [];
     a.forEach((val) => list.push(val.name));
-    b.forEach(val => (list.indexOf(val.name) > -1) ? out.push(val) : false);
+    b.forEach(val => (~list.indexOf(val.name)) ? out.push(val) : false);
     return out;
 }
 
