@@ -126,9 +126,18 @@ function getVariablesHelp(inputWords: string[], declarations: TVarDecl[], isNext
 
 
 export const getColonOrPipeCompletionResult = (textBefore: string, vars: TVarDecl[]) => {
-    console.error(JSON.stringify(vars, null, 4))
-    return ([...getDataByRegexp(textBefore, matchRegexp)].map(({name}) => name).indexOf('tx') > -1) ? transactionClasses : classes;
-}
+    let out = classes;
+    let matchVariable = getLastArrayElement(getDataByRegexp(textBefore, matchRegexp).map(({name}) => name));
+    if (matchVariable === 'tx') {
+        out = transactionClasses;
+    } else {
+        const type = defineType('', matchVariable, vars).type;
+        if (isUnion(type)) {
+            out = type.map(({typeName}: any) => ({label: typeName, kind: CompletionItemKind.Class}));
+        }
+    }
+    return out
+};
 
 export const checkPostfixFunction = (variablesDeclarations: TVarDecl[], inputWord: string) => {
     let variable = variablesDeclarations.find(({variable}) => variable === inputWord);
