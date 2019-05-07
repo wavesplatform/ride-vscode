@@ -167,7 +167,7 @@ export class LspServer {
             const document = await this.getDocument(textDocumentPosition.textDocument.uri);
             return service.signatureHelp(document, textDocumentPosition.position);
         });
-        connection.onCompletionResolve(this.service.completionResolve.bind(service));
+        connection.onCompletionResolve(LspService.completionResolve.bind(service));
         // connection.onDefinition(service.definition.bind(service));
         // connection.onImplementation(service.implementation.bind(service));
         // connection.onTypeDefinition(service.typeDefinition.bind(service));
