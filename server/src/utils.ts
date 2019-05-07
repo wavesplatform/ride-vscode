@@ -286,8 +286,6 @@ export function getDefinedVariables(vars: TContext[]) {
     return out
 }
 
-console.error(JSON.stringify(types, null, 4))
-
 const contextFrames = (text: string): TContext[] => {
     const re = /func[ \t]*(.*)\([ \t]*(.*)[ \t]*\)[ \t]*=[ \t]*{/g;
     const rows = text.split('\n');

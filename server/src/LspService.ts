@@ -135,7 +135,7 @@ export class LspService {
         };
     }
 
-    public static completionResolve(item: CompletionItem) {
+    public  completionResolve(item: CompletionItem) {
         return item;
     }
 
