@@ -1,5 +1,5 @@
 import {
-    CompletionItem, 
+    CompletionItem,
     CompletionItemKind,
     CompletionList,
     Diagnostic,
@@ -17,9 +17,9 @@ export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         try {
             const version = scriptInfo(document.getText()).stdLibVersion;
-            utils.Suggestions.updateSuggestions(version);
+            utils.suggestions.updateSuggestions(version);
         } catch (e) {
-            utils.Suggestions.updateSuggestions();
+            utils.suggestions.updateSuggestions();
         }
 
         let diagnostics: Diagnostic[] = [];
@@ -48,15 +48,9 @@ export class LspService {
         const textBefore = document.getText({start: {line: 0, character: 0}, end: position});
         const line = document.getText({start: {line: position.line, character: 0}, end: position});
 
-        // const variablesDeclarations = utils.findDeclarations(textBefore);
-        const declarations = utils.findContextDeclarations(textBefore);
-
-        const variablesDeclarations = utils.getDefinedVariables(
-            declarations.filter(decl => position.line + 1 >= decl.start.row && position.line + 1 <= decl.end.row)
-        );
+        utils.ctx.updateContext(textBefore);
 
         let result: CompletionItem[] = [];
-
 
         try {
             let wordBeforeDot = line.match(/([a-zA-z0-9_]+)\.[a-zA-z0-9_]*\b$/);     // get text before dot (ex: [tx].test)
@@ -67,18 +61,17 @@ export class LspService {
                         ? (utils.getLastArrayElement(line.match(/\b(\w*)\b\./g))).slice(0, -1)
                         : wordBeforeDot[1];
 
-                    if (~['tx'].indexOf(inputWord)) { //todo add after completion
-                        result = utils.txFields;
-                    } else if (firstWordMatch.length >= 2 && variablesDeclarations.filter(({variable}) => variable === firstWordMatch[1]).length > 0) {
+                    //TODO Make fashionable humanly
+                    if (firstWordMatch.length >= 2 && utils.ctx.getVariable(firstWordMatch[1])) {
                         result = [
-                            ...utils.getCompletionResult((firstWordMatch[0] as string).split('.'), variablesDeclarations),
-                            ...utils.checkPostfixFunction(variablesDeclarations, inputWord).map(({name}) => ({label: name}))
+                            ...utils.getCompletionResult(firstWordMatch[0].split('.')),
+                            ...utils.checkPostfixFunction(inputWord).map(({name}) => ({label: name}))
                         ];
                     }
                     break;
                 //auto completion after clicking on a colon or pipe
                 case (line.match(/([a-zA-z0-9_]+)[ \t]*[|:][ \t]*[a-zA-z0-9_]*$/) !== null):
-                    result = utils.getColonOrPipeCompletionResult(textBefore, variablesDeclarations);
+                    result = utils.getColonOrPipeCompletionResult(textBefore);
                     break;
                 case(['@'].indexOf(character) !== -1):
                     result = [
@@ -86,13 +79,12 @@ export class LspService {
                         {label: 'Verifier', kind: CompletionItemKind.Interface}
                     ];
                     break;
-                //todo add completion after ] in lists
                 default:
-                    result = utils.getCompletionDefaultResult(variablesDeclarations);
+                    result = utils.getCompletionDefaultResult({row: position.line+1, col: position.character+1});
                     break;
             }
         } catch (e) {
-            //  console.error(e);
+            // console.error(e);
         }
 
         return {
@@ -106,7 +98,8 @@ export class LspService {
             .exec(document.getText({start: {line: position.line, character: 0}, end: position}));
         const line = document.getText().split('\n')[position.line];
         const word = utils.getWordByPos(line, position.character);
-        return {contents: utils.getHoverResult(document.getText(), word, (match ? match[0] : '').split('.'))};
+        utils.ctx.updateContext(document.getText());
+        return {contents: utils.getHoverResult( word, (match ? match[0] : '').split('.'))};
     }
 
     public signatureHelp(document: TextDocument, position: Position): SignatureHelp {
@@ -135,7 +128,7 @@ export class LspService {
         };
     }
 
-    public  completionResolve(item: CompletionItem) {
+    public completionResolve(item: CompletionItem) {
         return item;
     }
 
