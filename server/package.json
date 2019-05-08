@@ -17,7 +17,7 @@
 		"url": "https://github.com/wavesplatform/ride-vscode/tree/master/server"
 	},
 	"dependencies": {
-		"@waves/ride-js": "^0.17.4",
+		"@waves/ride-js": "^0.17.5",
 		"vscode-languageserver": "^4.1.3"
 	}
 }
