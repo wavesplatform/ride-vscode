@@ -100,7 +100,6 @@ export class SuggestionData {
         this.globalSuggestions.push(
             ...suggestions.keywords.map((label: string) => <CompletionItem>({label, kind: CompletionItemKind.Keyword})),
             ...suggestions.snippets.map(({label}: TSnippet) => ({label, kind: CompletionItemKind.Snippet})),
-            ...globalVariables.map(({name, doc}) => ({label: name, detail: doc, kind: CompletionItemKind.Variable})),
             ...functions.map(({name, doc}) => ({detail: doc, kind: CompletionItemKind.Function, label: name})),
             ...types.filter(({name}) => defaultClasses.indexOf(name) !== -1)
                 .map(({name}) => ({kind: CompletionItemKind.Class, label: name}))

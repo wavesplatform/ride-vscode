@@ -48,7 +48,7 @@ export class LspService {
         const textBefore = document.getText({start: {line: 0, character: 0}, end: position});
         const line = document.getText({start: {line: position.line, character: 0}, end: position});
 
-        utils.ctx.updateContext(textBefore);
+        utils.ctx.updateContext(document.getText());
 
         let result: CompletionItem[] = [];
 
@@ -84,7 +84,7 @@ export class LspService {
                     break;
             }
         } catch (e) {
-            // console.error(e);
+            console.error(e);
         }
 
         return {
@@ -110,7 +110,7 @@ export class LspService {
         const textBefore = document.getText({start: {line: 0, character: 0}, end: position});
         const line = document.getText({start: {line: position.line, character: 0}, end: position});
 
-        const isPostfix = /[a-zA-z0-9_]+.\b([a-zA-z0-9_]+)\b[ \t]*\(/.test(line);
+        const isPostfix = /[a-zA-z0-9_]+\.\b([a-zA-z0-9_]+)\b[ \t]*\(/.test(line);
 
         const lastFunction = utils.getLastArrayElement(textBefore.match(/\b([a-zA-z0-9_]*)\b[ \t]*\(/g));
         const functionArguments = utils.getLastArrayElement(textBefore.split(lastFunction || ''));

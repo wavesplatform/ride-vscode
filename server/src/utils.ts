@@ -24,8 +24,10 @@ type TPosition = {
 };
 
 type TVarDecl = {
-    variable: string,
+    name: string,
     type: TType,
+    doc?: string
+
 };
 
 type TContext = {
@@ -38,9 +40,9 @@ type TContext = {
 //======================STORAGE============================
 
 function comparePos(start: TPosition, end: TPosition, p: TPosition): boolean {
-    if (start.row > p.row && end.row < p.row) return true;
-    else if (start.row === p.row && start.col <= p.col-1) return true;
-    else if (end.row === p.row && end.col >= p.col-1) return true;
+    if (start.row < p.row && end.row > p.row) return true;
+    else if (start.row === p.row && start.col <= p.col - 1) return true;
+    else if (end.row === p.row && end.col >= p.col - 1) return true;
     return false
 }
 
@@ -49,6 +51,16 @@ function getDefinedVariables(vars: TContext[]) {
     vars.forEach(item => out.push(...item.vars));
     return out
 }
+
+const unique = (arr: any) => {
+    let obj: any = {};
+    for (let i = 0; i < arr.length; i++) {
+        if (!arr[i]) continue;
+        let str = JSON.stringify(arr[i]);
+        obj[str] = true;
+    }
+    return Object.keys(obj).map(type => JSON.parse(type));
+};
 
 export class Storage {
 
@@ -59,18 +71,20 @@ export class Storage {
     text: string = '';
 
     updateContext(text: string) {
+        this.contexts.length = 0;
+        this.variables.length = 0;
         if (this.text !== text) this.findContextDeclarations(text);
     }
 
     getVariable = (name: string): (TVarDecl | undefined) =>
-        this.variables.find(({variable}) => variable === name);
+        this.variables.find(({name: varName}) => varName === name);
 
     getVariablesByPos = (p: TPosition) => getDefinedVariables(
         this.contexts.filter(({start, end}) => comparePos(start, end, p))
     );
 
     defineType(name: string, value: string): TVarDecl {
-        let out: TVarDecl = {variable: name, type: 'Unknown'};
+        let out: TVarDecl = {name: name, type: 'Unknown'};
         let match: RegExpMatchArray | null, split;
 
         const variable = this.getVariable(value);
@@ -88,7 +102,7 @@ export class Storage {
         } else if ((match = value.match(regexps.typesRegExp)) != null) {
             out.type = types.find(type => match != null && type.name === match[0])!.type;
         } else if ((match = value.match(/^[ \t]*\[(.+)][ \t]*$/)) != null) {
-            let uniqueType = this.unique(match[1].split(',')
+            let uniqueType = unique(match[1].split(',')
                 .map(type => this.defineType('', type).type));
             out.type = (uniqueType.length === 1) ? {listOf: uniqueType[0]} : {listOf: "any"};
         } else if ((split = value.split('.')).length > 1) {
@@ -100,10 +114,10 @@ export class Storage {
             }
         } else if (value === 'Callable') {
             let type = types.find(item => item.name === 'Invocation');
-            out = {variable: name, type: type != null ? type.type : out.type}
+            out = {name: name, type: type != null ? type.type : out.type}
         } else if (value === 'Verifier') {
             let type = types.find(item => item.name === 'Transaction');
-            out = {variable: name, type: type != null ? type.type : out.type}
+            out = {name: name, type: type != null ? type.type : out.type}
         }
 
         if (out.type === 'TYPEPARAM(84)') out.type = this.getExtactDoc(this, value, out.type);
@@ -119,7 +133,7 @@ export class Storage {
 
             let out: TContext = {
                 vars: getDataByRegexp(func.value, regexp).map(({name, value}): TVarDecl =>
-                    ({variable: name, type: types.find(type => type.name === value)!.type})
+                    ({name: name, type: types.find(type => type.name === value)!.type})
                 ),
                 start: {row: func.row, col: 0},
                 end: {row: rows.length, col: 0},
@@ -156,18 +170,18 @@ export class Storage {
     private findContextDeclarations(text: string) {
         const scriptType = scriptInfo(text).scriptType;
         this.contextFrames(text);
-        this.pushGlobalVariable({variable: 'tx', type: transactionClasses});
+
+        globalVariables.map(v => this.pushGlobalVariable(v));
 
         if (scriptType === 1) {
             let type = types.find(item => item.name === 'Address');
-            this.pushGlobalVariable({variable: 'this', type: type ? type.type : 'Unknown'})
+            this.pushGlobalVariable({name: 'this', type: type ? type.type : 'Unknown'})
         }
 
         if (scriptType === 2) this.pushGlobalVariable({
-            variable: 'this',
+            name: 'this',
             type: ["ByteVector", {"typeName": "Unit", "fields": []}]
         }); //assetId
-
 
         [
             ...getDataByRegexp(text, /@(Verifier|Callable)[ \t]*\((.+)\)/g)
@@ -190,10 +204,13 @@ export class Storage {
     }
 
     private pushGlobalVariable(v: TVarDecl) {
-        this.variables.push(v);
-        this.contexts[0].vars.push(v);
+        const index = this.variables.findIndex(({name}) => name === v.name);
+        if (~index) this.variables[index] = {...this.variables[index], ...v};
+        else {
+            this.variables.push(v);
+            this.contexts[0].vars.push(v);
+        }
     }
-
 
     private getExtactDoc = (ctx: Storage, value: string, type: string): TType => {
         let extractData = value.match(/(.+)\.extract/) ||
@@ -206,37 +223,25 @@ export class Storage {
                 out = resultType.filter(type => (type as TStruct)!.typeName !== 'Unit')
             }
         } else {
-            //out = getLadderType(ctx, extractData[1].split('.'), true).type;
+            out = getLadderType(ctx, extractData[1].split('.'), true).type;
         }
         return out
     };
 
-    private unique = (arr: any) => {
-        let obj: any = {};
-        for (let i = 0; i < arr.length; i++) {
-            if (!arr[i]) continue;
-            let str = JSON.stringify(arr[i]);
-            obj[str] = true;
-        }
-        return Object.keys(obj).map(type => JSON.parse(type));
-    };
-
-
 }
+
 
 export const ctx = new Storage();
 
 //======================COMPLETION=========================
 
-export const getCompletionDefaultResult = (p: TPosition) =>{
-    console.error(JSON.stringify(ctx.contexts.map(({start, end}) => [start, end, p]), null, 4))
-    
-   return [
+export const getCompletionDefaultResult = (p: TPosition) => {
+    return [
         ...getDefinedVariables(ctx.contexts.filter(({start, end}) => comparePos(start, end, p)))
-            .map(item => ({label: item.variable, kind: CompletionItemKind.Variable})),
+            .map(item => ({label: item.name, kind: CompletionItemKind.Variable, detail: item.doc})),
         ...globalSuggestions,
     ];
-}
+};
 
 export const getCompletionResult = (inputWords: string[]) =>
     getLadderCompletion(ctx, inputWords).map((item) => convertToCompletion(item));
@@ -265,7 +270,7 @@ function getLadderType(ctx: Storage, inputWords: string[], isExtract?: boolean):
         : type;
     let declVariable = ctx.getVariable(inputWords[0]);
     if (declVariable == null || !declVariable.type) return {name: 'Unknown', type: 'Unknown'};
-    let out = {name: declVariable.variable, type: extractUnit(declVariable.type)};
+    let out = {name: declVariable.name, type: extractUnit(declVariable.type)};
     for (let i = 1; i < inputWords.length; i++) {
         let actualType;
         if (isStruct(out.type)) actualType = out.type.fields.find(type => type.name === inputWords[i]);
@@ -273,7 +278,6 @@ function getLadderType(ctx: Storage, inputWords: string[], isExtract?: boolean):
     }
     return out;
 }
-
 
 export const getColonOrPipeCompletionResult = (textBefore: string) => {
     let out = types.map((type: TStructField) => convertToCompletion(type));
@@ -339,14 +343,15 @@ export function getHoverResult(word: string, inputWords: string[]) {
         `\n${func.args.map(({name, type, doc}) => `\n * ${`${name}: ${getFunctionArgumentString(type)} - ${doc}`} \n`)}\n` :
         ' '}) : ${getFunctionArgumentString(func.resultType)} \n>_${func.doc}_`;
 
-
-    return getLadderCompletion(ctx, inputWords)
-        .filter(({name}) => name === word).map(item => `**${item.name}**: ` + getTypeDoc(item))
-        .concat(ctx.variables.filter(({variable}) => variable === word)
-            .map(({type}) => type ? getTypeDoc({name: '', type: type}, true) : 'Unknown'))
-        .concat(globalVariables.filter(({name}) => name === word).map(({doc}) => doc))
-        .concat(getFunctionsByName(word).map((func: TFunction) => getHoverFunctionDoc(func)))
-        .concat(types.filter(({name}) => name === word).map(item => getTypeDoc(item)));
+    return unique(
+        getLadderCompletion(ctx, inputWords)
+            .filter(({name}) => name === word).map(item => `**${item.name}**: ` + getTypeDoc(item))
+            .concat(ctx.variables.filter(({name}) => name === word)
+                .map(({type}) => type ? getTypeDoc({name: '', type: type}, true) : 'Unknown'))
+            .concat(globalVariables.filter(({name}) => name === word).map(({doc}) => doc))
+            .concat(getFunctionsByName(word).map((func: TFunction) => getHoverFunctionDoc(func)))
+            .concat(types.filter(({name}) => name === word).map(item => getTypeDoc(item)))
+    );
 }
 
 //======================exported functions=================
