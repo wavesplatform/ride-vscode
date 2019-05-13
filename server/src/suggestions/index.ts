@@ -67,11 +67,10 @@ export class SuggestionData {
     functions: TFunction[] = getFunctionsDoc();
     globalVariables: IVarDoc[] = getVarsDoc();
     regexps = {
-        typesRegExp: /()/,
-        functionsRegExp: /()/
+        typesRegExp: /[]/,
+        functionsRegExp: /[]/
     };
-    classes: CompletionItem[] = [];
-    transactionClasses: CompletionItem[] = [];
+    transactionClasses: TUnion = [];
     globalSuggestions: CompletionItem[] = [];
 
     updateSuggestions = (stdlibVersion?: number, isTokenContext?: boolean) => {
@@ -84,7 +83,6 @@ export class SuggestionData {
         this.types.length = 0;
         this.functions.length = 0;
         this.globalVariables.length = 0;
-        this.classes.length = 0;
         this.transactionClasses.length = 0;
         this.globalSuggestions.length = 0;
 
@@ -97,14 +95,11 @@ export class SuggestionData {
             functions.filter(({name}) => ['*', '\\', '/', '%', '+',].indexOf(name) === -1).map(({name}) => name).join('\\b|\\b')
             }\\b)[ \\t]*\\(`);
 
-        this.classes.push(...types.map(({name}) => ({label: name, kind: CompletionItemKind.Class})));
-        this.transactionClasses.push(...(types!.find(t => t.name === 'Transaction')!.type as TUnion)
-            .map(({typeName}: any) => ({label: typeName, kind: CompletionItemKind.Class})));
+        this.transactionClasses.push(...(types!.find(t => t.name === 'Transaction')!.type as TUnion));
 
         this.globalSuggestions.push(
             ...suggestions.keywords.map((label: string) => <CompletionItem>({label, kind: CompletionItemKind.Keyword})),
             ...suggestions.snippets.map(({label}: TSnippet) => ({label, kind: CompletionItemKind.Snippet})),
-            ...globalVariables.map(({name, doc}) => ({label: name, detail: doc, kind: CompletionItemKind.Variable})),
             ...functions.map(({name, doc}) => ({detail: doc, kind: CompletionItemKind.Function, label: name})),
             ...types.filter(({name}) => defaultClasses.indexOf(name) !== -1)
                 .map(({name}) => ({kind: CompletionItemKind.Class, label: name}))

@@ -6,7 +6,8 @@
     "if",
     "then",
     "else",
-    "case"
+    "case",
+    "func"
   ],
   "snippets": [
     {
