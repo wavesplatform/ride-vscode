@@ -126,36 +126,34 @@ export class Storage {
 
 
     private contextFrames = (text: string) => {
-        const re = /func[ \t]*(.*)\([ \t]*(.*)[ \t]*\)[ \t]*=[ \t]*{/g;
         const rows = text.split('\n');
-        const out = getDataByRegexp(text, re).map(func => {
-            const regexp = new RegExp(`([a-zA-z0-9_]+)[ \\t]*:[ \\t]*(${regexps.typesRegExp.source})`, 'g');
-
-            let out: TContext = {
-                vars: getDataByRegexp(func.value, regexp).map(({name, value}): TVarDecl =>
-                    ({name: name, type: types.find(type => type.name === value)!.type})
-                ),
-                start: {row: func.row, col: 0},
-                end: {row: rows.length, col: 0},
-                children: []
-            };
-            let bracket = 1;
-            let isStop = false;
-            for (let i = func.row; i < rows.length; i++) {
-                for (let j = 0; j < rows[i].length; j++) {
-                    if (rows[i][j] === '{') bracket++;
-                    if (rows[i][j] === '}') bracket--;
-                    if (bracket === 0) {
-                        out.end.row = i + 1;
-                        out.end.col = rows[i].length;
-                        isStop = true;
-                        break;
+        const out = rows.map((row: string, i: number): TPosition => ({col: row.indexOf('{'), row: i + 1}))
+            .filter(({row, col}) => ~row && ~col)
+            .map(p => {
+                let out: TContext = {
+                    vars: [],
+                    start: {row: p.row, col: p.col},
+                    end: {row: rows.length, col: rows[rows.length - 1].length},
+                    children: []
+                };
+                let bracket = 1;
+                let isStop = false;
+                for (let i = p.row - 1; i < rows.length; i++) {
+                    for (let j = i === p.row - 1 ? p.col + 1 : 0; j < rows[i].length; j++) {
+                        if (rows[i][j] === '{') bracket++;
+                        if (rows[i][j] === '}') bracket--;
+                        if (bracket === 0) {
+                            out.end.row = i + 1;
+                            out.end.col = rows[i].length;
+                            isStop = true;
+                            break;
+                        }
                     }
+                    if (isStop) break;
                 }
-                if (isStop) break;
-            }
-            return out;
-        });
+                return out;
+            });
+        console.error(out)
         this.contexts = [
             {
                 vars: [],
@@ -165,6 +163,8 @@ export class Storage {
             },
             ...out
         ]
+
+
     };
 
     private findContextDeclarations(text: string) {
