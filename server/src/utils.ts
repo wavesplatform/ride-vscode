@@ -124,92 +124,79 @@ export class Storage {
         return out
     };
 
+    private getContextFrame(p: TPosition, rows: string[], vars?: TVarDecl[]): TContext {
 
-    private contextFrames = (text: string) => {
-        const rows = text.split('\n');
-        const out = rows.map((row: string, i: number): TPosition => ({col: row.indexOf('{'), row: i + 1}))
-            .filter(({row, col}) => ~row && ~col)
-            .map(p => {
-                let out: TContext = {
-                    vars: [],
-                    start: {row: p.row, col: p.col},
-                    end: {row: rows.length, col: rows[rows.length - 1].length},
-                    children: []
-                };
-                let bracket = 1;
-                let isStop = false;
-                for (let i = p.row - 1; i < rows.length; i++) {
-                    for (let j = i === p.row - 1 ? p.col + 1 : 0; j < rows[i].length; j++) {
-                        if (rows[i][j] === '{') bracket++;
-                        if (rows[i][j] === '}') bracket--;
-                        if (bracket === 0) {
-                            out.end.row = i + 1;
-                            out.end.col = rows[i].length;
-                            isStop = true;
-                            break;
-                        }
-                    }
-                    if (isStop) break;
+        let out: TContext = {
+            vars: vars || [],
+            start: {row: p.row, col: p.col},
+            end: {row: rows.length-1, col: rows[rows.length - 1].length},
+            children: []
+        };
+        let bracket = (p.row === 0 && p.col === 0 && rows[0][0] === '{') ? 2 : 1;
+        let isStop = false;
+        for (let i = p.row; i < rows.length; i++) {
+            if (bracket === 1) out.vars.push(...this.getVariables(rows[i]));
+            for (let j = i === p.row ? p.col + 1 : 0; j < rows[i].length; j++) {
+
+                if (rows[i][j] === '}') bracket--;
+
+                if (rows[i][j] === '{') {
+                    bracket++;
+                    const child = this.getContextFrame({row: i, col: j}, rows);
+                    out.children.push(child);
+                    i = child.end.row;
+                    j = child.end.col;
                 }
-                return out;
-            });
-        console.error(out)
-        this.contexts = [
-            {
-                vars: [],
-                start: {row: 0, col: 0},
-                end: {row: rows.length, col: rows[rows.length - 1].length},
-                children: [],
-            },
-            ...out
-        ]
 
+                if (bracket === 0) {
+                    out.end.row = i;
+                    out.end.col = j + 1;
+                    isStop = true;
+                    break;
+                }
+            }
+            if (isStop) break;
+        }
+        return out;
+    }
 
-    };
+    private getGlobalVariables(scriptType: number) {
+        const out = globalVariables.map(v => this.pushGlobalVariable(v));
+        if (scriptType === 1) {
+            let type = types.find(item => item.name === 'Address');
+            out.push(this.pushGlobalVariable({name: 'this', type: type ? type.type : 'Unknown'}))
+        }
+
+        if (scriptType === 2) out.push(this.pushGlobalVariable({
+            name: 'this',
+            type: ["ByteVector", {"typeName": "Unit", "fields": []}]
+        })); //assetId
+        return out;
+    }
+
+    private getVariables = (row: string) => [
+        ...getDataByRegexp(row, /@(Verifier|Callable)[ \t]*\((.+)\)/g)
+            .map(item => ({...item, name: item.value, value: item.name})),
+        ...getDataByRegexp(row, matchRegexp).map(({name}) => ({name, value: 'Transaction'})),
+        ...getDataByRegexp(row, caseRegexp),
+        ...getDataByRegexp(row, letRegexp),
+    ].map(({name, value}) => this.defineType(name, value) || {variable: name});
+
 
     private findContextDeclarations(text: string) {
         const scriptType = scriptInfo(text).scriptType;
-        this.contextFrames(text);
-
-        globalVariables.map(v => this.pushGlobalVariable(v));
-
-        if (scriptType === 1) {
-            let type = types.find(item => item.name === 'Address');
-            this.pushGlobalVariable({name: 'this', type: type ? type.type : 'Unknown'})
-        }
-
-        if (scriptType === 2) this.pushGlobalVariable({
-            name: 'this',
-            type: ["ByteVector", {"typeName": "Unit", "fields": []}]
-        }); //assetId
-
-        [
-            ...getDataByRegexp(text, /@(Verifier|Callable)[ \t]*\((.+)\)/g)
-                .map(item => ({...item, name: item.value, value: item.name})),
-            ...getDataByRegexp(text, caseRegexp),
-            ...getDataByRegexp(text, letRegexp),
-        ]
-            .forEach(item => { //by variables
-                let isPushed = false;
-                const variable = this.defineType(item.name, item.value) || {variable: item.name};
-                this.variables.push(variable);
-                for (let i = 1; i < this.contexts.length; i++) {
-                    if (item.row >= this.contexts[i].start.row && item.row <= this.contexts[i].end.row) {
-                        this.contexts[i].vars.push(variable);
-                        isPushed = true;
-                    }
-                }
-                if (!isPushed) this.contexts[0].vars.push(variable);
-            });
+        const rows = text.split('\n');
+        const out = this.getContextFrame({row: 0, col: 0}, rows, [])// this.getGlobalVariables(scriptType)); //todo unmute
+        console.error(JSON.stringify(out, null, 4));
+        return out;
     }
 
     private pushGlobalVariable(v: TVarDecl) {
         const index = this.variables.findIndex(({name}) => name === v.name);
         if (~index) this.variables[index] = {...this.variables[index], ...v};
-        else {
-            this.variables.push(v);
-            this.contexts[0].vars.push(v);
-        }
+        else this.variables.push(v);
+
+        return v;
     }
 
     private getExtactDoc = (ctx: Storage, value: string, type: string): TType => {
@@ -484,7 +471,7 @@ function getDataByRegexp(text: string, re: RegExp) {
                 namePos: row.indexOf(myMatch[1]),
                 value: myMatch[2],
                 valuePos: row.indexOf(myMatch[2]),
-                row: i + 1
+                row: i
             });
         }
     });

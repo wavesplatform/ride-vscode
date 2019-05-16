@@ -80,7 +80,7 @@ export class LspService {
                     ];
                     break;
                 default:
-                    result = utils.getCompletionDefaultResult({row: position.line+1, col: position.character+1});
+                    result = utils.getCompletionDefaultResult({row: position.line, col: position.character+1});
                     break;
             }
         } catch (e) {
