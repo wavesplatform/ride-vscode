@@ -220,7 +220,7 @@ export class Context {
 
     private getExtractDoc = (value: string, type: string): TType => {
         let extractData = value.match(/(.+)\.extract/) ||
-            value.match(/extract[ \t]*\([ \t]*([a-zA-z0-9_.()]*)[ \t]*\)/) || [];
+            value.match(/extract[ \t]*\([ \t]*([a-zA-z0-9_.()"]*)[ \t]*\)/) || [];
         let out: TType = type, match: RegExpMatchArray | null;
         if (extractData.length < 2) return out;
         if (extractData[1] && (match = extractData[1].match(regexps.functionsRegExp)) != null) {
