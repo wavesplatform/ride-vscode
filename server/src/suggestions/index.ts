@@ -58,11 +58,10 @@ export const unionToString = (item: TUnion) => item.map(type => getUnionItemName
 
 export const letRegexp = /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm;
 export const caseRegexp = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:(.*)=>*{*/gm;
-export const matchRegexp = /\bmatch[ \t(]+\b(.+)\b[ \t)]*[{=]*/gm;
 
 const defaultClasses = ['WriteSet', 'TransferSet', 'ScriptResult'];
 
-export class SuggestionData {
+export class Suggestions {
     types: TStructField[] = getTypes();
     functions: TFunction[] = getFunctionsDoc();
     globalVariables: IVarDoc[] = getVarsDoc();

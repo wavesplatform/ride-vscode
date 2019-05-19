@@ -1,252 +1,12 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types';
-import {
-    caseRegexp,
-    isList,
-    isPrimitive,
-    isStruct,
-    isUnion,
-    letRegexp,
-    listToString,
-    matchRegexp,
-    SuggestionData,
-    unionToString,
-} from './suggestions';
-import { scriptInfo, TFunction, TList, TStruct, TStructField, TType, TUnion } from '@waves/ride-js'
+import { isList, isPrimitive, isStruct, isUnion, listToString, unionToString } from './suggestions';
+import { TFunction, TList, TStruct, TStructField, TType, TUnion } from '@waves/ride-js'
+import { Context, TPosition, suggestions } from "./context";
 
-export const suggestions = new SuggestionData();
-
-const {regexps, types, functions, globalVariables, globalSuggestions} = suggestions;
-
-//======================TYPES==============================
-export type TPosition = {
-    row: number
-    col: number
-};
-
-type TVarDecl = {
-    name: string,
-    type: TType,
-    doc?: string
-
-};
-
-type TContext = {
-    vars: TVarDecl[]
-    start: TPosition
-    end: TPosition
-    children: TContext[]
-}
-
-//======================STORAGE============================
-
-const unique = (arr: any) => {
-    let obj: any = {};
-    for (let i = 0; i < arr.length; i++) {
-        if (!arr[i]) continue;
-        let str = JSON.stringify(arr[i]);
-        obj[str] = true;
-    }
-    return Object.keys(obj).map(type => JSON.parse(type));
-};
-
-export class Storage {
-
-    context: TContext = {
-        vars: [],
-        start: {row: 0, col: 0},
-        end: {row: 0, col: 0},
-        children: []
-    };
-
-    variables: TVarDecl[] = [];
-
-    text: string = '';
-
-    updateContext(text: string) {
-        this.context = {
-            vars: [],
-            start: {row: 0, col: 0},
-            end: {row: 0, col: 0},
-            children: []
-        };
-        this.variables.length = 0;
-        if (this.text !== text) this.findContextDeclarations(text);
-    }
-
-    getVariable = (name: string): (TVarDecl | undefined) =>
-        this.variables.find(({name: varName}) => varName === name);
-
-    getVariablesByPos = (p: TPosition): TVarDecl[] => this.getVariablesRec(this.context, p);
-
-    getContextByPos = (p: TPosition): TContext => this.getContextRec(this.context, p);
-
-    private getContextRec = (c: TContext, p: TPosition): TContext => {
-        const newCtx: TContext | undefined = c.children.find(({start, end}) => this.comparePos(start, end, p));
-        return (newCtx !== undefined) ? this.getContextRec(newCtx, p) : c;
-    };
+export const ctx = new Context();
+const {types, functions, globalVariables, globalSuggestions} = suggestions;
 
 
-    private getVariablesRec(c: TContext, p: TPosition): TVarDecl[] {
-        const out: TVarDecl[] = c.vars;
-        const childCtx = c.children.find(({start, end}) => this.comparePos(start, end, p));
-        if (childCtx) out.push(...this.getVariablesRec(childCtx, p));
-        return out;
-    }
-
-    private comparePos(start: TPosition, end: TPosition, p: TPosition): boolean {
-        if (start.row < p.row && end.row > p.row) return true;
-        else if (start.row === p.row && start.col <= p.col - 1) return true;
-        else if (end.row === p.row && end.col >= p.col - 1) return true;
-        return false
-    }
-
-    private defineType(name: string, value: string): TVarDecl {
-        let out: TVarDecl = {name: name, type: 'Unknown'};
-        let match: RegExpMatchArray | null, split;
-
-        const variable = this.getVariable(value);
-        if (variable) out.type = variable.type;
-        else if (Number(value.toString().replace(/_/g, '')).toString() !== 'NaN') {
-            out.type = 'Int';
-        } else if ((match = value.match(/\b(base58|base64)\b[ \t]*'(.*)'/)) != null) {
-            out.type = 'ByteVector';
-        } else if (/.*\b&&|==|!=|>=|>\b.*/.test(value) || /\btrue|false\b/.test(value)) {
-            out.type = 'Boolean';
-        } else if ((match = value.match(/^[ \t]*"(.+)"[ \t]*/)) != null) {
-            out.type = 'String';
-        } else if ((match = value.match(regexps.functionsRegExp)) != null) {
-            out.type = functions.find(({name}) => name === match![1])!.resultType;
-        } else if ((match = value.match(regexps.typesRegExp)) != null) {
-            out.type = types.find(type => match != null && type.name === match[0])!.type;
-        } else if ((match = value.match(/^[ \t]*\[(.+)][ \t]*$/)) != null) {
-            let uniqueType = unique(match[1].split(',')
-                .map(type => this.defineType('', type).type));
-            out.type = (uniqueType.length === 1) ? {listOf: uniqueType[0]} : {listOf: "any"};
-        } else if ((split = value.split('.')).length > 1) {
-            const type = getLadderType(this, split);
-            out.type = type.type;
-            if ((match = getLastArrayElement(split).match(regexps.functionsRegExp)) != null) {
-                let func = functions.find(({name}) => match != null && name === match[1]);
-                if (func) out.type = func.resultType
-            }
-        } else if (value === 'Callable') {
-            let type = types.find(item => item.name === 'Invocation');
-            out = {name: name, type: type != null ? type.type : out.type}
-        } else if (value === 'Verifier') {
-            let type = types.find(item => item.name === 'Transaction');
-            out = {name: name, type: type != null ? type.type : out.type}
-        }
-
-        if (out.type === 'TYPEPARAM(84)') out.type = this.getExtactDoc(this, value, out.type);
-        return out
-    };
-
-    private getContextFrame(p: TPosition, rows: string[], vars?: TVarDecl[]): TContext {
-
-        let out: TContext = {
-            vars: vars || [],
-            start: {row: p.row, col: p.col},
-            end: {row: rows.length - 1, col: rows[rows.length - 1].length},
-            children: []
-        };
-        let bracket = 1;
-        let isStop = false;
-        for (let i = p.row; i < rows.length; i++) {
-
-            let childrenVariables: TVarDecl[] = [];
-            if (~rows[i].indexOf('{-#') || ~rows[i].indexOf(' #-}')) continue;
-            if (bracket === 1) {
-                const vars = this.getVariables(rows[i]);
-                out.vars.push(...vars);
-                childrenVariables = this.getChlidrenVariables(rows[i]);
-                this.variables.push(...vars, ...childrenVariables)
-            }
-
-            for (let j = ((i === p.row) ? (p.col + 1) : 0); j < rows[i].length; j++) {
-
-                if (rows[i][j] === '}') bracket--;
-
-                if (rows[i][j] === '{') {
-                    const child = this.getContextFrame({row: i, col: j}, rows, childrenVariables);
-                    out.children.push(child);
-                    i = child.end.row;
-                    j = child.end.col;
-                }
-
-                if (bracket === 0) {
-                    out.end.row = i;
-                    out.end.col = j + 1;
-                    isStop = true;
-                    break;
-                }
-            }
-            if (isStop) break;
-        }
-        return out;
-    }
-
-    private getGlobalVariables(scriptType: number) {
-        const out = globalVariables.map(v => this.pushGlobalVariable(v));
-        if (scriptType === 1) {
-            let type = types.find(item => item.name === 'Address');
-            out.push(this.pushGlobalVariable({name: 'this', type: type ? type.type : 'Unknown'}))
-        }
-
-        if (scriptType === 2) out.push(this.pushGlobalVariable({
-            name: 'this',
-            type: ["ByteVector", {"typeName": "Unit", "fields": []}]
-        })); //assetId
-        return out;
-    }
-
-    private getVariables = (row: string) => [
-        ...getDataByRegexp(row, letRegexp),
-    ].map(({name, value}) => this.defineType(name, value) || {variable: name});
-
-    private getChlidrenVariables = (row: string) => [
-        ...getDataByRegexp(row, /@(Verifier|Callable)[ \t]*\((.+)\)/g)
-            .map(item => ({...item, name: item.value, value: item.name})),
-        ...getDataByRegexp(row, matchRegexp).map(({name}) => ({name, value: 'Transaction'})),
-        ...getDataByRegexp(row, caseRegexp),
-
-    ].map(({name, value}) => this.defineType(name, value) || {variable: name});
-
-    private findContextDeclarations(text: string) {
-        const scriptType = scriptInfo(text).scriptType;
-        const rows = text.split('\n');
-        const out = this.getContextFrame({row: 0, col: 0}, rows, this.getGlobalVariables(scriptType));
-        this.context = out;
-        return out;
-    }
-
-    private pushGlobalVariable(v: TVarDecl) {
-        const index = this.variables.findIndex(({name}) => name === v.name);
-        if (~index) this.variables[index] = {...this.variables[index], ...v};
-        else this.variables.push(v);
-
-        return v;
-    }
-
-    private getExtactDoc = (ctx: Storage, value: string, type: string): TType => {
-        let extractData = value.match(/(.+)\.extract/) ||
-            value.match(/extract[ \t]*\([ \t]*([a-zA-z0-9_.()]*)[ \t]*\)/) || [];
-        let out: TType = type, match: RegExpMatchArray | null;
-        if (extractData.length < 2) return out;
-        if (extractData[1] && (match = extractData[1].match(regexps.functionsRegExp)) != null) {
-            let resultType = functions.find(({name}) => name === match![1])!.resultType;
-            if (resultType && isUnion(resultType)) {
-                out = resultType.filter(type => (type as TStruct)!.typeName !== 'Unit')
-            }
-        } else {
-            out = getLadderType(ctx, extractData[1].split('.'), true).type;
-        }
-        return out
-    };
-
-}
-
-
-export const ctx = new Storage();
 
 //======================COMPLETION=========================
 
@@ -262,7 +22,7 @@ export const getCompletionResult = (inputWords: string[]) =>
     getLadderCompletion(ctx, inputWords).map((item) => convertToCompletion(item));
 
 
-function getLadderCompletion(ctx: Storage, inputWords: string[]): TStructField[] {
+function getLadderCompletion(ctx: Context, inputWords: string[]): TStructField[] {
     let declVariable = ctx.getVariable(inputWords[0]);
     if (declVariable == null || !declVariable.type) return [];
     let out = intersection(isUnion(declVariable.type) ? declVariable.type : [declVariable.type]);
@@ -279,25 +39,11 @@ function getLadderCompletion(ctx: Storage, inputWords: string[]): TStructField[]
 }
 
 
-function getLadderType(ctx: Storage, inputWords: string[], isExtract?: boolean): TStructField {
-    const extractUnit = (type: TType): TType => isExtract && isUnion(type)
-        ? type.filter((item) => !(isStruct(item) && item.typeName === 'Unit'))
-        : type;
-    let declVariable = ctx.getVariable(inputWords[0]);
-    if (declVariable == null || !declVariable.type) return {name: 'Unknown', type: 'Unknown'};
-    let out = {name: declVariable.name, type: extractUnit(declVariable.type)};
-    for (let i = 1; i < inputWords.length; i++) {
-        let actualType;
-        if (isStruct(out.type)) actualType = out.type.fields.find(type => type.name === inputWords[i]);
-        if (actualType && actualType.type) out = {...actualType, type: extractUnit(actualType.type)}
-    }
-    return out;
-}
-
 export const getColonOrPipeCompletionResult = (text: string, p: TPosition): CompletionItem[] => {
     let out: CompletionItem[] = types.map((type: TStructField) => convertToCompletion(type));
     const context = ctx.getContextByPos(p);
-    let matchRes =  matchRegexp.exec(text.split('\n')[context.start.row]);
+    const matchRegexp = /\bmatch[ \t(]+\b(.+)\b[ \t)]*[{=]*/gm;
+    let matchRes = matchRegexp.exec(text.split('\n')[context.start.row]);
     if (matchRes != null && matchRes[1]) {
         const variable = ctx.getVariablesByPos(p).find(({name}) => name === matchRes![1].toString());
         if (variable && variable.type && isUnion(variable.type)) {
@@ -450,7 +196,7 @@ const convertToCompletion = (field: TStructField): CompletionItem => {
     };
 };
 
-function intersection(types: TType[]): TStructField[] {
+export function intersection(types: TType[]): TStructField[] {
     const items = [...types];
     let structs: TStruct[] = [];
     if (types === [] || items.length === 0) {
@@ -480,7 +226,7 @@ function intersect(a: TStructField[], b: TStructField[]) {
     return out;
 }
 
-function getDataByRegexp(text: string, re: RegExp) {
+export function getDataByRegexp(text: string, re: RegExp) {
     const declarations: {
         name: string
         namePos: number
@@ -504,5 +250,12 @@ function getDataByRegexp(text: string, re: RegExp) {
     return declarations;
 }
 
-
-
+export const unique = (arr: any) => {
+    let obj: any = {};
+    for (let i = 0; i < arr.length; i++) {
+        if (!arr[i]) continue;
+        let str = JSON.stringify(arr[i]);
+        obj[str] = true;
+    }
+    return Object.keys(obj).map(type => JSON.parse(type));
+};

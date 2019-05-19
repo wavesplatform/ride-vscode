@@ -11,15 +11,15 @@ import {
 } from 'vscode-languageserver-types';
 import { compile, scriptInfo } from '@waves/ride-js';
 import * as utils from './utils';
-
+import { suggestions, TPosition } from "./context";
 
 export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         try {
             const version = scriptInfo(document.getText()).stdLibVersion;
-            utils.suggestions.updateSuggestions(version);
+            suggestions.updateSuggestions(version);
         } catch (e) {
-            utils.suggestions.updateSuggestions();
+            suggestions.updateSuggestions();
         }
 
         let diagnostics: Diagnostic[] = [];
@@ -44,14 +44,13 @@ export class LspService {
 
     public completion(document: TextDocument, position: Position) {
         const offset = document.offsetAt(position);
-        const text =  document.getText();
+        const text = document.getText();
         const character = text.substring(offset - 1, offset);
         const line = document.getText({start: {line: position.line, character: 0}, end: position});
-        const p: utils.TPosition = {row: position.line, col: position.character + 1};
+        const p: TPosition = {row: position.line, col: position.character + 1};
 
         utils.ctx.updateContext(text);
         let result: CompletionItem[] = [];
-
         try {
             let wordBeforeDot = line.match(/([a-zA-z0-9_]+)\.[a-zA-z0-9_]*\b$/);     // get text before dot (ex: [tx].test)
             let firstWordMatch = (/([a-zA-z0-9_]+)\.[a-zA-z0-9_.]*$/gm).exec(line) || [];
