@@ -15,10 +15,10 @@ import { scriptInfo, TFunction, TList, TStruct, TStructField, TType, TUnion } fr
 
 export const suggestions = new SuggestionData();
 
-const {regexps, types, functions, globalVariables, globalSuggestions, transactionClasses} = suggestions;
+const {regexps, types, functions, globalVariables, globalSuggestions} = suggestions;
 
 //======================TYPES==============================
-type TPosition = {
+export type TPosition = {
     row: number
     col: number
 };
@@ -39,19 +39,6 @@ type TContext = {
 
 //======================STORAGE============================
 
-function comparePos(start: TPosition, end: TPosition, p: TPosition): boolean {
-    if (start.row < p.row && end.row > p.row) return true;
-    else if (start.row === p.row && start.col <= p.col - 1) return true;
-    else if (end.row === p.row && end.col >= p.col - 1) return true;
-    return false
-}
-
-function getDefinedVariables(vars: TContext[]) {
-    const out: TVarDecl[] = [];
-    vars.forEach(item => out.push(...item.vars));
-    return out
-}
-
 const unique = (arr: any) => {
     let obj: any = {};
     for (let i = 0; i < arr.length; i++) {
@@ -64,14 +51,24 @@ const unique = (arr: any) => {
 
 export class Storage {
 
-    contexts: TContext[] = [];
+    context: TContext = {
+        vars: [],
+        start: {row: 0, col: 0},
+        end: {row: 0, col: 0},
+        children: []
+    };
 
     variables: TVarDecl[] = [];
 
     text: string = '';
 
     updateContext(text: string) {
-        this.contexts.length = 0;
+        this.context = {
+            vars: [],
+            start: {row: 0, col: 0},
+            end: {row: 0, col: 0},
+            children: []
+        };
         this.variables.length = 0;
         if (this.text !== text) this.findContextDeclarations(text);
     }
@@ -79,11 +76,31 @@ export class Storage {
     getVariable = (name: string): (TVarDecl | undefined) =>
         this.variables.find(({name: varName}) => varName === name);
 
-    getVariablesByPos = (p: TPosition) => getDefinedVariables(
-        this.contexts.filter(({start, end}) => comparePos(start, end, p))
-    );
+    getVariablesByPos = (p: TPosition): TVarDecl[] => this.getVariablesRec(this.context, p);
 
-    defineType(name: string, value: string): TVarDecl {
+    getContextByPos = (p: TPosition): TContext => this.getContextRec(this.context, p);
+
+    private getContextRec = (c: TContext, p: TPosition): TContext => {
+        const newCtx: TContext | undefined = c.children.find(({start, end}) => this.comparePos(start, end, p));
+        return (newCtx !== undefined) ? this.getContextRec(newCtx, p) : c;
+    };
+
+
+    private getVariablesRec(c: TContext, p: TPosition): TVarDecl[] {
+        const out: TVarDecl[] = c.vars;
+        const childCtx = c.children.find(({start, end}) => this.comparePos(start, end, p));
+        if (childCtx) out.push(...this.getVariablesRec(childCtx, p));
+        return out;
+    }
+
+    private comparePos(start: TPosition, end: TPosition, p: TPosition): boolean {
+        if (start.row < p.row && end.row > p.row) return true;
+        else if (start.row === p.row && start.col <= p.col - 1) return true;
+        else if (end.row === p.row && end.col >= p.col - 1) return true;
+        return false
+    }
+
+    private defineType(name: string, value: string): TVarDecl {
         let out: TVarDecl = {name: name, type: 'Unknown'};
         let match: RegExpMatchArray | null, split;
 
@@ -129,20 +146,28 @@ export class Storage {
         let out: TContext = {
             vars: vars || [],
             start: {row: p.row, col: p.col},
-            end: {row: rows.length-1, col: rows[rows.length - 1].length},
+            end: {row: rows.length - 1, col: rows[rows.length - 1].length},
             children: []
         };
-        let bracket = (p.row === 0 && p.col === 0 && rows[0][0] === '{') ? 2 : 1;
+        let bracket = 1;
         let isStop = false;
         for (let i = p.row; i < rows.length; i++) {
-            if (bracket === 1) out.vars.push(...this.getVariables(rows[i]));
-            for (let j = i === p.row ? p.col + 1 : 0; j < rows[i].length; j++) {
+
+            let childrenVariables: TVarDecl[] = [];
+            if (~rows[i].indexOf('{-#') || ~rows[i].indexOf(' #-}')) continue;
+            if (bracket === 1) {
+                const vars = this.getVariables(rows[i]);
+                out.vars.push(...vars);
+                childrenVariables = this.getChlidrenVariables(rows[i]);
+                this.variables.push(...vars, ...childrenVariables)
+            }
+
+            for (let j = ((i === p.row) ? (p.col + 1) : 0); j < rows[i].length; j++) {
 
                 if (rows[i][j] === '}') bracket--;
 
                 if (rows[i][j] === '{') {
-                    bracket++;
-                    const child = this.getContextFrame({row: i, col: j}, rows);
+                    const child = this.getContextFrame({row: i, col: j}, rows, childrenVariables);
                     out.children.push(child);
                     i = child.end.row;
                     j = child.end.col;
@@ -175,19 +200,22 @@ export class Storage {
     }
 
     private getVariables = (row: string) => [
+        ...getDataByRegexp(row, letRegexp),
+    ].map(({name, value}) => this.defineType(name, value) || {variable: name});
+
+    private getChlidrenVariables = (row: string) => [
         ...getDataByRegexp(row, /@(Verifier|Callable)[ \t]*\((.+)\)/g)
             .map(item => ({...item, name: item.value, value: item.name})),
         ...getDataByRegexp(row, matchRegexp).map(({name}) => ({name, value: 'Transaction'})),
         ...getDataByRegexp(row, caseRegexp),
-        ...getDataByRegexp(row, letRegexp),
-    ].map(({name, value}) => this.defineType(name, value) || {variable: name});
 
+    ].map(({name, value}) => this.defineType(name, value) || {variable: name});
 
     private findContextDeclarations(text: string) {
         const scriptType = scriptInfo(text).scriptType;
         const rows = text.split('\n');
-        const out = this.getContextFrame({row: 0, col: 0}, rows, [])// this.getGlobalVariables(scriptType)); //todo unmute
-        console.error(JSON.stringify(out, null, 4));
+        const out = this.getContextFrame({row: 0, col: 0}, rows, this.getGlobalVariables(scriptType));
+        this.context = out;
         return out;
     }
 
@@ -224,9 +252,9 @@ export const ctx = new Storage();
 
 export const getCompletionDefaultResult = (p: TPosition) => {
     return [
-        ...getDefinedVariables(ctx.contexts.filter(({start, end}) => comparePos(start, end, p)))
-            .map(item => ({label: item.name, kind: CompletionItemKind.Variable, detail: item.doc})),
         ...globalSuggestions,
+        ...ctx.getVariablesByPos(p)
+            .map(item => ({label: item.name, kind: CompletionItemKind.Variable, detail: item.doc})),
     ];
 };
 
@@ -266,16 +294,14 @@ function getLadderType(ctx: Storage, inputWords: string[], isExtract?: boolean):
     return out;
 }
 
-export const getColonOrPipeCompletionResult = (textBefore: string) => {
-    let out = types.map((type: TStructField) => convertToCompletion(type));
-
-    let matchVariable = getLastArrayElement(getDataByRegexp(textBefore, matchRegexp).map(({name}) => name));
-    if (matchVariable === 'tx') {
-        out = transactionClasses.map(({typeName}: any) => ({label: typeName, kind: CompletionItemKind.Class}));
-    } else {
-        const type = ctx.defineType('', matchVariable).type;
-        if (isUnion(type)) {
-            out = type.map(({typeName}: any) => ({label: typeName, kind: CompletionItemKind.Class}));
+export const getColonOrPipeCompletionResult = (text: string, p: TPosition): CompletionItem[] => {
+    let out: CompletionItem[] = types.map((type: TStructField) => convertToCompletion(type));
+    const context = ctx.getContextByPos(p);
+    let matchRes =  matchRegexp.exec(text.split('\n')[context.start.row]);
+    if (matchRes != null && matchRes[1]) {
+        const variable = ctx.getVariablesByPos(p).find(({name}) => name === matchRes![1].toString());
+        if (variable && variable.type && isUnion(variable.type)) {
+            out = variable.type.map(({typeName}: any) => ({label: typeName, kind: CompletionItemKind.Class}));
         }
     }
     return out
@@ -380,7 +406,7 @@ const getFunctionArgumentString = (type: TType): string => {
     }
 };
 
-const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
+export const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
     const type = item.type;
     let typeDoc = 'Unknown';
     switch (true) {

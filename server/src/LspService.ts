@@ -44,12 +44,12 @@ export class LspService {
 
     public completion(document: TextDocument, position: Position) {
         const offset = document.offsetAt(position);
-        const character = document.getText().substring(offset - 1, offset);
-        const textBefore = document.getText({start: {line: 0, character: 0}, end: position});
+        const text =  document.getText();
+        const character = text.substring(offset - 1, offset);
         const line = document.getText({start: {line: position.line, character: 0}, end: position});
+        const p: utils.TPosition = {row: position.line, col: position.character + 1};
 
-        utils.ctx.updateContext(document.getText());
-
+        utils.ctx.updateContext(text);
         let result: CompletionItem[] = [];
 
         try {
@@ -71,7 +71,7 @@ export class LspService {
                     break;
                 //auto completion after clicking on a colon or pipe
                 case (line.match(/([a-zA-z0-9_]+)[ \t]*[|:][ \t]*[a-zA-z0-9_]*$/) !== null):
-                    result = utils.getColonOrPipeCompletionResult(textBefore);
+                    result = utils.getColonOrPipeCompletionResult(text, p);
                     break;
                 case(['@'].indexOf(character) !== -1):
                     result = [
@@ -80,7 +80,7 @@ export class LspService {
                     ];
                     break;
                 default:
-                    result = utils.getCompletionDefaultResult({row: position.line, col: position.character+1});
+                    result = utils.getCompletionDefaultResult(p);
                     break;
             }
         } catch (e) {
@@ -99,7 +99,7 @@ export class LspService {
         const line = document.getText().split('\n')[position.line];
         const word = utils.getWordByPos(line, position.character);
         utils.ctx.updateContext(document.getText());
-        return {contents: utils.getHoverResult( word, (match ? match[0] : '').split('.'))};
+        return {contents: utils.getHoverResult(word, (match ? match[0] : '').split('.'))};
     }
 
     public signatureHelp(document: TextDocument, position: Position): SignatureHelp {
