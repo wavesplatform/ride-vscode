@@ -19,6 +19,7 @@ import {
 } from 'vscode-languageserver';
 import * as fs from 'fs';
 import { LspService } from './LspService';
+import { ErrorMessageTracker } from "vscode-languageserver";
 
 export class LspServer {
     private hasConfigurationCapability: boolean= false;
@@ -29,7 +30,7 @@ export class LspServer {
     private documents: { [uri: string]: TextDocument } = {};
 
     constructor(private connection: IConnection) {
-        this.service = new LspService();
+        this.service = new LspService(connection);
 
         // Bind connection events to server methods
         // Init
