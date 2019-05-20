@@ -95,7 +95,7 @@ export function getSignatureHelpResult(word: string, isShift: boolean) {
 
 //======================Hover==============================
 
-export function getHoverResult(word: string, inputWords: string[]) {
+export function getHoverResult( word: string, inputWords: string[], p: TPosition) {
 
 
     const getHoverFunctionDoc = (func: TFunction) => `**${func.name}** (${func.args.length > 0 ?
@@ -226,14 +226,16 @@ function intersect(a: TStructField[], b: TStructField[]) {
     return out;
 }
 
+export type TDecl = {
+    name: string
+    namePos?: number
+    value: string
+    valuePos?: number
+    row?: number
+}
+
 export function getDataByRegexp(text: string, re: RegExp) {
-    const declarations: {
-        name: string
-        namePos: number
-        value: string
-        valuePos: number
-        row: number
-    }[] = [];
+    const declarations: TDecl[] = [];
     const split = text.split('\n');
     let myMatch;
     split.map((row: string, i: number) => {

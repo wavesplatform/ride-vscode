@@ -1,6 +1,6 @@
 import { caseRegexp, isStruct, isUnion, letRegexp, Suggestions } from "./suggestions";
 import { scriptInfo, TStruct, TStructField, TType } from "@waves/ride-js";
-import { getDataByRegexp, getLastArrayElement, unique, intersection } from "./utils";
+import { getDataByRegexp, getLastArrayElement, intersection, TDecl, unique } from "./utils";
 
 export const suggestions = new Suggestions();
 const {regexps, types, functions, globalVariables} = suggestions;
@@ -62,6 +62,7 @@ export class Context {
 
 
     private getVariablesRec(c: TContext, p: TPosition): TVarDecl[] {
+
         const out: TVarDecl[] = c.vars;
         const childCtx = c.children.find(({start, end}) => this.comparePos(start, end, p));
         if (childCtx) out.push(...this.getVariablesRec(childCtx, p));
@@ -122,7 +123,10 @@ export class Context {
 
         let declVariable = this.getVariable(inputWords[0]);
         if (declVariable == null || !declVariable.type) return {name: 'Unknown', type: 'Unknown'};
-        if(isUnion(declVariable.type)) declVariable.type = {typeName: 'Union', fields: intersection(declVariable.type)};
+        if (isUnion(declVariable.type)) declVariable.type = {
+            typeName: 'Union',
+            fields: intersection(declVariable.type)
+        };
         let out = {name: declVariable.name, type: extractUnit(declVariable.type)};
         for (let i = 1; i < inputWords.length; i++) {
             let actualType;
@@ -195,12 +199,24 @@ export class Context {
         ...getDataByRegexp(row, letRegexp),
     ].map(({name, value}) => this.defineType(name, value) || {variable: name});
 
-    private getChildrenVariables = (row: string) => [
+    private getChildrenVariables = (row: string) => [ //todo add function args
         ...getDataByRegexp(row, /@(Verifier|Callable)[ \t]*\((.+)\)/g)
             .map(item => ({...item, name: item.value, value: item.name})),
         ...getDataByRegexp(row, caseRegexp),
-
+        ...this.getFuncArgs(row)
     ].map(({name, value}) => this.defineType(name, value) || {variable: name});
+
+    private getFuncArgs(row: string): TDecl[] {
+        const out: TDecl[] = [];
+        getDataByRegexp(row, /func[ \t]*(.*)\([ \t]*(.*)[ \t]*\)[ \t]*=[ \t]*{/g).forEach(i =>
+            i.value.split(/[ \t]*,[ \t]*/).forEach(v => {
+                    const split = v.split(/[ \t]*:[ \t]*/);
+                    if(split[0] && split[1]) out.push({name: split[0] || '', value: split[1] || ''})
+                }
+            )
+        );
+        return out
+    }
 
     private findContextDeclarations(text: string) {
         const scriptType = scriptInfo(text).scriptType;

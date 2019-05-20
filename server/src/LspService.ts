@@ -50,6 +50,8 @@ export class LspService {
         const p: TPosition = {row: position.line, col: position.character + 1};
 
         utils.ctx.updateContext(text);
+        console.error(JSON.stringify(utils.ctx.context, null, 4))
+
         let result: CompletionItem[] = [];
         try {
             let wordBeforeDot = line.match(/([a-zA-z0-9_]+)\.[a-zA-z0-9_]*\b$/);     // get text before dot (ex: [tx].test)
@@ -98,7 +100,8 @@ export class LspService {
         const line = document.getText().split('\n')[position.line];
         const word = utils.getWordByPos(line, position.character);
         utils.ctx.updateContext(document.getText());
-        return {contents: utils.getHoverResult(word, (match ? match[0] : '').split('.'))};
+        const p: TPosition = {row: position.line, col: position.character + 1};
+        return {contents: utils.getHoverResult(word, (match ? match[0] : '').split('.'), p)};
     }
 
     public signatureHelp(document: TextDocument, position: Position): SignatureHelp {
