@@ -23,7 +23,7 @@
 			"port": 6009,
 			"sourceMaps": true,
 			"outFiles": ["${workspaceRoot}/server/out/**/*.js"]
-		},	
+		},
 			{
 			"type": "node",
 			"request": "attach",
