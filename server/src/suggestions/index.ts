@@ -58,11 +58,10 @@ export const unionToString = (item: TUnion) => item.map(type => getUnionItemName
 
 export const letRegexp = /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm;
 export const caseRegexp = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:(.*)=>*{*/gm;
-export const matchRegexp = /\bmatch[ \t(]+\b(.+)\b[ \t)]*[{=]*/gm;
 
 const defaultClasses = ['WriteSet', 'TransferSet', 'ScriptResult'];
 
-export class SuggestionData {
+export class Suggestions {
     types: TStructField[] = getTypes();
     functions: TFunction[] = getFunctionsDoc();
     globalVariables: IVarDoc[] = getVarsDoc();
@@ -70,7 +69,6 @@ export class SuggestionData {
         typesRegExp: /[]/,
         functionsRegExp: /[]/
     };
-    transactionClasses: TUnion = [];
     globalSuggestions: CompletionItem[] = [];
 
     updateSuggestions = (stdlibVersion?: number, isTokenContext?: boolean) => {
@@ -83,7 +81,6 @@ export class SuggestionData {
         this.types.length = 0;
         this.functions.length = 0;
         this.globalVariables.length = 0;
-        this.transactionClasses.length = 0;
         this.globalSuggestions.length = 0;
 
         this.types.push(...types);
@@ -94,8 +91,6 @@ export class SuggestionData {
         this.regexps.functionsRegExp = new RegExp(`^[!]*(\\b${
             functions.filter(({name}) => ['*', '\\', '/', '%', '+',].indexOf(name) === -1).map(({name}) => name).join('\\b|\\b')
             }\\b)[ \\t]*\\(`);
-
-        this.transactionClasses.push(...(types!.find(t => t.name === 'Transaction')!.type as TUnion));
 
         this.globalSuggestions.push(
             ...suggestions.keywords.map((label: string) => <CompletionItem>({label, kind: CompletionItemKind.Keyword})),

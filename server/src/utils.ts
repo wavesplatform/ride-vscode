@@ -1,245 +1,20 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types';
-import {
-    caseRegexp,
-    isList,
-    isPrimitive,
-    isStruct,
-    isUnion,
-    letRegexp,
-    listToString,
-    matchRegexp,
-    SuggestionData,
-    unionToString,
-} from './suggestions';
-import { scriptInfo, TFunction, TList, TStruct, TStructField, TType, TUnion } from '@waves/ride-js'
+import { isList, isPrimitive, isStruct, isUnion, listToString, unionToString } from './suggestions';
+import { TFunction, TList, TStruct, TStructField, TType, TUnion } from '@waves/ride-js'
+import { Context, TPosition, suggestions } from "./context";
 
-export const suggestions = new SuggestionData();
-
-const {regexps, types, functions, globalVariables, globalSuggestions, transactionClasses} = suggestions;
-
-//======================TYPES==============================
-type TPosition = {
-    row: number
-    col: number
-};
-
-type TVarDecl = {
-    name: string,
-    type: TType,
-    doc?: string
-
-};
-
-type TContext = {
-    vars: TVarDecl[]
-    start: TPosition
-    end: TPosition
-    children: TContext[]
-}
-
-//======================STORAGE============================
-
-function comparePos(start: TPosition, end: TPosition, p: TPosition): boolean {
-    if (start.row < p.row && end.row > p.row) return true;
-    else if (start.row === p.row && start.col <= p.col - 1) return true;
-    else if (end.row === p.row && end.col >= p.col - 1) return true;
-    return false
-}
-
-function getDefinedVariables(vars: TContext[]) {
-    const out: TVarDecl[] = [];
-    vars.forEach(item => out.push(...item.vars));
-    return out
-}
-
-const unique = (arr: any) => {
-    let obj: any = {};
-    for (let i = 0; i < arr.length; i++) {
-        if (!arr[i]) continue;
-        let str = JSON.stringify(arr[i]);
-        obj[str] = true;
-    }
-    return Object.keys(obj).map(type => JSON.parse(type));
-};
-
-export class Storage {
-
-    contexts: TContext[] = [];
-
-    variables: TVarDecl[] = [];
-
-    text: string = '';
-
-    updateContext(text: string) {
-        this.contexts.length = 0;
-        this.variables.length = 0;
-        if (this.text !== text) this.findContextDeclarations(text);
-    }
-
-    getVariable = (name: string): (TVarDecl | undefined) =>
-        this.variables.find(({name: varName}) => varName === name);
-
-    getVariablesByPos = (p: TPosition) => getDefinedVariables(
-        this.contexts.filter(({start, end}) => comparePos(start, end, p))
-    );
-
-    defineType(name: string, value: string): TVarDecl {
-        let out: TVarDecl = {name: name, type: 'Unknown'};
-        let match: RegExpMatchArray | null, split;
-
-        const variable = this.getVariable(value);
-        if (variable) out.type = variable.type;
-        else if (Number(value.toString().replace(/_/g, '')).toString() !== 'NaN') {
-            out.type = 'Int';
-        } else if ((match = value.match(/\b(base58|base64)\b[ \t]*'(.*)'/)) != null) {
-            out.type = 'ByteVector';
-        } else if (/.*\b&&|==|!=|>=|>\b.*/.test(value) || /\btrue|false\b/.test(value)) {
-            out.type = 'Boolean';
-        } else if ((match = value.match(/^[ \t]*"(.+)"[ \t]*/)) != null) {
-            out.type = 'String';
-        } else if ((match = value.match(regexps.functionsRegExp)) != null) {
-            out.type = functions.find(({name}) => name === match![1])!.resultType;
-        } else if ((match = value.match(regexps.typesRegExp)) != null) {
-            out.type = types.find(type => match != null && type.name === match[0])!.type;
-        } else if ((match = value.match(/^[ \t]*\[(.+)][ \t]*$/)) != null) {
-            let uniqueType = unique(match[1].split(',')
-                .map(type => this.defineType('', type).type));
-            out.type = (uniqueType.length === 1) ? {listOf: uniqueType[0]} : {listOf: "any"};
-        } else if ((split = value.split('.')).length > 1) {
-            const type = getLadderType(this, split);
-            out.type = type.type;
-            if ((match = getLastArrayElement(split).match(regexps.functionsRegExp)) != null) {
-                let func = functions.find(({name}) => match != null && name === match[1]);
-                if (func) out.type = func.resultType
-            }
-        } else if (value === 'Callable') {
-            let type = types.find(item => item.name === 'Invocation');
-            out = {name: name, type: type != null ? type.type : out.type}
-        } else if (value === 'Verifier') {
-            let type = types.find(item => item.name === 'Transaction');
-            out = {name: name, type: type != null ? type.type : out.type}
-        }
-
-        if (out.type === 'TYPEPARAM(84)') out.type = this.getExtactDoc(this, value, out.type);
-        return out
-    };
+export const ctx = new Context();
+const {types, functions, globalVariables, globalSuggestions} = suggestions;
 
 
-    private contextFrames = (text: string) => {
-        const re = /func[ \t]*(.*)\([ \t]*(.*)[ \t]*\)[ \t]*=[ \t]*{/g;
-        const rows = text.split('\n');
-        const out = getDataByRegexp(text, re).map(func => {
-            const regexp = new RegExp(`([a-zA-z0-9_]+)[ \\t]*:[ \\t]*(${regexps.typesRegExp.source})`, 'g');
-
-            let out: TContext = {
-                vars: getDataByRegexp(func.value, regexp).map(({name, value}): TVarDecl =>
-                    ({name: name, type: types.find(type => type.name === value)!.type})
-                ),
-                start: {row: func.row, col: 0},
-                end: {row: rows.length, col: 0},
-                children: []
-            };
-            let bracket = 1;
-            let isStop = false;
-            for (let i = func.row; i < rows.length; i++) {
-                for (let j = 0; j < rows[i].length; j++) {
-                    if (rows[i][j] === '{') bracket++;
-                    if (rows[i][j] === '}') bracket--;
-                    if (bracket === 0) {
-                        out.end.row = i + 1;
-                        out.end.col = rows[i].length;
-                        isStop = true;
-                        break;
-                    }
-                }
-                if (isStop) break;
-            }
-            return out;
-        });
-        this.contexts = [
-            {
-                vars: [],
-                start: {row: 0, col: 0},
-                end: {row: rows.length, col: rows[rows.length - 1].length},
-                children: [],
-            },
-            ...out
-        ]
-    };
-
-    private findContextDeclarations(text: string) {
-        const scriptType = scriptInfo(text).scriptType;
-        this.contextFrames(text);
-
-        globalVariables.map(v => this.pushGlobalVariable(v));
-
-        if (scriptType === 1) {
-            let type = types.find(item => item.name === 'Address');
-            this.pushGlobalVariable({name: 'this', type: type ? type.type : 'Unknown'})
-        }
-
-        if (scriptType === 2) this.pushGlobalVariable({
-            name: 'this',
-            type: ["ByteVector", {"typeName": "Unit", "fields": []}]
-        }); //assetId
-
-        [
-            ...getDataByRegexp(text, /@(Verifier|Callable)[ \t]*\((.+)\)/g)
-                .map(item => ({...item, name: item.value, value: item.name})),
-            ...getDataByRegexp(text, caseRegexp),
-            ...getDataByRegexp(text, letRegexp),
-        ]
-            .forEach(item => { //by variables
-                let isPushed = false;
-                const variable = this.defineType(item.name, item.value) || {variable: item.name};
-                this.variables.push(variable);
-                for (let i = 1; i < this.contexts.length; i++) {
-                    if (item.row >= this.contexts[i].start.row && item.row <= this.contexts[i].end.row) {
-                        this.contexts[i].vars.push(variable);
-                        isPushed = true;
-                    }
-                }
-                if (!isPushed) this.contexts[0].vars.push(variable);
-            });
-    }
-
-    private pushGlobalVariable(v: TVarDecl) {
-        const index = this.variables.findIndex(({name}) => name === v.name);
-        if (~index) this.variables[index] = {...this.variables[index], ...v};
-        else {
-            this.variables.push(v);
-            this.contexts[0].vars.push(v);
-        }
-    }
-
-    private getExtactDoc = (ctx: Storage, value: string, type: string): TType => {
-        let extractData = value.match(/(.+)\.extract/) ||
-            value.match(/extract[ \t]*\([ \t]*([a-zA-z0-9_.()]*)[ \t]*\)/) || [];
-        let out: TType = type, match: RegExpMatchArray | null;
-        if (extractData.length < 2) return out;
-        if (extractData[1] && (match = extractData[1].match(regexps.functionsRegExp)) != null) {
-            let resultType = functions.find(({name}) => name === match![1])!.resultType;
-            if (resultType && isUnion(resultType)) {
-                out = resultType.filter(type => (type as TStruct)!.typeName !== 'Unit')
-            }
-        } else {
-            out = getLadderType(ctx, extractData[1].split('.'), true).type;
-        }
-        return out
-    };
-
-}
-
-
-export const ctx = new Storage();
 
 //======================COMPLETION=========================
 
 export const getCompletionDefaultResult = (p: TPosition) => {
     return [
-        ...getDefinedVariables(ctx.contexts.filter(({start, end}) => comparePos(start, end, p)))
-            .map(item => ({label: item.name, kind: CompletionItemKind.Variable, detail: item.doc})),
         ...globalSuggestions,
+        ...ctx.getVariablesByPos(p)
+            .map(item => ({label: item.name, kind: CompletionItemKind.Variable, detail: item.doc})),
     ];
 };
 
@@ -247,7 +22,7 @@ export const getCompletionResult = (inputWords: string[]) =>
     getLadderCompletion(ctx, inputWords).map((item) => convertToCompletion(item));
 
 
-function getLadderCompletion(ctx: Storage, inputWords: string[]): TStructField[] {
+function getLadderCompletion(ctx: Context, inputWords: string[]): TStructField[] {
     let declVariable = ctx.getVariable(inputWords[0]);
     if (declVariable == null || !declVariable.type) return [];
     let out = intersection(isUnion(declVariable.type) ? declVariable.type : [declVariable.type]);
@@ -264,31 +39,15 @@ function getLadderCompletion(ctx: Storage, inputWords: string[]): TStructField[]
 }
 
 
-function getLadderType(ctx: Storage, inputWords: string[], isExtract?: boolean): TStructField {
-    const extractUnit = (type: TType): TType => isExtract && isUnion(type)
-        ? type.filter((item) => !(isStruct(item) && item.typeName === 'Unit'))
-        : type;
-    let declVariable = ctx.getVariable(inputWords[0]);
-    if (declVariable == null || !declVariable.type) return {name: 'Unknown', type: 'Unknown'};
-    let out = {name: declVariable.name, type: extractUnit(declVariable.type)};
-    for (let i = 1; i < inputWords.length; i++) {
-        let actualType;
-        if (isStruct(out.type)) actualType = out.type.fields.find(type => type.name === inputWords[i]);
-        if (actualType && actualType.type) out = {...actualType, type: extractUnit(actualType.type)}
-    }
-    return out;
-}
-
-export const getColonOrPipeCompletionResult = (textBefore: string) => {
-    let out = types.map((type: TStructField) => convertToCompletion(type));
-
-    let matchVariable = getLastArrayElement(getDataByRegexp(textBefore, matchRegexp).map(({name}) => name));
-    if (matchVariable === 'tx') {
-        out = transactionClasses.map(({typeName}: any) => ({label: typeName, kind: CompletionItemKind.Class}));
-    } else {
-        const type = ctx.defineType('', matchVariable).type;
-        if (isUnion(type)) {
-            out = type.map(({typeName}: any) => ({label: typeName, kind: CompletionItemKind.Class}));
+export const getColonOrPipeCompletionResult = (text: string, p: TPosition): CompletionItem[] => {
+    let out: CompletionItem[] = types.map((type: TStructField) => convertToCompletion(type));
+    const context = ctx.getContextByPos(p);
+    const matchRegexp = /\bmatch[ \t(]+\b(.+)\b[ \t)]*[{=]*/gm;
+    let matchRes = matchRegexp.exec(text.split('\n')[context.start.row]);
+    if (matchRes != null && matchRes[1]) {
+        const variable = ctx.getVariablesByPos(p).find(({name}) => name === matchRes![1].toString());
+        if (variable && variable.type && isUnion(variable.type)) {
+            out = variable.type.map(({typeName}: any) => ({label: typeName, kind: CompletionItemKind.Class}));
         }
     }
     return out
@@ -336,7 +95,7 @@ export function getSignatureHelpResult(word: string, isShift: boolean) {
 
 //======================Hover==============================
 
-export function getHoverResult(word: string, inputWords: string[]) {
+export function getHoverResult( word: string, inputWords: string[], p: TPosition) {
 
 
     const getHoverFunctionDoc = (func: TFunction) => `**${func.name}** (${func.args.length > 0 ?
@@ -393,7 +152,7 @@ const getFunctionArgumentString = (type: TType): string => {
     }
 };
 
-const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
+export const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
     const type = item.type;
     let typeDoc = 'Unknown';
     switch (true) {
@@ -437,7 +196,7 @@ const convertToCompletion = (field: TStructField): CompletionItem => {
     };
 };
 
-function intersection(types: TType[]): TStructField[] {
+export function intersection(types: TType[]): TStructField[] {
     const items = [...types];
     let structs: TStruct[] = [];
     if (types === [] || items.length === 0) {
@@ -467,14 +226,16 @@ function intersect(a: TStructField[], b: TStructField[]) {
     return out;
 }
 
-function getDataByRegexp(text: string, re: RegExp) {
-    const declarations: {
-        name: string
-        namePos: number
-        value: string
-        valuePos: number
-        row: number
-    }[] = [];
+export type TDecl = {
+    name: string
+    namePos?: number
+    value: string
+    valuePos?: number
+    row?: number
+}
+
+export function getDataByRegexp(text: string, re: RegExp) {
+    const declarations: TDecl[] = [];
     const split = text.split('\n');
     let myMatch;
     split.map((row: string, i: number) => {
@@ -484,12 +245,19 @@ function getDataByRegexp(text: string, re: RegExp) {
                 namePos: row.indexOf(myMatch[1]),
                 value: myMatch[2],
                 valuePos: row.indexOf(myMatch[2]),
-                row: i + 1
+                row: i
             });
         }
     });
     return declarations;
 }
 
-
-
+export const unique = (arr: any) => {
+    let obj: any = {};
+    for (let i = 0; i < arr.length; i++) {
+        if (!arr[i]) continue;
+        let str = JSON.stringify(arr[i]);
+        obj[str] = true;
+    }
+    return Object.keys(obj).map(type => JSON.parse(type));
+};
