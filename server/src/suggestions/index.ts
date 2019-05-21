@@ -59,7 +59,6 @@ export const unionToString = (item: TUnion) => item.map(type => getUnionItemName
 export const letRegexp = /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm;
 export const caseRegexp = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:(.*)=>*{*/gm;
 
-const defaultClasses = ['WriteSet', 'TransferSet', 'ScriptResult'];
 
 export class Suggestions {
     types: TStructField[] = getTypes();
@@ -95,9 +94,7 @@ export class Suggestions {
         this.globalSuggestions.push(
             ...suggestions.keywords.map((label: string) => <CompletionItem>({label, kind: CompletionItemKind.Keyword})),
             ...suggestions.snippets.map(({label}: TSnippet) => ({label, kind: CompletionItemKind.Snippet})),
-            ...functions.map(({name, doc}) => ({detail: doc, kind: CompletionItemKind.Function, label: name})),
-            ...types.filter(({name}) => defaultClasses.indexOf(name) !== -1)
-                .map(({name}) => ({kind: CompletionItemKind.Class, label: name}))
+            ...functions.map(({name, doc}) => ({detail: doc, kind: CompletionItemKind.Function, label: name}))
         )
 
     };
