@@ -1,11 +1,10 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types';
 import { isList, isPrimitive, isStruct, isUnion, listToString, unionToString } from './suggestions';
 import { TFunction, TList, TStruct, TStructField, TType, TUnion } from '@waves/ride-js'
-import { Context, TPosition, suggestions } from "./context";
+import { Context, suggestions, TPosition } from "./context";
 
 export const ctx = new Context();
 const {types, functions, globalVariables, globalSuggestions} = suggestions;
-
 
 
 //======================COMPLETION=========================
@@ -13,6 +12,8 @@ const {types, functions, globalVariables, globalSuggestions} = suggestions;
 export const getCompletionDefaultResult = (p: TPosition) => {
     return [
         ...globalSuggestions,
+        ...types.filter(item => isStruct(item.type))
+            .map(({name}) => ({kind: CompletionItemKind.Class, label: name})),
         ...ctx.getVariablesByPos(p)
             .map(item => ({label: item.name, kind: CompletionItemKind.Variable, detail: item.doc})),
     ];
@@ -79,23 +80,32 @@ export const checkPostfixFunction = (inputWord: string) => {
 //======================SignatureHelp======================
 
 export function getSignatureHelpResult(word: string, isShift: boolean) {
-    let func = getFunctionsByName(word).map(func => ({
-        ...func,
-        args: func.args.filter((_, i) => !(isShift && i === 0))
+    type TStructTypeField = { name: string, type: TStruct };
+
+    const getLabel = (name: string, args: TStructField[], resultType: TType) =>
+        `${name}(${args.map(({name, type}) =>
+            `${name}: ${getFunctionArgumentString(type)}`).join(', ')}): ${getFunctionArgumentString(resultType)}`;
+
+    const getParameters = (args: TStructField[]) => args.map(({name, type}) => ({
+        label: `${name}: ${getFunctionArgumentString(type)}`
     }));
-    return func.map((func: TFunction) => ({
-        label: `${word}(${func.args.map(({name, type}) =>
-            `${name}: ${getFunctionArgumentString(type)}`).join(', ')}): ${getFunctionArgumentString(func.resultType)}`,
-        documentation: func.doc,
-        parameters: func.args.map(({name, type, doc}) => ({
-            label: `${name}: ${getFunctionArgumentString(type)}`, documentation: doc
-        }))
-    }))
+
+    return [
+        ...getFunctionsByName(word).map(func => ({
+            ...func,
+            args: func.args.filter((_, i) => !(isShift && i === 0))
+        })).map(({name, args, doc, resultType}) =>
+            ({label: getLabel(name, args, resultType), documentation: doc, parameters: getParameters(args)})),
+
+        ...types.filter((item): item is TStructTypeField => item.name === word && isStruct(item.type))
+            .map(({name, type}: TStructTypeField) =>
+                ({label: getLabel(name, type.fields, type), parameters: getParameters(type.fields)}))
+    ]
 }
 
 //======================Hover==============================
 
-export function getHoverResult( word: string, inputWords: string[], p: TPosition) {
+export function getHoverResult(word: string, inputWords: string[], p: TPosition) {
 
 
     const getHoverFunctionDoc = (func: TFunction) => `**${func.name}** (${func.args.length > 0 ?
