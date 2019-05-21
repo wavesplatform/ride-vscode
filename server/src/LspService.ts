@@ -38,6 +38,18 @@ export class LspService {
                 };
             });
             diagnostics.push(...errors);
+            const parsingErrRegexp = /^Failure\(End:(\d+):(\d+) ...".*"\)$/gm;
+            const parsingErrorRanges: string[] = parsingErrRegexp.exec(errorText) || [];
+            if (!isNaN(+parsingErrorRanges[1]) && !isNaN(+parsingErrorRanges[2])) {
+                diagnostics.push({
+                    range: Range.create(
+                        Position.create(+parsingErrorRanges[1] - 1, +parsingErrorRanges[2] - 1),
+                        Position.create(+parsingErrorRanges[1] - 1, +parsingErrorRanges[2] - 1)
+                    ),
+                    severity: DiagnosticSeverity.Error,
+                    message: `Parsing error: ${errorText}`
+                });
+            }
         }
         return diagnostics;
     }
@@ -50,7 +62,6 @@ export class LspService {
         const p: TPosition = {row: position.line, col: position.character + 1};
 
         utils.ctx.updateContext(text);
-        console.error(JSON.stringify(utils.ctx.context, null, 4))
 
         let result: CompletionItem[] = [];
         try {
@@ -85,7 +96,7 @@ export class LspService {
                     break;
             }
         } catch (e) {
-            console.error(e);
+            // console.error(e);
         }
 
         return {
