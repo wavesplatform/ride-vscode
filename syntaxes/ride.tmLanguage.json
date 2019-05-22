@@ -8,15 +8,15 @@
     "patterns": [
         {
           "name": "keyword.ride",
-          "match": "\\b(this|let|if|then|else|ifelse|match|case|base64|base58|func)\\b"
+          "match": "\\b(let|if|then|else|ifelse|match|case|base64|base58|func)\\b"
         },
         {
           "name": "entity.name.function.ride",
-          "match": "\\b(keccak256|blake2b256|sha256|sigVerify|toBase58String|fromBase58String|toBase64String|fromBase64String|transactionById|addressFromRecipient|addressFromString|addressFromPublicKey|wavesBalance|assetBalance|getInteger|getBoolean|getBinary|getString|getInteger|getBoolean|getBinary|getString|getInteger|getBoolean|getBinary|getString|fraction|size|toBytes|take|drop|takeRight|dropRight|toString|isDefined|extract|throw|height|tx)\\b"
+          "match": "\\b(fraction|size|toBytes|toBytes|toBytes|take|drop|takeRight|dropRight|size|toString|toString|take|drop|takeRight|dropRight|isDefined|extract|throw|throw|\\*|\\/|%|\\+|-|==|!=|>=|>|getElement|size|!|value|cons|ensure|toUtf8String|toInt|toInt|indexOf|indexOf|split|parseInt|parseIntValue|keccak256|blake2b256|sha256|sigVerify|toBase58String|fromBase58String|toBase64String|fromBase64String|rsaVerify|toBase16String|fromBase16String|transactionById|transactionHeightById|getInteger|getBoolean|getBinary|getString|getInteger|getBoolean|getBinary|getString|getInteger|getBoolean|getBinary|getString|addressFromPublicKey|addressFromString|addressFromRecipient|assetBalance|wavesBalance|getIntegerValue|getBooleanValue|getBinaryValue|getStringValue|getIntegerValue|getBooleanValue|getBinaryValue|getStringValue|getIntegerValue|getBooleanValue|getBinaryValue|getStringValue|addressFromStringValue|assetInfo|blockInfoByHeight|this|SHA3256|SHA512|lastBlock|NOALG|SHA3224|MD2|height|Buy|nil|SHA256|MD5|SHA3512|SHA384|SHA3384|unit|tx|SHA224|SHA1|Sell)\\b"
         },
         {
             "name": "entity.name.type.ride",
-            "match": "\\b(Transaction|WriteSet|TransferSet|TransferTransaction|IssueTransaction|ReissueTransaction|BurnTransaction|LeaseTransaction|LeaseCancelTransaction|MassTransferTransaction|CreateAliasTransaction|SetScriptTransaction|SponsorFeeTransaction|ExchangeTransaction|DataTransaction|SetAssetScriptTransaction)\\b"
+            "match": "\\b(Unit|Int|Boolean|ByteVector|String|SHA1|SHA224|SHA256|SHA384|SHA512|UNION(MD2|MD5|NOALG|SHA1|SHA224|SHA256|SHA3224|SHA3256|SHA3384|SHA3512|SHA384|SHA512)|AssetPair|Transaction|ReissueTransaction|BurnTransaction|MassTransferTransaction|ExchangeTransaction|TransferTransaction|SetAssetScriptTransaction|InvokeScriptTransaction|IssueTransaction|LeaseTransaction|LeaseCancelTransaction|CreateAliasTransaction|SetScriptTransaction|SponsorFeeTransaction|DataTransaction|WriteSet|AttachedPayment|ScriptTransfer|TransferSet|ScriptResult|Invocation|Asset|BlockInfo)\\b"
         },
         {
             "name": "markup.bold.ride entity.name.type.ride",
