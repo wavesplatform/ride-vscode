@@ -77,6 +77,7 @@ export class Context {
     }
 
     private defineType(name: string, value: string): TVarDecl {
+        value = value.replace(/#.*$/, '');
         let out: TVarDecl = {name: name, type: 'Unknown'};
         let match: RegExpMatchArray | null, split;
         const variable = this.getVariable(value);
