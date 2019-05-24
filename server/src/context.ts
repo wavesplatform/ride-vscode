@@ -79,7 +79,7 @@ export class Context {
     private defineType(name: string, value: string): TVarDecl {
         value = value.replace(/#.*$/, '');
         let out: TVarDecl = {name: name, type: 'Unknown'};
-        let match: RegExpMatchArray | null, split;
+        let match: RegExpMatchArray | null, split: string[];
         const variable = this.getVariable(value);
         if (variable) out.type = variable.type;
         else if (Number(value.toString().replace(/_/g, '')).toString() !== 'NaN') {
@@ -90,6 +90,11 @@ export class Context {
             out.type = 'Boolean';
         } else if ((match = value.match(/^[ \t]*"(.+)"[ \t]*/)) != null) {
             out.type = 'String';
+        } else if ((split = value.split('|')).length > 1) {
+            out.type = {
+                typeName: 'Union',
+                fields: intersection(types.filter(({name}) => ~split.indexOf(name)).map(i => i.type))
+            }
         } else if ((match = value.match(regexps.functionsRegExp)) != null) {
             out.type = functions.find(({name}) => name === match![1])!.resultType;
         } else if ((match = value.match(regexps.typesRegExp)) != null) {
@@ -212,7 +217,7 @@ export class Context {
         getDataByRegexp(row, /func[ \t]*(.*)\([ \t]*(.*)[ \t]*\)[ \t]*=[ \t]*{/g).forEach(i =>
             i.value.split(/[ \t]*,[ \t]*/).forEach(v => {
                     const split = v.split(/[ \t]*:[ \t]*/);
-                    if(split[0] && split[1]) out.push({name: split[0] || '', value: split[1] || ''})
+                    if (split[0] && split[1]) out.push({name: split[0] || '', value: split[1] || ''})
                 }
             )
         );
