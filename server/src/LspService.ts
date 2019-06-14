@@ -49,6 +49,15 @@ export class LspService {
                     severity: DiagnosticSeverity.Error,
                     message: `Parsing error: ${errorText}`
                 });
+            }else{
+                diagnostics.push({
+                    range: Range.create(
+                        Position.create(0, 0),
+                        Position.create(document.lineCount, 1)
+                    ),
+                    severity: DiagnosticSeverity.Error,
+                    message: errorText
+                });
             }
         }
         return diagnostics;
