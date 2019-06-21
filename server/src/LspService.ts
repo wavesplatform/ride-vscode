@@ -28,28 +28,41 @@ export class LspService {
             const errorText = resultOrError.error;
             const errRangesRegxp = /\d+-\d+/gm;
             const errorRanges: string[] = errRangesRegxp.exec(errorText) || [];
-            const errors = errorRanges.map(offsets => {
-                const [start, end] = offsets.split('-').map(offset => document.positionAt(parseInt(offset)));
-                const range = Range.create(start, end);
-                return {
-                    range,
-                    severity: DiagnosticSeverity.Error,
-                    message: errorText
-                };
-            });
-            diagnostics.push(...errors);
-            const parsingErrRegexp = /^Failure\(End:(\d+):(\d+) ...".*"\)$/gm;
-            const parsingErrorRanges: string[] = parsingErrRegexp.exec(errorText) || [];
-            if (!isNaN(+parsingErrorRanges[1]) && !isNaN(+parsingErrorRanges[2])) {
-                diagnostics.push({
-                    range: Range.create(
-                        Position.create(+parsingErrorRanges[1] - 1, +parsingErrorRanges[2] - 1),
-                        Position.create(+parsingErrorRanges[1] - 1, +parsingErrorRanges[2] - 1)
-                    ),
-                    severity: DiagnosticSeverity.Error,
-                    message: `Parsing error: ${errorText}`
+            if (errorRanges.length > 0){
+                const errors = errorRanges.map(offsets => {
+                    const [start, end] = offsets.split('-').map(offset => document.positionAt(parseInt(offset)));
+                    const range = Range.create(start, end);
+                    return {
+                        range,
+                        severity: DiagnosticSeverity.Error,
+                        message: errorText
+                    };
                 });
+                diagnostics.push(...errors);
+            }else {
+                const parsingErrRegexp = /:(\d+):(\d+) ...".*"\)$/gm;
+                const parsingErrorRanges: string[] = parsingErrRegexp.exec(errorText) || [];
+                if (!isNaN(+parsingErrorRanges[1]) && !isNaN(+parsingErrorRanges[2])) {
+                    diagnostics.push({
+                        range: Range.create(
+                            Position.create(+parsingErrorRanges[1] - 1, +parsingErrorRanges[2] - 1),
+                            Position.create(+parsingErrorRanges[1] - 1, +parsingErrorRanges[2] - 1)
+                        ),
+                        severity: DiagnosticSeverity.Error,
+                        message: `Parsing error: ${errorText}`
+                    });
+                }else{
+                    diagnostics.push({
+                        range: Range.create(
+                            Position.create(0, 0),
+                            Position.create(0, 0)
+                        ),
+                        severity: DiagnosticSeverity.Error,
+                        message: errorText
+                    });
+                }
             }
+
         }
         return diagnostics;
     }
