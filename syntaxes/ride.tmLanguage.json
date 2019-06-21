@@ -12,7 +12,7 @@
         },
         {
           "name": "entity.name.function.ride",
-          "match": "\\b(fraction|size|toBytes|toBytes|toBytes|take|drop|takeRight|dropRight|size|toString|toString|take|drop|takeRight|dropRight|isDefined|extract|throw|throw|\\*|\\/|%|\\+|-|==|!=|>=|>|getElement|size|!|value|cons|ensure|toUtf8String|toInt|toInt|indexOf|indexOf|split|parseInt|parseIntValue|keccak256|blake2b256|sha256|sigVerify|toBase58String|fromBase58String|toBase64String|fromBase64String|rsaVerify|toBase16String|fromBase16String|transactionById|transactionHeightById|getInteger|getBoolean|getBinary|getString|getInteger|getBoolean|getBinary|getString|getInteger|getBoolean|getBinary|getString|addressFromPublicKey|addressFromString|addressFromRecipient|assetBalance|wavesBalance|getIntegerValue|getBooleanValue|getBinaryValue|getStringValue|getIntegerValue|getBooleanValue|getBinaryValue|getStringValue|getIntegerValue|getBooleanValue|getBinaryValue|getStringValue|addressFromStringValue|assetInfo|blockInfoByHeight|this|SHA3256|SHA512|lastBlock|NOALG|SHA3224|MD2|height|Buy|nil|SHA256|MD5|SHA3512|SHA384|SHA3384|unit|tx|SHA224|SHA1|Sell)\\b"
+          "match": "\\b(wavesBalance|valueOrErrorMessage|value|transferTransactionById|transactionHeightById|toUtf8String|toString|toString|toString|toInt|toInt|toBytes|toBytes|toBytes|toBase64String|toBase58String|toBase16String|throw|throw|takeRight|takeRight|take|take|split|size|size|size|sigVerify|sha256|rsaVerify|pow|parseIntValue|parseInt|log|lastIndexOf|lastIndexOf|keccak256|isDefined|indexOf|indexOf|getStringValue|getStringValue|getStringValue|getString|getString|getString|getIntegerValue|getIntegerValue|getIntegerValue|getInteger|getInteger|getInteger|getElement|getBooleanValue|getBooleanValue|getBooleanValue|getBoolean|getBoolean|getBoolean|getBinaryValue|getBinaryValue|getBinaryValue|getBinary|getBinary|getBinary|fromBase64String|fromBase58String|fromBase16String|fraction|extract|dropRight|dropRight|drop|drop|cons|checkMerkleProof|blockInfoByHeight|blake2b256|assetInfo|assetBalance|addressFromStringValue|addressFromString|addressFromRecipient|addressFromPublicKey|_isInstanceOf)\\b"
         },
         {
             "name": "entity.name.type.ride",
@@ -45,7 +45,7 @@
         {
             "include": "#numbers"
         }
-       
+
     ],
     "repository": {
 		"qstring-double": {
@@ -91,7 +91,7 @@
                     "name": "constant.language.ride"
                 }
             ]
-        },   
+        },
         "comments": {
             "patterns": [
                 {
@@ -103,7 +103,7 @@
         },
         "numbers": {
 			"patterns": [
-				
+
 				{
 					"match": "\\b(?<!\\$)0[0-7]([0-7_]*[0-7])?[Ll]?\\b(?!\\$)",
 					"name": "constant.numeric.octal.ride"
