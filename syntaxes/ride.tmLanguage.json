@@ -7,16 +7,16 @@
     "scopeName": "source.ride",
     "patterns": [
         {
-          "name": "keyword.ride",
-          "match": "\\b(let|if|then|else|ifelse|match|case|base64|base58|func)\\b"
+            "name": "keyword.ride",
+            "match": "\\b(let|if|then|else|ifelse|match|case|base64|base58|func)\\b"
         },
         {
-          "name": "entity.name.function.ride",
-          "match": "\\b(wavesBalance|valueOrErrorMessage|value|transferTransactionById|transactionHeightById|toUtf8String|toString|toString|toString|toInt|toInt|toBytes|toBytes|toBytes|toBase64String|toBase58String|toBase16String|throw|throw|takeRight|takeRight|take|take|split|size|size|size|sigVerify|sha256|rsaVerify|pow|parseIntValue|parseInt|log|lastIndexOf|lastIndexOf|keccak256|isDefined|indexOf|indexOf|getStringValue|getStringValue|getStringValue|getString|getString|getString|getIntegerValue|getIntegerValue|getIntegerValue|getInteger|getInteger|getInteger|getElement|getBooleanValue|getBooleanValue|getBooleanValue|getBoolean|getBoolean|getBoolean|getBinaryValue|getBinaryValue|getBinaryValue|getBinary|getBinary|getBinary|fromBase64String|fromBase58String|fromBase16String|fraction|extract|dropRight|dropRight|drop|drop|cons|checkMerkleProof|blockInfoByHeight|blake2b256|assetInfo|assetBalance|addressFromStringValue|addressFromString|addressFromRecipient|addressFromPublicKey|_isInstanceOf)\\b"
+            "name": "entity.name.function.ride",
+            "match": "\\b(fraction|size|toBytes|toBytes|toBytes|take|drop|takeRight|dropRight|size|toString|toString|take|drop|takeRight|dropRight|_isInstanceOf|isDefined|extract|throw|throw|-|==|!=|>=|>|getElement|size|-|!|value|valueOrErrorMessage|cons|toUtf8String|toInt|toInt|indexOf|indexOf|lastIndexOf|lastIndexOf|split|parseInt|parseIntValue|pow|log|keccak256|blake2b256|sha256|sigVerify|toBase58String|fromBase58String|toBase64String|fromBase64String|rsaVerify|checkMerkleProof|toBase16String|fromBase16String|transactionHeightById|getInteger|getBoolean|getBinary|getString|getInteger|getBoolean|getBinary|getString|getInteger|getBoolean|getBinary|getString|addressFromPublicKey|addressFromString|addressFromRecipient|assetBalance|wavesBalance|getIntegerValue|getBooleanValue|getBinaryValue|getStringValue|getIntegerValue|getBooleanValue|getBinaryValue|getStringValue|getIntegerValue|getBooleanValue|getBinaryValue|getStringValue|addressFromStringValue|assetInfo|blockInfoByHeight|transferTransactionById|toString)\\b"
         },
         {
             "name": "entity.name.type.ride",
-            "match": "\\b(Unit|Int|Boolean|ByteVector|String|SHA1|SHA224|SHA256|SHA384|SHA512|UNION(MD2|MD5|NOALG|SHA1|SHA224|SHA256|SHA3224|SHA3256|SHA3384|SHA3512|SHA384|SHA512)|AssetPair|Transaction|ReissueTransaction|BurnTransaction|MassTransferTransaction|ExchangeTransaction|TransferTransaction|SetAssetScriptTransaction|InvokeScriptTransaction|IssueTransaction|LeaseTransaction|LeaseCancelTransaction|CreateAliasTransaction|SetScriptTransaction|SponsorFeeTransaction|DataTransaction|WriteSet|AttachedPayment|ScriptTransfer|TransferSet|ScriptResult|Invocation|Asset|BlockInfo)\\b"
+            "match": "\\b(Unit|Int|Boolean|ByteVector|String|Down|Up|HalfUp|HalfDown|HalfEven|Ceiling|Floor|Ceiling|Down|Floor|HalfDown|HalfEven|HalfUp|Up|NoAlg|Md5|Sha1|Sha224|Sha256|Sha384|Sha512|Sha3224|Sha3256|Sha3384|Sha3512|Md5|NoAlg|Sha1|Sha224|Sha256|Sha3224|Sha3256|Sha3384|Sha3512|Sha384|Sha512|Address|Alias|Transfer|AssetPair|DataEntry|Order|Transaction|GenesisTransaction|PaymentTransaction|ReissueTransaction|BurnTransaction|MassTransferTransaction|ExchangeTransaction|TransferTransaction|SetAssetScriptTransaction|InvokeScriptTransaction|IssueTransaction|LeaseTransaction|LeaseCancelTransaction|CreateAliasTransaction|SetScriptTransaction|SponsorFeeTransaction|DataTransaction|WriteSet|AttachedPayment|ScriptTransfer|TransferSet|ScriptResult|Invocation|Asset|BlockInfo)\\b"
         },
         {
             "name": "markup.bold.ride entity.name.type.ride",
@@ -45,45 +45,44 @@
         {
             "include": "#numbers"
         }
-
     ],
     "repository": {
-		"qstring-double": {
-			"name": "string.quoted.double.ride",
-			"begin": "\"",
-			"beginCaptures": {
-				"0": {
-					"name": "punctuation.definition.string.begin.ride"
-				}
-			},
-			"end": "(\")|((?:[^\\\\\\n])$)",
-			"endCaptures": {
-				"1": {
-					"name": "punctuation.definition.string.end.ride"
-				},
-				"2": {
-					"name": "invalid.illegal.newline.ride"
-				}
-			}
-		},
-		"qstring-single": {
-			"name": "variable.parameter ",
-			"begin": "'",
-			"beginCaptures": {
-				"0": {
-					"name": "punctuation.definition.string.begin.ride"
-				}
-			},
-			"end": "(\\')|((?:[^\\\\\\n])$)",
-			"endCaptures": {
-				"1": {
-					"name": "punctuation.definition.string.end.ride"
-				},
-				"2": {
-					"name": "invalid.illegal.newline.ride"
-				}
-			}
-		},
+        "qstring-double": {
+            "name": "string.quoted.double.ride",
+            "begin": "\"",
+            "beginCaptures": {
+                "0": {
+                    "name": "punctuation.definition.string.begin.ride"
+                }
+            },
+            "end": "(\")|((?:[^\\\\\\n])$)",
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.string.end.ride"
+                },
+                "2": {
+                    "name": "invalid.illegal.newline.ride"
+                }
+            }
+        },
+        "qstring-single": {
+            "name": "variable.parameter ",
+            "begin": "'",
+            "beginCaptures": {
+                "0": {
+                    "name": "punctuation.definition.string.begin.ride"
+                }
+            },
+            "end": "(\\')|((?:[^\\\\\\n])$)",
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.string.end.ride"
+                },
+                "2": {
+                    "name": "invalid.illegal.newline.ride"
+                }
+            }
+        },
         "boolean": {
             "patterns": [
                 {
@@ -102,17 +101,16 @@
             ]
         },
         "numbers": {
-			"patterns": [
-
-				{
-					"match": "\\b(?<!\\$)0[0-7]([0-7_]*[0-7])?[Ll]?\\b(?!\\$)",
-					"name": "constant.numeric.octal.ride"
-				},
-				{
-					"match": "(?x)\n(?<!\\$)\n(\n  \\b[0-9]([0-9_]*[0-9])?\\.\\B(?!\\.)\n  |\n  \\b[0-9]([0-9_]*[0-9])?\\.([Ee][+-]?[0-9]([0-9_]*[0-9])?)[FfDd]?\\b\n  |\n  \\b[0-9]([0-9_]*[0-9])?\\.([Ee][+-]?[0-9]([0-9_]*[0-9])?)?[FfDd]\\b\n  |\n  \\b[0-9]([0-9_]*[0-9])?\\.([0-9]([0-9_]*[0-9])?)([Ee][+-]?[0-9]([0-9_]*[0-9])?)?[FfDd]?\\b\n  |\n  (?<!\\.)\\B\\.[0-9]([0-9_]*[0-9])?([Ee][+-]?[0-9]([0-9_]*[0-9])?)?[FfDd]?\\b\n  |\n  \\b[0-9]([0-9_]*[0-9])?([Ee][+-]?[0-9]([0-9_]*[0-9])?)[FfDd]?\\b\n  |\n  \\b[0-9]([0-9_]*[0-9])?([Ee][+-]?[0-9]([0-9_]*[0-9])?)?[FfDd]\\b\n  |\n  \\b(0|[1-9]([0-9_]*[0-9])?)(?!\\.)[Ll]?\\b\n)\n(?!\\$)",
-					"name": "constant.numeric.decimal.ride"
-				}
-			]
-		}
+            "patterns": [
+                {
+                    "match": "\\b(?<!\\$)0[0-7]([0-7_]*[0-7])?[Ll]?\\b(?!\\$)",
+                    "name": "constant.numeric.octal.ride"
+                },
+                {
+                    "match": "(?x)\n(?<!\\$)\n(\n  \\b[0-9]([0-9_]*[0-9])?\\.\\B(?!\\.)\n  |\n  \\b[0-9]([0-9_]*[0-9])?\\.([Ee][+-]?[0-9]([0-9_]*[0-9])?)[FfDd]?\\b\n  |\n  \\b[0-9]([0-9_]*[0-9])?\\.([Ee][+-]?[0-9]([0-9_]*[0-9])?)?[FfDd]\\b\n  |\n  \\b[0-9]([0-9_]*[0-9])?\\.([0-9]([0-9_]*[0-9])?)([Ee][+-]?[0-9]([0-9_]*[0-9])?)?[FfDd]?\\b\n  |\n  (?<!\\.)\\B\\.[0-9]([0-9_]*[0-9])?([Ee][+-]?[0-9]([0-9_]*[0-9])?)?[FfDd]?\\b\n  |\n  \\b[0-9]([0-9_]*[0-9])?([Ee][+-]?[0-9]([0-9_]*[0-9])?)[FfDd]?\\b\n  |\n  \\b[0-9]([0-9_]*[0-9])?([Ee][+-]?[0-9]([0-9_]*[0-9])?)?[FfDd]\\b\n  |\n  \\b(0|[1-9]([0-9_]*[0-9])?)(?!\\.)[Ll]?\\b\n)\n(?!\\$)",
+                    "name": "constant.numeric.decimal.ride"
+                }
+            ]
+        }
     }
 }
