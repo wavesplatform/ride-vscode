@@ -98,7 +98,8 @@
 		"watch:server": "tsc -w -p ./server/tsconfig.json",
 		"compile": "npm run compile:extension && npm run compile:server",
 		"postinstall": "cd extension && npm install && cd ../server && npm install && cd ..",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"updateTmLanguage": "ts-node ./scripts/updateTmLanguage.ts"
 	},
 	"devDependencies": {
 		"@types/mocha": "^5.2.0",
@@ -107,6 +108,7 @@
 		"typescript": "3.2.2"
 	},
 	"dependencies": {
+		"@waves/ride-js": "^1.0.0",
 		"vscode-languageserver-types": "^3.12.0"
 	}
 }
