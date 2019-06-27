@@ -91,7 +91,7 @@
 	},
 	"scripts": {
 		"publish-server": "npm run compile:server && cd server && npm run publish-server",
-		"vscode:prepublish": "cd extension && npm run update-vscode && cd .. && npm run compile",
+		"vscode:prepublish": "cd extension && npm run update-vscode && cd .. && npm run compile && npm run updateTmLanguage",
 		"compile:extension": "tsc -p ./extension/tsconfig.json && cd ./extension && ./node_modules/.bin/webpack",
 		"compile:server": "tsc -p ./server/tsconfig.json",
 		"watch:extension": "tsc -w -p ./extension/tsconfig.json",
@@ -99,16 +99,14 @@
 		"compile": "npm run compile:extension && npm run compile:server",
 		"postinstall": "cd extension && npm install && cd ../server && npm install && cd ..",
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"updateTmLanguage": "ts-node ./scripts/updateTmLanguage.ts"
+		"updateTmLanguage": "node ./scripts/updateTmLanguage.js"
 	},
 	"devDependencies": {
 		"@types/mocha": "^5.2.0",
 		"@types/node": "^8.0.0",
-		"ts-node": "^7.0.1",
 		"typescript": "3.2.2"
 	},
 	"dependencies": {
-		"@waves/ride-js": "^1.0.0",
 		"vscode-languageserver-types": "^3.12.0"
 	}
 }

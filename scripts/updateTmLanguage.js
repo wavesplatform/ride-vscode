@@ -5,7 +5,7 @@ const libVersion = 3;
 const funcsIndex = tmLanguage.patterns.findIndex(({name}) => name === 'entity.name.function.ride');
 const typesIndex = tmLanguage.patterns.findIndex(({name}) => name === 'entity.name.type.ride');
 
-import { getFunctionsDoc, getTypes } from '@waves/ride-js';
+const { getFunctionsDoc, getTypes } = require('../server/node_modules/@waves/ride-js');
 
 tmLanguage.patterns[funcsIndex].match = `\\b(${
     getFunctionsDoc(libVersion)
