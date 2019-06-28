@@ -96,7 +96,9 @@ export class Context {
                 fields: intersection(types.filter(({name}) => ~split.indexOf(name)).map(i => i.type))
             }
         } else if ((match = value.match(regexps.functionsRegExp)) != null) {
-            out.type = functions.find(({name}) => name === match![1])!.resultType;
+            (match[1] === 'extract')
+                ? out.type = this.getExtractDoc(value, 'TYPEPARAM(84)')
+                : out.type = functions.find(({name}) => name === match![1])!.resultType;
         } else if ((match = value.match(regexps.typesRegExp)) != null) {
             out.type = types.find(type => match != null && type.name === match[0])!.type;
         } else if ((match = value.match(/^[ \t]*\[(.+)][ \t]*$/)) != null) {
@@ -118,7 +120,6 @@ export class Context {
             out = {name: name, type: type != null ? type.type : out.type}
         }
 
-        if (out.type === 'TYPEPARAM(84)') out.type = this.getExtractDoc(value, out.type);
         return out
     };
 
