@@ -9,6 +9,15 @@
     "case",
     "func"
   ],
+  "directives": [
+    "{-# STDLIB_VERSION 1 #-}",
+    "{-# STDLIB_VERSION 2 #-}",
+    "{-# STDLIB_VERSION 3 #-}",
+    "{-# SCRIPT_TYPE ACCOUNT #-}",
+    "{-# SCRIPT_TYPE ASSET #-}",
+    "{-# CONTENT_TYPE DAPP #-}",
+    "{-# CONTENT_TYPE EXPRESSION #-}"
+  ],
   "snippets": [
     {
       "label": "ifelse",

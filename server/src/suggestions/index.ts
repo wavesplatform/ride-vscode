@@ -92,6 +92,7 @@ export class Suggestions {
             }\\b)[ \\t]*\\(`);
 
         this.globalSuggestions.push(
+            ...suggestions.directives.map(directive => ({label: directive, kind: CompletionItemKind.Reference})),
             ...suggestions.keywords.map((label: string) => <CompletionItem>({label, kind: CompletionItemKind.Keyword})),
             ...suggestions.snippets.map(({label}: TSnippet) => ({label, kind: CompletionItemKind.Snippet})),
             ...functions.map(({name, doc}) => ({detail: doc, kind: CompletionItemKind.Function, label: name}))
