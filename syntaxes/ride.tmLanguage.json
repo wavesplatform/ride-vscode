@@ -8,7 +8,7 @@
     "patterns": [
         {
             "name": "keyword.ride",
-            "match": "\\b(let|if|then|else|ifelse|match|case|base64|base58|func)\\b"
+            "match": "\\b(let|if|then|else|ifelse|match|case|base64|base58|base16|func)\\b"
         },
         {
             "name": "entity.name.function.ride",

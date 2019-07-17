@@ -29,11 +29,16 @@
       "insertTextFormat": 2
     },{
       "label": "base58",
-      "insertText": "base58'$0'",
+      "insertText": "base58'$1'",
       "insertTextFormat": 2
     },{
       "label": "base64",
-      "insertText": "base64'$0'",
+      "insertText": "base64'$1'",
+      "insertTextFormat": 2
+    },
+    {
+      "label": "base16",
+      "insertText": "base16'$1'",
       "insertTextFormat": 2
     }
   ]

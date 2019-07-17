@@ -84,7 +84,7 @@ export class Context {
         if (variable) out.type = variable.type;
         else if (Number(value.toString().replace(/_/g, '')).toString() !== 'NaN') {
             out.type = 'Int';
-        } else if ((match = value.match(/\b(base58|base64)\b[ \t]*'(.*)'/)) != null) {
+        } else if ((match = value.match(/\b(base58|base64|base16)\b[ \t]*'(.*)'/)) != null) {
             out.type = 'ByteVector';
         } else if (/.*\b&&|==|!=|>=|>\b.*/.test(value) || /\btrue|false\b/.test(value)) {
             out.type = 'Boolean';
