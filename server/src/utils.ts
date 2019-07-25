@@ -56,13 +56,20 @@ export const getColonOrPipeCompletionResult = (text: string, p: TPosition): Comp
 
 export const checkPostfixFunction = (inputWord: string) => {
     let variable = ctx.getVariable(inputWord);
-    return functions.filter(({args}) => {
+    
+     const out = functions.filter(({args}) => {
         if (!args[0] || !variable || !variable.type) return false;
 
         let type = variable.type;
 
         if (isPrimitive(type) && isPrimitive(args[0].type) && type === args[0].type) return true;
 
+        if(isStruct(type)  && isStruct(args[0].type)){
+            if(type.typeName === args[0].type.typeName){
+                return true;
+            }
+        }
+    
         if (isStruct(type) && isUnion(args[0].type)) {
             let currentType = args[0].type[0];
             if (isStruct(currentType) && type.typeName === currentType.typeName) {
@@ -74,6 +81,8 @@ export const checkPostfixFunction = (inputWord: string) => {
         }
         return false;
     })
+
+    return out
 };
 
 
