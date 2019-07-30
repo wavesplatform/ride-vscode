@@ -1,5 +1,5 @@
 import { caseRegexp, isStruct, isUnion, letRegexp, Suggestions } from "./suggestions";
-import { scriptInfo, TStruct, TStructField, TType } from "@waves/ride-js";
+import { TStruct, TStructField, TType } from "@waves/ride-js";
 import { getDataByRegexp, getLastArrayElement, intersection, TDecl, unique } from "./utils";
 
 export const suggestions = new Suggestions();
@@ -38,13 +38,6 @@ export class Context {
     text: string = '';
 
     updateContext(text: string) {
-        this.context = {
-            vars: [],
-            start: {row: 0, col: 0},
-            end: {row: 0, col: 0},
-            children: []
-        };
-        this.variables.length = 0;
         if (this.text !== text) this.findContextDeclarations(text);
     }
 
@@ -145,7 +138,6 @@ export class Context {
     }
 
     private getContextFrame(p: TPosition, rows: string[], vars?: TVarDecl[]): TContext {
-
         let out: TContext = {
             vars: vars || [],
             start: {row: p.row, col: p.col},
@@ -188,20 +180,6 @@ export class Context {
         return out;
     }
 
-    private getGlobalVariables(scriptType: number) {
-        const out = globalVariables.map(v => this.pushGlobalVariable(v));
-        if (scriptType === 1) {
-            let type = types.find(item => item.name === 'Address');
-            out.push(this.pushGlobalVariable({name: 'this', type: type ? type.type : 'Unknown'}))
-        }
-
-        if (scriptType === 2) out.push(this.pushGlobalVariable({
-            name: 'this',
-            type: ["ByteVector", {"typeName": "Unit", "fields": []}]
-        })); //assetId
-        return out;
-    }
-
     private getVariables = (row: string) => [
         ...getDataByRegexp(row, letRegexp),
     ].map(({name, value}) => this.defineType(name, value) || {variable: name});
@@ -226,19 +204,12 @@ export class Context {
     }
 
     private findContextDeclarations(text: string) {
-        const scriptType = scriptInfo(text).scriptType;
         const rows = text.split('\n');
-        const out = this.getContextFrame({row: 0, col: 0}, rows, this.getGlobalVariables(scriptType));
+        this.variables.length = 0;
+        this.variables.push(...globalVariables);
+        const out = this.getContextFrame({row: 0, col: 0}, rows, globalVariables);
         this.context = out;
         return out;
-    }
-
-    private pushGlobalVariable(v: TVarDecl) {
-        const index = this.variables.findIndex(({name}) => name === v.name);
-        if (~index) this.variables[index] = {...this.variables[index], ...v};
-        else this.variables.push(v);
-
-        return v;
     }
 
     private getExtractDoc = (value: string, type: string): TType => {
