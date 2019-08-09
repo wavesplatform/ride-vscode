@@ -14,7 +14,7 @@ import * as utils from './utils';
 import { suggestions, TPosition } from "./context";
 
 export class LspService {
-    public validateTextDocument(document: TextDocument): Diagnostic[] {
+    public validateTextDocument(document: TextDocument, libraries?: {[key: string]: string}): Diagnostic[] {
         try {
             const {stdLibVersion, scriptType} = scriptInfo(document.getText());
             suggestions.updateSuggestions(stdLibVersion, scriptType === 2);
@@ -23,7 +23,7 @@ export class LspService {
         }
 
         let diagnostics: Diagnostic[] = [];
-        let resultOrError = compile(document.getText());
+        let resultOrError = compile(document.getText(), libraries);
         if ('error' in resultOrError) {
             const errorText = resultOrError.error;
             const errRangesRegxp = /\d+-\d+/gm;
