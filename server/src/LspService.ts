@@ -9,18 +9,34 @@ import {
     SignatureHelp,
     TextDocument
 } from 'vscode-languageserver-types';
-import { compile, scriptInfo } from '@waves/ride-js';
+import { compile, IScriptInfo, scriptInfo } from '@waves/ride-js';
 import * as utils from './utils';
 import { suggestions, TPosition } from "./context";
 
+
+interface IFile {
+    id: string
+    type: 'ride'
+    name: string
+    content: string
+}
+
 export class LspService {
-    public validateTextDocument(document: TextDocument, libraries?: {[key: string]: string}): Diagnostic[] {
+    public validateTextDocument(document: TextDocument, files?: IFile[]): Diagnostic[] {
+        const info = scriptInfo(document.getText());
+        if ('error' in scriptInfo) return [];
+        const {stdLibVersion, scriptType, imports} = info as IScriptInfo;
         try {
-            const {stdLibVersion, scriptType} = scriptInfo(document.getText());
             suggestions.updateSuggestions(stdLibVersion, scriptType === 2);
         } catch (e) {
             suggestions.updateSuggestions();
         }
+
+        const libraries = (files || []).reduce(
+                (acc: { [key: string]: string }, {name, content}) =>
+                    imports.includes(name) ? ({...acc, [name]: content}) : acc,
+                {});
+
 
         let diagnostics: Diagnostic[] = [];
         let resultOrError = compile(document.getText(), libraries);
@@ -28,7 +44,7 @@ export class LspService {
             const errorText = resultOrError.error;
             const errRangesRegxp = /\d+-\d+/gm;
             const errorRanges: string[] = errRangesRegxp.exec(errorText) || [];
-            if (errorRanges.length > 0){
+            if (errorRanges.length > 0) {
                 const errors = errorRanges.map(offsets => {
                     const [start, end] = offsets.split('-').map(offset => document.positionAt(parseInt(offset)));
                     const range = Range.create(start, end);
@@ -39,7 +55,7 @@ export class LspService {
                     };
                 });
                 diagnostics.push(...errors);
-            }else {
+            } else {
                 const parsingErrRegexp = /:(\d+):(\d+) ...".*"\)$/gm;
                 const parsingErrorRanges: string[] = parsingErrRegexp.exec(errorText) || [];
                 if (!isNaN(+parsingErrorRanges[1]) && !isNaN(+parsingErrorRanges[2])) {
@@ -51,7 +67,7 @@ export class LspService {
                         severity: DiagnosticSeverity.Error,
                         message: `Parsing error: ${errorText}`
                     });
-                }else{
+                } else {
                     diagnostics.push({
                         range: Range.create(
                             Position.create(0, 0),
