@@ -32,10 +32,13 @@ export class LspService {
             suggestions.updateSuggestions();
         }
 
-        const libraries = (files || []).reduce(
+        let libraries = {};
+        if (imports) {
+            libraries = (files || []).reduce(
                 (acc: { [key: string]: string }, {name, content}) =>
                     imports.includes(name) ? ({...acc, [name]: content}) : acc,
                 {});
+        }
 
 
         let diagnostics: Diagnostic[] = [];
