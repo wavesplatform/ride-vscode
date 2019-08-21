@@ -14,9 +14,7 @@ import * as utils from './utils';
 import { suggestions, TPosition } from "./context";
 
 
-interface IFile {
-    id: string
-    type: 'ride'
+export interface IFile {
     name: string
     content: string
 }
@@ -26,6 +24,7 @@ export class LspService {
         const info = scriptInfo(document.getText());
         if ('error' in scriptInfo) return [];
         const {stdLibVersion, scriptType, imports} = info as IScriptInfo;
+
         try {
             suggestions.updateSuggestions(stdLibVersion, scriptType === 2);
         } catch (e) {
@@ -39,7 +38,6 @@ export class LspService {
                     imports.includes(name) ? ({...acc, [name]: content}) : acc,
                 {});
         }
-
 
         let diagnostics: Diagnostic[] = [];
         let resultOrError = compile(document.getText(), libraries);

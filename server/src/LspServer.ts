@@ -1,27 +1,27 @@
 'use strict';
 
 import {
-    TextDocument,
-    Diagnostic,
-    InitializeParams,
-    DidChangeConfigurationNotification,
-    DidOpenTextDocumentParams,
-    DidCloseTextDocumentParams,
-    DidChangeTextDocumentParams,
     CompletionItem,
-    TextDocumentPositionParams,
-    IConnection,
-    Files,
-    TextDocumentSyncKind,
     CompletionList,
+    Diagnostic,
+    DidChangeConfigurationNotification,
+    DidChangeTextDocumentParams,
+    DidCloseTextDocumentParams,
+    DidOpenTextDocumentParams,
+    Files,
     Hover,
-    SignatureHelp
+    IConnection,
+    InitializeParams,
+    SignatureHelp,
+    TextDocument,
+    TextDocumentPositionParams,
+    TextDocumentSyncKind
 } from 'vscode-languageserver';
-import * as fs from 'fs';
-import { LspService } from './LspService';
+import { access, readdir, readFile } from 'fs';
+import { IFile, LspService } from './LspService';
 
 export class LspServer {
-    private hasConfigurationCapability: boolean= false;
+    private hasConfigurationCapability: boolean = false;
     private hasWorkspaceFolderCapability: boolean = false;
     private hasDiagnosticRelatedInformationCapability: boolean = false;
 
@@ -45,11 +45,11 @@ export class LspServer {
         if (!document) {
             const path = Files.uriToFilePath(uri) || './';
             document = await new Promise<TextDocument>((resolve) => {
-                fs.access(path, (err) => {
+                access(path, (err) => {
                     if (err) {
                         resolve(undefined)
                     } else {
-                        fs.readFile(path, (_, data) => {
+                        readFile(path, (_, data) => {
                             resolve(TextDocument.create(uri, "ride", 1, data.toString()))
                         })
                     }
@@ -58,6 +58,32 @@ export class LspServer {
         }
         return document
     }
+
+    private async getLibraries(): Promise<IFile[]> {
+        const path = './libraries';
+        return await new Promise((resolve) => {
+            access(path, async (err) => {
+                if (err) {
+                    resolve(undefined)
+                } else {
+                    readdir(path, (_, data) => {
+                        const contents = data.filter(name => name !== '.DS_Store').map((name) =>
+                            new Promise((resolveFile) =>
+                                readFile(path + '/' + name, (_, data) =>
+                                    resolveFile({name, content: data.toString()} as IFile)
+                                )
+                            )
+                        );
+                        Promise.all(contents.map(async p => await p))
+                            .then((res) => {
+                                resolve((res as IFile[]))
+                            })
+                    })
+                }
+            })
+        });
+    }
+
 
     private applyChanges(document: TextDocument, didChangeTextDocumentParams: DidChangeTextDocumentParams): TextDocument {
         let buffer = document.getText();
@@ -70,7 +96,7 @@ export class LspServer {
                 break;
             }
             let offset, end, range = changes[i].range;
-            if (range !== undefined){
+            if (range !== undefined) {
                 offset = document.offsetAt(range.start);
                 end = null;
                 if (range.end) {
@@ -107,7 +133,7 @@ export class LspServer {
                     // Tell the client that the server supports code completion
                     completionProvider: {
                         resolveProvider: true,
-                        triggerCharacters: ['.', ':', '|','@']
+                        triggerCharacters: ['.', ':', '|', '@']
                     },
                     hoverProvider: true,
                     signatureHelpProvider: {
@@ -125,7 +151,7 @@ export class LspServer {
                 );
             }
             if (this.hasWorkspaceFolderCapability) {
-                connection.workspace.onDidChangeWorkspaceFolders(_event => {
+                connection.workspace.onDidChangeWorkspaceFolders(() => {
                     connection.console.log('Workspace folder change event received.');
                 });
             }
@@ -137,8 +163,10 @@ export class LspServer {
         connection.onDidOpenTextDocument((didOpenTextDocumentParams: DidOpenTextDocumentParams): void => {
             let document = TextDocument.create(didOpenTextDocumentParams.textDocument.uri, didOpenTextDocumentParams.textDocument.languageId, didOpenTextDocumentParams.textDocument.version, didOpenTextDocumentParams.textDocument.text);
             this.documents[didOpenTextDocumentParams.textDocument.uri] = document;
-            const diagnostics = service.validateTextDocument(document);
-            this.sendDiagnostics(document.uri, diagnostics);
+            this.getLibraries().then((libraries: IFile[]) => {
+                const diagnostics = service.validateTextDocument(document, libraries);
+                this.sendDiagnostics(document.uri, diagnostics);
+            })
         });
         connection.onDidCloseTextDocument((didCloseTextDocumentParams: DidCloseTextDocumentParams): void => {
             delete this.documents[didCloseTextDocumentParams.textDocument.uri];
@@ -148,8 +176,10 @@ export class LspServer {
             const changedDocument = this.applyChanges(document, didChangeTextDocumentParams);
             this.documents[didChangeTextDocumentParams.textDocument.uri] = changedDocument;
             if (document.getText() !== changedDocument.getText()) {
-                const diagnostics = service.validateTextDocument(changedDocument);
-                this.sendDiagnostics(document.uri, diagnostics);
+                this.getLibraries().then((libraries: IFile[]) => {
+                    const diagnostics = service.validateTextDocument(changedDocument, libraries);
+                    this.sendDiagnostics(document.uri, diagnostics);
+                })
             }
         });
 
@@ -184,6 +214,6 @@ export class LspServer {
     }
 
     private sendDiagnostics(uri: string, diagnostics: Diagnostic[]) {
-        this.connection.sendDiagnostics({ uri, diagnostics })
+        this.connection.sendDiagnostics({uri, diagnostics})
     }
 }
