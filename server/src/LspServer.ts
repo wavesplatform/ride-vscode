@@ -61,7 +61,7 @@ export class LspServer {
 
     private async getLibraries(): Promise<IFile[]> {
         const path = './libraries';
-        return await new Promise((resolve) => {
+        return  new Promise((resolve) => {
             access(path, async (err) => {
                 if (err) {
                     resolve(undefined)
@@ -74,7 +74,7 @@ export class LspServer {
                                 )
                             )
                         );
-                        Promise.all(contents.map(async p => await p))
+                        Promise.all(contents)
                             .then((res) => {
                                 resolve((res as IFile[]))
                             })
