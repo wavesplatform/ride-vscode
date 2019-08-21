@@ -1,6 +1,6 @@
 {
-    "name": "waves-ride",
-    "displayName": "RIDE",
+	"name": "waves-ride",
+	"displayName": "RIDE",
 	"description": "Waves Ride language support and REPL for Visual Studio Code",
 	"author": "wavesplatform",
 	"license": "MIT",
