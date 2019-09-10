@@ -12,18 +12,41 @@ import {
 import { compile, scriptInfo } from '@waves/ride-js';
 import * as utils from './utils';
 import { suggestions, TPosition } from "./context";
+import {FileContentProvider} from "./FileContentProvider";
+
+const noRangeError = (msg: string) => ({
+    range: Range.create(
+        Position.create(0, 0),
+        Position.create(0, 0)
+    ),
+    severity: DiagnosticSeverity.Error,
+    message: msg
+});
 
 export class LspService {
+    constructor(private fileContentProvider: FileContentProvider){}
+
     public validateTextDocument(document: TextDocument): Diagnostic[] {
-        try {
-            const {stdLibVersion, scriptType} = scriptInfo(document.getText());
-            suggestions.updateSuggestions(stdLibVersion, scriptType === 2);
-        } catch (e) {
-            suggestions.updateSuggestions();
+        let diagnostics: Diagnostic[] = [];
+
+        const info =  scriptInfo(document.getText());
+        if ('error' in info){
+            diagnostics.push(noRangeError(info.error));
+            return diagnostics
         }
 
-        let diagnostics: Diagnostic[] = [];
-        let resultOrError = compile(document.getText());
+        const {stdLibVersion, scriptType, imports} = info;
+        suggestions.updateSuggestions(stdLibVersion, scriptType === 2);
+        let libraries: Record<string, string> = {};
+        for (let uri of imports){
+            try {
+                libraries[uri] = this.fileContentProvider.getContent(uri, document.uri)
+            }catch (e) {
+                // diagnostics.push(noRangeError(`Failed to resolve file "${uri}"`))
+            }
+        }
+
+        let resultOrError = compile(document.getText(), libraries);
         if ('error' in resultOrError) {
             const errorText = resultOrError.error;
             const errRangesRegxp = /\d+-\d+/gm;
