@@ -4,8 +4,11 @@ import * as fs from 'fs'
 import { URI } from 'vscode-uri'
 import * as path from 'path'
 
+export interface IFileContentProvider {
+    getContent(filePath: string, relativeTo: string): string
+}
 
-export class FileContentProvider {
+export class FileContentProvider implements IFileContentProvider{
     constructor(private inmemoryStorage:Record<string, TextDocument>){}
 
     getContent(filePath: string, relativeTo: string) {

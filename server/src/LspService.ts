@@ -12,7 +12,7 @@ import {
 import { compile, scriptInfo } from '@waves/ride-js';
 import * as utils from './utils';
 import { suggestions, TPosition } from "./context";
-import {FileContentProvider} from "./FileContentProvider";
+import { IFileContentProvider } from "./FileContentProvider";
 
 const noRangeError = (msg: string) => ({
     range: Range.create(
@@ -24,7 +24,7 @@ const noRangeError = (msg: string) => ({
 });
 
 export class LspService {
-    constructor(private fileContentProvider: FileContentProvider){}
+    constructor(private fileContentProvider: IFileContentProvider){}
 
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         let diagnostics: Diagnostic[] = [];

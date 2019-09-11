@@ -92,6 +92,7 @@
 	},
 	"scripts": {
 		"publish-server": "npm run compile:server && cd server && npm run publish-server",
+		"publish-server-beta": "npm run compile:server && cd server && npm run publish-server-beta",
 		"vscode:prepublish": "cd extension && npm run update-vscode && cd .. && npm run compile && npm run updateTmLanguage",
 		"compile:extension": "tsc -p ./extension/tsconfig.json && cd ./extension && ./node_modules/.bin/webpack && npm run syncCompilerVersion",
 		"compile:server": "tsc -p ./server/tsconfig.json",

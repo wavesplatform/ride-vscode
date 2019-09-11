@@ -1,13 +1,14 @@
 {
 	"name": "@waves/ride-language-server",
 	"description": "Language server for Wavesplatfor RIDE language",
-	"version": "0.9.0-beta.5",
+	"version": "0.9.0-beta.6",
 	"author": "Wavesplatform",
 	"license": "MIT",
 	"main": "src/index.ts",
 	"types": "src/index.ts",
 	"scripts": {
-		"publish-server": "tsc && node ./scripts/copyPackageJson.js && cd out && npm publish"
+		"publish-server": "tsc && node ./scripts/copyPackageJson.js && cd out && npm publish",
+		"publish-server-beta": "tsc && node ./scripts/copyPackageJson.js && cd out && npm publish -tag beta"
 	},
 	"engines": {
 		"node": "*"
