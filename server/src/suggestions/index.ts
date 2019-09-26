@@ -70,6 +70,10 @@ export class Suggestions {
     };
     globalSuggestions: CompletionItem[] = [];
 
+    constructor(){
+        this.updateSuggestions()
+    }
+
     updateSuggestions = (stdlibVersion?: number, isTokenContext?: boolean) => {
 
         const types = getTypes(stdlibVersion, isTokenContext);
