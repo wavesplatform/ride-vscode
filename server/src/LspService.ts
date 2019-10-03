@@ -16,7 +16,9 @@ import { suggestions, TPosition } from "./context";
 export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         try {
-            const {stdLibVersion, scriptType} = scriptInfo(document.getText());
+            const info = scriptInfo(document.getText());
+            if('error' in info) throw info.error;
+            const {stdLibVersion, scriptType} = info;
             suggestions.updateSuggestions(stdLibVersion, scriptType === 2);
         } catch (e) {
             suggestions.updateSuggestions();
