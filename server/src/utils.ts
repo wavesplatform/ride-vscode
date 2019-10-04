@@ -9,15 +9,11 @@ const { types, functions, globalVariables, globalSuggestions } = suggestions;
 
 //======================DEFINITION=========================
 
-export function getVarDefinition(word: string, { line: row, character: col }: Position, uri: string) {
+export function getVarDefinition(word: string, { line: row, character: col }: Position) {
     const variable = ctx.getContextByPos({ row, col }).vars.find(({ name: varName }) => varName === word);
-    if (!variable || !variable.pos) return null;
-    const { row: line, col: character } = variable.pos
-
-    return variable && variable.pos
-        ? Location.create(uri, { start: { line, character }, end: { line, character: character + word.length } })
-        : null;
+    return variable && variable.pos ? {line: variable.pos.row, character: variable.pos.col} : undefined
 }
+
 //======================COMPLETION=========================
 
 export const getCompletionDefaultResult = (p: TPosition) => {
@@ -268,7 +264,7 @@ export function getDataByRegexp(text: string, re: RegExp) {
     const declarations: TDecl[] = [];
     const split = text.split('\n');
     let myMatch;
-    
+
     split.forEach((row: string, i: number) => {
         while ((myMatch = re.exec(row)) !== null) {
             declarations.push({
@@ -280,7 +276,7 @@ export function getDataByRegexp(text: string, re: RegExp) {
             });
         }
     });
-    
+
     return declarations;
 }
 

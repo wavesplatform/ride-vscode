@@ -183,7 +183,7 @@ export class Context {
     private getVariables = (string: string, row: number) => [
         ...getDataByRegexp(string, letRegexp),
     ]
-        .map(({ name, value, valuePos: col }) => this.defineType(name, value, row && col ? { row, col } : undefined));
+        .map(({ name, value, namePos: col }) => this.defineType(name, value, row && col ? { row, col } : undefined));
 
     private getChildrenVariables = (string: string, row: number) => [
         ...getDataByRegexp(string, /@(Verifier|Callable)[ \t]*\((.+)\)/g)
@@ -199,7 +199,7 @@ export class Context {
             value.split(/[ \t]*,[ \t]*/).forEach(v => {
                 const split = v.split(/[ \t]*:[ \t]*/);
                 const valuePos = value.indexOf(v) !== -1 && pos ? value.indexOf(v) + pos : undefined;
-                
+
                 if (split[0] && split[1]) out.push({ name: split[0] || '', value: split[1] || '', valuePos, row })
             }
             )

@@ -2,14 +2,14 @@ import {
     CompletionItem,
     CompletionItemKind,
     CompletionList,
+    Definition,
     Diagnostic,
     DiagnosticSeverity,
+    Location,
     Position,
     Range,
     SignatureHelp,
-    TextDocument,
-    Definition,
-    Location
+    TextDocument
 } from 'vscode-languageserver-types';
 import { compile, scriptInfo } from '@waves/ride-js';
 import * as utils from './utils';
@@ -20,7 +20,7 @@ export class LspService {
         try {
             const info = scriptInfo(document.getText());
             if ('error' in info) throw info.error;
-            const { stdLibVersion, scriptType } = info;
+            const {stdLibVersion, scriptType} = info;
             suggestions.updateSuggestions(stdLibVersion, scriptType === 2);
         } catch (e) {
             suggestions.updateSuggestions();
@@ -75,8 +75,8 @@ export class LspService {
         const offset = document.offsetAt(position);
         const text = document.getText();
         const character = text.substring(offset - 1, offset);
-        const line = document.getText({ start: { line: position.line, character: 0 }, end: position });
-        const p: TPosition = { row: position.line, col: position.character + 1 };
+        const line = document.getText({start: {line: position.line, character: 0}, end: position});
+        const p: TPosition = {row: position.line, col: position.character + 1};
 
         utils.ctx.updateContext(text);
 
@@ -94,7 +94,7 @@ export class LspService {
                     if (firstWordMatch.length >= 2 && utils.ctx.getVariable(firstWordMatch[1])) {
                         result = [
                             ...utils.getCompletionResult(firstWordMatch[0].split('.')),
-                            ...utils.checkPostfixFunction(inputWord).map(({ name }) => ({ label: name }))
+                            ...utils.checkPostfixFunction(inputWord).map(({name}) => ({label: name}))
                         ];
                     }
                     break;
@@ -104,8 +104,8 @@ export class LspService {
                     break;
                 case (['@'].indexOf(character) !== -1):
                     result = [
-                        { label: 'Callable', kind: CompletionItemKind.Interface },
-                        { label: 'Verifier', kind: CompletionItemKind.Interface }
+                        {label: 'Callable', kind: CompletionItemKind.Interface},
+                        {label: 'Verifier', kind: CompletionItemKind.Interface}
                     ];
                     break;
                 default:
@@ -124,12 +124,12 @@ export class LspService {
 
     public hover(document: TextDocument, position: Position) { //todo add hover to func args
         const match = (/[a-zA-z0-9_]+\.[a-zA-z0-9_.]*$/gm)
-            .exec(document.getText({ start: { line: position.line, character: 0 }, end: position }));
+            .exec(document.getText({start: {line: position.line, character: 0}, end: position}));
         const line = document.getText().split('\n')[position.line];
         const word = utils.getWordByPos(line, position.character);
         utils.ctx.updateContext(document.getText());
-        const p: TPosition = { row: position.line, col: position.character + 1 };
-        return { contents: utils.getHoverResult(word, (match ? match[0] : '').split('.'), p) };
+        const p: TPosition = {row: position.line, col: position.character + 1};
+        return {contents: utils.getHoverResult(word, (match ? match[0] : '').split('.'), p)};
     }
 
     public definition(document: TextDocument, position: Position): Definition {
@@ -137,16 +137,17 @@ export class LspService {
         const text = document.getText(),
             line = text.split('\n')[position.line],
             word = utils.getWordByPos(line, position.character),
-            { uri } = document,
+            {uri} = document,
             func = utils.getDataByRegexp(text, /func[ \t]*(.*)\([ \t]*(.*)[ \t]*\)[ \t]*=[ \t]*{/g)
-                .find(({ name }) => name === word);
+                .find(({name}) => name === word);
 
-        return func && func.namePos && func.row
-            ? Location.create(uri, {
-                start: { line: func.row, character: func.namePos },
-                end: { line: func.row, character: func.namePos + word.length }
-            })
-            : utils.getVarDefinition(word, position, document.uri);
+        let pos;
+        if (func && func.namePos && func.row) pos = {line: func.row, character: func.namePos};
+        else pos = utils.getVarDefinition(word, position);
+
+        return pos
+            ? Location.create(uri, {start: pos, end: {...pos, character: pos.character + word.length}})
+            : null;
     }
 
     public signatureHelp(document: TextDocument, position: Position): SignatureHelp {
@@ -154,8 +155,8 @@ export class LspService {
         const offset = document.offsetAt(position);
         const character = document.getText().substring(offset - 1, offset);
 
-        const textBefore = document.getText({ start: { line: 0, character: 0 }, end: position });
-        const line = document.getText({ start: { line: position.line, character: 0 }, end: position });
+        const textBefore = document.getText({start: {line: 0, character: 0}, end: position});
+        const line = document.getText({start: {line: position.line, character: 0}, end: position});
 
         const isPostfix = /[a-zA-z0-9_]+\.\b([a-zA-z0-9_]+)\b[ \t]*\(/.test(line);
 
