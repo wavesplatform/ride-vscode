@@ -21,7 +21,7 @@ import * as fs from 'fs';
 import { LspService } from './LspService';
 
 export class LspServer {
-    private hasConfigurationCapability: boolean= false;
+    private hasConfigurationCapability: boolean = false;
     private hasWorkspaceFolderCapability: boolean = false;
     private hasDiagnosticRelatedInformationCapability: boolean = false;
 
@@ -70,7 +70,7 @@ export class LspServer {
                 break;
             }
             let offset, end, range = changes[i].range;
-            if (range !== undefined){
+            if (range !== undefined) {
                 offset = document.offsetAt(range.start);
                 end = null;
                 if (range.end) {
@@ -107,12 +107,13 @@ export class LspServer {
                     // Tell the client that the server supports code completion
                     completionProvider: {
                         resolveProvider: true,
-                        triggerCharacters: ['.', ':', '|','@']
+                        triggerCharacters: ['.', ':', '|', '@']
                     },
                     hoverProvider: true,
                     signatureHelpProvider: {
                         "triggerCharacters": ['(']
-                    }
+                    },
+                    definitionProvider: true
                 }
             }
         });
@@ -167,6 +168,11 @@ export class LspServer {
             const document = await this.getDocument(textDocumentPosition.textDocument.uri);
             return service.signatureHelp(document, textDocumentPosition.position);
         });
+        connection.onDefinition(async (textDocumentPosition: TextDocumentPositionParams) => {
+            const document = await this.getDocument(textDocumentPosition.textDocument.uri);
+            return service.definition(document, textDocumentPosition.position);
+        });
+
         connection.onCompletionResolve(this.service.completionResolve.bind(service));
         // connection.onDefinition(service.definition.bind(service));
         // connection.onImplementation(service.implementation.bind(service));
