@@ -138,7 +138,7 @@ export class LspService {
             line = text.split('\n')[position.line],
             word = utils.getWordByPos(line, position.character),
             {uri} = document,
-            func = utils.getDataByRegexp(text, /func[ \t]*(.*)\([ \t]*(.*)[ \t]*\)[ \t]*=[ \t]*{/g)
+            func = utils.getDataByRegexp(text, /func[ \t]*(.*)\([ \t]*(.*)[ \t]*\)[ \t]*=[ \t]*/g)
                 .find(({name}) => name === word);
 
         let pos;
