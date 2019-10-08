@@ -3,7 +3,7 @@ import { TStruct, TStructField, TType } from "@waves/ride-js";
 import { getDataByRegexp, getLastArrayElement, intersection, TDecl, unique } from "./utils";
 
 export const suggestions = new Suggestions();
-const {regexps, types, functions, globalVariables} = suggestions;
+const { regexps, types, functions, globalVariables } = suggestions;
 
 export type TPosition = {
     row: number
@@ -14,7 +14,7 @@ export type TVarDecl = {
     name: string,
     type: TType,
     doc?: string
-
+    pos?: TPosition
 };
 
 type TContext = {
@@ -28,8 +28,8 @@ export class Context {
 
     context: TContext = {
         vars: [],
-        start: {row: 0, col: 0},
-        end: {row: 0, col: 0},
+        start: { row: 0, col: 0 },
+        end: { row: 0, col: 0 },
         children: []
     };
 
@@ -42,14 +42,14 @@ export class Context {
     }
 
     getVariable = (name: string): (TVarDecl | undefined) =>
-        this.variables.find(({name: varName}) => varName === name);
+        this.variables.find(({ name: varName }) => varName === name);
 
     getVariablesByPos = (p: TPosition): TVarDecl[] => this.getVariablesRec(this.context, p);
 
     getContextByPos = (p: TPosition): TContext => this.getContextRec(this.context, p);
 
     private getContextRec = (c: TContext, p: TPosition): TContext => {
-        const newCtx: TContext | undefined = c.children.find(({start, end}) => this.comparePos(start, end, p));
+        const newCtx: TContext | undefined = c.children.find(({ start, end }) => this.comparePos(start, end, p));
         return (newCtx !== undefined) ? this.getContextRec(newCtx, p) : c;
     };
 
@@ -57,7 +57,7 @@ export class Context {
     private getVariablesRec(c: TContext, p: TPosition): TVarDecl[] {
 
         const out: TVarDecl[] = c.vars;
-        const childCtx = c.children.find(({start, end}) => this.comparePos(start, end, p));
+        const childCtx = c.children.find(({ start, end }) => this.comparePos(start, end, p));
         if (childCtx) out.push(...this.getVariablesRec(childCtx, p));
         return out;
     }
@@ -69,9 +69,9 @@ export class Context {
         return false
     }
 
-    private defineType(name: string, value: string): TVarDecl {
+    private defineType(name: string, value: string, pos?: TPosition): TVarDecl {
         value = value.replace(/#.*$/, '');
-        let out: TVarDecl = {name: name, type: 'Unknown'};
+        let out: TVarDecl = { name, pos, type: 'Unknown' };
         let match: RegExpMatchArray | null, split: string[];
         const variable = this.getVariable(value);
         if (variable) out.type = variable.type;
@@ -86,31 +86,31 @@ export class Context {
         } else if ((split = value.split('|')).length > 1) {
             out.type = {
                 typeName: 'Union',
-                fields: intersection(types.filter(({name}) => ~split.indexOf(name)).map(i => i.type))
+                fields: intersection(types.filter(({ name }) => ~split.indexOf(name)).map(i => i.type))
             }
         } else if ((match = value.match(regexps.functionsRegExp)) != null) {
             (match[1] === 'extract')
                 ? out.type = this.getExtractDoc(value, 'TYPEPARAM(84)')
-                : out.type = functions.find(({name}) => name === match![1])!.resultType;
+                : out.type = functions.find(({ name }) => name === match![1])!.resultType;
         } else if ((match = value.match(regexps.typesRegExp)) != null) {
             out.type = types.find(type => match != null && type.name === match[0])!.type;
         } else if ((match = value.match(/^[ \t]*\[(.+)][ \t]*$/)) != null) {
             let uniqueType = unique(match[1].split(',')
                 .map(type => this.defineType('', type).type));
-            out.type = (uniqueType.length === 1) ? {listOf: uniqueType[0]} : {listOf: "any"};
+            out.type = (uniqueType.length === 1) ? { listOf: uniqueType[0] } : { listOf: "any" };
         } else if ((split = value.split('.')).length > 1) {
             const type = this.getLadderType(split);
             out.type = type.type;
             if ((match = getLastArrayElement(split).match(regexps.functionsRegExp)) != null) {
-                let func = functions.find(({name}) => match != null && name === match[1]);
+                let func = functions.find(({ name }) => match != null && name === match[1]);
                 if (func) out.type = func.resultType
             }
         } else if (value === 'Callable') {
             let type = types.find(item => item.name === 'Invocation');
-            out = {name: name, type: type != null ? type.type : out.type}
+            out = { name: name, type: type != null ? type.type : out.type }
         } else if (value === 'Verifier') {
             let type = types.find(item => item.name === 'Transaction');
-            out = {name: name, type: type != null ? type.type : out.type}
+            out = { name: name, type: type != null ? type.type : out.type }
         }
 
         return out
@@ -122,16 +122,16 @@ export class Context {
             : type;
 
         let declVariable = this.getVariable(inputWords[0]);
-        if (declVariable == null || !declVariable.type) return {name: 'Unknown', type: 'Unknown'};
+        if (declVariable == null || !declVariable.type) return { name: 'Unknown', type: 'Unknown' };
         if (isUnion(declVariable.type)) declVariable.type = {
             typeName: 'Union',
             fields: intersection(declVariable.type)
         };
-        let out = {name: declVariable.name, type: extractUnit(declVariable.type)};
+        let out = { name: declVariable.name, type: extractUnit(declVariable.type) };
         for (let i = 1; i < inputWords.length; i++) {
             let actualType;
             if (isStruct(out.type)) actualType = out.type.fields.find(type => type.name === inputWords[i]);
-            if (actualType && actualType.type) out = {...actualType, type: extractUnit(actualType.type)}
+            if (actualType && actualType.type) out = { ...actualType, type: extractUnit(actualType.type) }
         }
 
         return out;
@@ -140,8 +140,8 @@ export class Context {
     private getContextFrame(p: TPosition, rows: string[], vars?: TVarDecl[]): TContext {
         let out: TContext = {
             vars: vars || [],
-            start: {row: p.row, col: p.col},
-            end: {row: rows.length - 1, col: rows[rows.length - 1].length},
+            start: { row: p.row, col: p.col },
+            end: { row: rows.length - 1, col: rows[rows.length - 1].length },
             children: []
         };
         let bracket = 1;
@@ -151,9 +151,9 @@ export class Context {
             let childrenVariables: TVarDecl[] = [];
             if (~rows[i].indexOf('{-#') || ~rows[i].indexOf(' #-}')) continue;
             if (bracket === 1) {
-                const vars = this.getVariables(rows[i]);
+                const vars = this.getVariables(rows[i], i);
                 out.vars.push(...vars);
-                childrenVariables = this.getChildrenVariables(rows[i]);
+                childrenVariables = this.getChildrenVariables(rows[i], i);
                 this.variables.push(...vars, ...childrenVariables)
             }
 
@@ -162,7 +162,7 @@ export class Context {
                 if (rows[i][j] === '}') bracket--;
 
                 if (rows[i][j] === '{') {
-                    const child = this.getContextFrame({row: i, col: j}, rows, childrenVariables);
+                    const child = this.getContextFrame({ row: i, col: j }, rows, childrenVariables);
                     out.children.push(child);
                     i = child.end.row;
                     j = child.end.col;
@@ -180,24 +180,28 @@ export class Context {
         return out;
     }
 
-    private getVariables = (row: string) => [
-        ...getDataByRegexp(row, letRegexp),
-    ].map(({name, value}) => this.defineType(name, value) || {variable: name});
+    private getVariables = (string: string, row: number) => [
+        ...getDataByRegexp(string, letRegexp),
+    ]
+        .map(({ name, value, namePos: col }) => this.defineType(name, value, row && col ? { row, col } : undefined));
 
-    private getChildrenVariables = (row: string) => [ //todo add function args
-        ...getDataByRegexp(row, /@(Verifier|Callable)[ \t]*\((.+)\)/g)
-            .map(item => ({...item, name: item.value, value: item.name})),
-        ...getDataByRegexp(row, caseRegexp),
-        ...this.getFuncArgs(row)
-    ].map(({name, value}) => this.defineType(name, value) || {variable: name});
+    private getChildrenVariables = (string: string, row: number) => [
+        ...getDataByRegexp(string, /@(Verifier|Callable)[ \t]*\((.+)\)/g)
+            .map(item => ({ ...item, name: item.value, value: item.name })),
+        ...getDataByRegexp(string, caseRegexp),
+        ...this.getFuncArgs(string)
+    ]
+        .map(({ name, value, valuePos: col }) => this.defineType(name, value, row && col ? { row, col } : undefined));
 
     private getFuncArgs(row: string): TDecl[] {
         const out: TDecl[] = [];
-        getDataByRegexp(row, /func[ \t]*(.*)\([ \t]*(.*)[ \t]*\)[ \t]*=[ \t]*{/g).forEach(i =>
-            i.value.split(/[ \t]*,[ \t]*/).forEach(v => {
-                    const split = v.split(/[ \t]*:[ \t]*/);
-                    if (split[0] && split[1]) out.push({name: split[0] || '', value: split[1] || ''})
-                }
+        getDataByRegexp(row, /func[ \t]*(.*)\([ \t]*(.*)[ \t]*\)[ \t]*=[ \t]*{/g).forEach(({ value, valuePos: pos, row }) =>
+            value.split(/[ \t]*,[ \t]*/).forEach(v => {
+                const split = v.split(/[ \t]*:[ \t]*/);
+                const valuePos = value.indexOf(v) !== -1 && pos ? value.indexOf(v) + pos : undefined;
+
+                if (split[0] && split[1]) out.push({ name: split[0] || '', value: split[1] || '', valuePos, row })
+            }
             )
         );
         return out
@@ -207,7 +211,7 @@ export class Context {
         const rows = text.split('\n');
         this.variables.length = 0;
         this.variables.push(...globalVariables);
-        const out = this.getContextFrame({row: 0, col: 0}, rows, globalVariables);
+        const out = this.getContextFrame({ row: 0, col: 0 }, rows, globalVariables);
         this.context = out;
         return out;
     }
@@ -218,7 +222,7 @@ export class Context {
         let out: TType = type, match: RegExpMatchArray | null;
         if (extractData.length < 2) return out;
         if (extractData[1] && (match = extractData[1].match(regexps.functionsRegExp)) != null) {
-            let resultType = functions.find(({name}) => name === match![1])!.resultType;
+            let resultType = functions.find(({ name }) => name === match![1])!.resultType;
             if (resultType && isUnion(resultType)) {
                 out = resultType.filter(type => (type as TStruct)!.typeName !== 'Unit')
             }

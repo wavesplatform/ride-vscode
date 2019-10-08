@@ -2,8 +2,10 @@ import {
     CompletionItem,
     CompletionItemKind,
     CompletionList,
+    Definition,
     Diagnostic,
     DiagnosticSeverity,
+    Location,
     Position,
     Range,
     SignatureHelp,
@@ -17,7 +19,7 @@ export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         try {
             const info = scriptInfo(document.getText());
-            if('error' in info) throw info.error;
+            if ('error' in info) throw info.error;
             const {stdLibVersion, scriptType} = info;
             suggestions.updateSuggestions(stdLibVersion, scriptType === 2);
         } catch (e) {
@@ -30,7 +32,7 @@ export class LspService {
             const errorText = resultOrError.error;
             const errRangesRegxp = /\d+-\d+/gm;
             const errorRanges: string[] = errRangesRegxp.exec(errorText) || [];
-            if (errorRanges.length > 0){
+            if (errorRanges.length > 0) {
                 const errors = errorRanges.map(offsets => {
                     const [start, end] = offsets.split('-').map(offset => document.positionAt(parseInt(offset)));
                     const range = Range.create(start, end);
@@ -41,7 +43,7 @@ export class LspService {
                     };
                 });
                 diagnostics.push(...errors);
-            }else {
+            } else {
                 const parsingErrRegexp = /:(\d+):(\d+) ...".*"\)$/gm;
                 const parsingErrorRanges: string[] = parsingErrRegexp.exec(errorText) || [];
                 if (!isNaN(+parsingErrorRanges[1]) && !isNaN(+parsingErrorRanges[2])) {
@@ -53,7 +55,7 @@ export class LspService {
                         severity: DiagnosticSeverity.Error,
                         message: `Parsing error: ${errorText}`
                     });
-                }else{
+                } else {
                     diagnostics.push({
                         range: Range.create(
                             Position.create(0, 0),
@@ -100,7 +102,7 @@ export class LspService {
                 case (line.match(/([a-zA-z0-9_]+)[ \t]*[|:][ \t]*[a-zA-z0-9_]*$/) !== null):
                     result = utils.getColonOrPipeCompletionResult(text, p);
                     break;
-                case(['@'].indexOf(character) !== -1):
+                case (['@'].indexOf(character) !== -1):
                     result = [
                         {label: 'Callable', kind: CompletionItemKind.Interface},
                         {label: 'Verifier', kind: CompletionItemKind.Interface}
@@ -128,6 +130,24 @@ export class LspService {
         utils.ctx.updateContext(document.getText());
         const p: TPosition = {row: position.line, col: position.character + 1};
         return {contents: utils.getHoverResult(word, (match ? match[0] : '').split('.'), p)};
+    }
+
+    public definition(document: TextDocument, position: Position): Definition {
+
+        const text = document.getText(),
+            line = text.split('\n')[position.line],
+            word = utils.getWordByPos(line, position.character),
+            {uri} = document,
+            func = utils.getDataByRegexp(text, /func[ \t]*(.*)\([ \t]*(.*)[ \t]*\)[ \t]*=[ \t]*/g)
+                .find(({name}) => name === word);
+
+        let pos;
+        if (func && func.namePos && func.row) pos = {line: func.row, character: func.namePos};
+        else pos = utils.getVarDefinition(word, position);
+
+        return pos
+            ? Location.create(uri, {start: pos, end: {...pos, character: pos.character + word.length}})
+            : null;
     }
 
     public signatureHelp(document: TextDocument, position: Position): SignatureHelp {
