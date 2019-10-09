@@ -174,17 +174,14 @@ export class LspServer {
         });
 
         connection.onCompletionResolve(this.service.completionResolve.bind(service));
-        // connection.onDefinition(service.definition.bind(service));
         // connection.onImplementation(service.implementation.bind(service));
         // connection.onTypeDefinition(service.typeDefinition.bind(service));
         // connection.onDocumentFormatting(service.documentFormatting.bind(service));
         // connection.onDocumentHighlight(service.documentHighlight.bind(service));
         // connection.onDocumentSymbol(service.documentSymbol.bind(service));
         // connection.onExecuteCommand(service.executeCommand.bind(service));
-        // connection.onHover(service.hover.bind(service));
         // connection.onReferences(service.references.bind(service));
         // connection.onRenameRequest(service.rename.bind(service));
-        // connection.onSignatureHelp(service.signatureHelp.bind(service));
         // connection.onWorkspaceSymbol(service.workspaceSymbol.bind(service));
         // connection.onFoldingRanges(service.foldingRanges.bind(service));
     }
