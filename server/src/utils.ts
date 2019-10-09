@@ -10,7 +10,7 @@ const { types, functions, globalVariables, globalSuggestions } = suggestions;
 //======================DEFINITION=========================
 
 export function getVarDefinition(word: string, { line: row, character: col }: Position) {
-    const variable = ctx.getContextByPos({ row, col }).vars.find(({ name: varName }) => varName === word);
+    const variable = ctx.getVariablesByPos({ row, col }).reverse().find(({ name: varName }) => varName === word);
     return variable && variable.pos ? {line: variable.pos.row, character: variable.pos.col} : undefined
 }
 
