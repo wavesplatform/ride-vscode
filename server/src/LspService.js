@@ -1,105 +1,71 @@
-import {
-    CompletionItem,
-    CompletionList,
-    Definition,
-    Diagnostic,
-    DiagnosticSeverity,
-    Hover,
-    MarkedString,
-    MarkupContent,
-    Position,
-    Range,
-    SignatureHelp,
-    TextDocument
-} from 'vscode-languageserver-types';
-import { ILet, parseAndCompile, scriptInfo } from '@waves/ride-js';
-import suggestions from "./suggestions";
-import {
-    getNodeByOffset, isIBlock,
-    isIConstByteStr,
-    isIConstLong,
-    isIConstStr, isIDApp,
-    isIFalse,
-    isIFunc,
-    isIFunctionCall, isIGetter, isIIf,
-    isILet, isIMatch, isIMatchCase,
-    isIRef, isIScript,
-    isITrue,
-    offsetToRange,
-    rangeToOffset
-} from "./utils";
-
-export class LspService {
-
-    public validateTextDocument(document: TextDocument): Diagnostic[] {
-        const text = document.getText();
-        const parsedDoc = parseAndCompile(text);
+"use strict";
+exports.__esModule = true;
+var vscode_languageserver_types_1 = require("vscode-languageserver-types");
+var ride_js_1 = require("@waves/ride-js");
+var suggestions_1 = require("./suggestions");
+var utils_1 = require("./utils");
+var LspService = /** @class */ (function () {
+    function LspService() {
+    }
+    LspService.prototype.validateTextDocument = function (document) {
+        var text = document.getText();
+        var parsedDoc = ride_js_1.parseAndCompile(text);
         try {
-            const info = scriptInfo(text);
-            if ('error' in info) throw info.error;
-            const {stdLibVersion, scriptType} = info;
-            suggestions.updateSuggestions(stdLibVersion, scriptType === 2);
-        } catch (e) {
-            suggestions.updateSuggestions();
+            var info = ride_js_1.scriptInfo(text);
+            if ('error' in info)
+                throw info.error;
+            var stdLibVersion = info.stdLibVersion, scriptType = info.scriptType;
+            suggestions_1["default"].updateSuggestions(stdLibVersion, scriptType === 2);
+        }
+        catch (e) {
+            suggestions_1["default"].updateSuggestions();
         }
         return parsedDoc.errorList
-            .map(({posStart, posEnd, msg: message}) => {
-                const start = offsetToRange(posStart, text);
-                const end = offsetToRange(posEnd, text);
-
-                return ({
-                    range: Range.create(Position.create(start.row, start.col), Position.create(end.row, end.col)),
-                    severity: DiagnosticSeverity.Error,
-                    message
-                })
+            .map(function (_a) {
+            var posStart = _a.posStart, posEnd = _a.posEnd, message = _a.msg;
+            var start = utils_1.offsetToRange(posStart, text);
+            var end = utils_1.offsetToRange(posEnd, text);
+            return ({
+                range: vscode_languageserver_types_1.Range.create(vscode_languageserver_types_1.Position.create(start.row, start.col), vscode_languageserver_types_1.Position.create(end.row, end.col)),
+                severity: vscode_languageserver_types_1.DiagnosticSeverity.Error,
+                message: message
             });
-    }
-
-    public completion(document: TextDocument, position: Position): CompletionItem[] | CompletionList {
+        });
+    };
+    LspService.prototype.completion = function (document, position) {
         // const text = document.getText();
         // const parsedDoc = parseAndCompile(text);
         // getNodeByOffset(parsedDoc.exprAst, rangeToOffset(position.line, position.character, text));
-        return []
-    }
-
-    public hover(document: TextDocument, position: Position): Hover {
-        const text = document.getText();
-        const parsedDoc = parseAndCompile(text);
-        const node = getNodeByOffset(parsedDoc.exprAst, rangeToOffset(position.line, position.character, text));
-        let contents: MarkupContent | MarkedString | MarkedString[] = [];
-         if (isILet(node) ) {
-             contents.push(`${node.name.value}: ${node.expr.resultType}`)
-        } else if (isIGetter(node)) {
-             contents.push(node.resultType)
-        } else if (isIRef(node)) {
-             contents.push(`${node.name}: ${node.resultType}`)
-        } else if (isIFunc(node)) {
-             contents.push(`${node.name.value}(): ${node.expr.resultType}`)
-         } else if (isIFunctionCall(node)) {
-             contents.push(`${node.name.value}(): ${node.resultType}`)
-         } else {
-        }
-        return {contents};
-    }
-
-    public definition(document: TextDocument, position: Position): Definition {
-        const text = document.getText();
-        const parsedDoc = parseAndCompile(text);
-        const node = getNodeByOffset(parsedDoc.exprAst, rangeToOffset(position.line, position.character, text));
+        return [];
+    };
+    LspService.prototype.hover = function (document, position) {
+        var text = document.getText();
+        var parsedDoc = ride_js_1.parseAndCompile(text);
+        var node = utils_1.getNodeByOffset(parsedDoc.exprAst, utils_1.rangeToOffset(position.line, position.character, text));
+        console.error(utils_1.rangeToOffset(position.line, position.character, text), position);
+        console.error(node.posStart, utils_1.offsetToRange(node.posStart, text));
+        console.error(node.posEnd, utils_1.offsetToRange(node.posEnd, text));
+        console.error('---------');
+        var contents = [];
+        if ('name' in node)
+            contents = "" + node.name.value;
+        return { contents: contents };
+    };
+    LspService.prototype.definition = function (document, position) {
+        var text = document.getText();
+        var parsedDoc = ride_js_1.parseAndCompile(text);
+        var node = utils_1.getNodeByOffset(parsedDoc.exprAst, utils_1.rangeToOffset(position.line, position.character, text));
         delete node.ctx;
-        console.error(node)
-        return null
-    }
-
-    public signatureHelp(document: TextDocument, position: Position): SignatureHelp {
+        console.error(node);
+        return null;
+    };
+    LspService.prototype.signatureHelp = function (document, position) {
         return {
             activeParameter: null,
             activeSignature: null,
             signatures: []
         };
-    }
-
-
+    };
     // public completion(document: TextDocument, position: Position) {
     //     const offset = document.offsetAt(position);
     //     const text = document.getText();
@@ -204,10 +170,9 @@ export class LspService {
     //         signatures: fail ? [] : utils.getSignatureHelpResult(lastFunction.slice(0, -1), isPostfix),
     //     };
     // }
-
-    public completionResolve(item: CompletionItem) {
+    LspService.prototype.completionResolve = function (item) {
         return item;
-    }
-
-}
-
+    };
+    return LspService;
+}());
+exports.LspService = LspService;

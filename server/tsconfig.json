@@ -10,8 +10,10 @@
         "rootDir": "src",
         "declaration": true,
         "lib": [ "es6" ],
+		"types": ["jest"],
         "typeRoots": [
-            "./src/types"
+            "./src/types",
+			"./node_modules/@types"
           ]
 	},
 	"include": [
