@@ -5,6 +5,7 @@ import {
     Diagnostic,
     DiagnosticSeverity,
     Hover,
+    Location,
     MarkedString,
     MarkupContent,
     Position,
@@ -12,19 +13,16 @@ import {
     SignatureHelp,
     TextDocument
 } from 'vscode-languageserver-types';
-import { ILet, parseAndCompile, scriptInfo } from '@waves/ride-js';
+import { parseAndCompile, scriptInfo } from '@waves/ride-js';
 import suggestions from "./suggestions";
 import {
-    getNodeByOffset, isIBlock,
-    isIConstByteStr,
-    isIConstLong,
-    isIConstStr, isIDApp,
-    isIFalse,
+    getNodeByOffset,
+    getNodeDefinitionByName,
     isIFunc,
-    isIFunctionCall, isIGetter, isIIf,
-    isILet, isIMatch, isIMatchCase,
-    isIRef, isIScript,
-    isITrue,
+    isIFunctionCall,
+    isIGetter,
+    isILet,
+    isIRef,
     offsetToRange,
     rangeToOffset
 } from "./utils";
@@ -48,7 +46,10 @@ export class LspService {
                 const end = offsetToRange(posEnd, text);
 
                 return ({
-                    range: Range.create(Position.create(start.row, start.col), Position.create(end.row, end.col)),
+                    range: Range.create(
+                        Position.create(start.line, start.character),
+                        Position.create(end.line, end.character)
+                    ),
                     severity: DiagnosticSeverity.Error,
                     message
                 })
@@ -67,28 +68,34 @@ export class LspService {
         const parsedDoc = parseAndCompile(text);
         const node = getNodeByOffset(parsedDoc.exprAst, rangeToOffset(position.line, position.character, text));
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
-         if (isILet(node) ) {
-             contents.push(`${node.name.value}: ${node.expr.resultType}`)
+        if (isILet(node)) {
+            contents.push(`${node.name.value}: ${node.expr.resultType}`)
         } else if (isIGetter(node)) {
-             contents.push(node.resultType)
+            contents.push(node.resultType)
         } else if (isIRef(node)) {
-             contents.push(`${node.name}: ${node.resultType}`)
+            contents.push(`${node.name}: ${node.resultType}`)
         } else if (isIFunc(node)) {
-             contents.push(`${node.name.value}(): ${node.expr.resultType}`)
-         } else if (isIFunctionCall(node)) {
-             contents.push(`${node.name.value}(): ${node.resultType}`)
-         } else {
+            contents.push(`${node.name.value}(): ${node.expr.resultType}`)
+        } else if (isIFunctionCall(node)) {
+            contents.push(`${node.name.value}(): ${node.resultType}`)
+        } else {
         }
         return {contents};
     }
 
-    public definition(document: TextDocument, position: Position): Definition {
+    public definition(document: TextDocument, {line, character}: Position): Definition {
         const text = document.getText();
-        const parsedDoc = parseAndCompile(text);
-        const node = getNodeByOffset(parsedDoc.exprAst, rangeToOffset(position.line, position.character, text));
-        delete node.ctx;
-        console.error(node)
-        return null
+        const {exprAst: parsedDoc} = parseAndCompile(text);
+        const node = getNodeByOffset(parsedDoc, rangeToOffset(line, character, text));
+        let def = null;
+        if (isIRef(node))
+            def = getNodeDefinitionByName(parsedDoc, node.name, rangeToOffset(line, character, text));
+        else if (isIFunctionCall(node)) {
+            def = getNodeDefinitionByName(parsedDoc, node.name.value, rangeToOffset(line, character, text));
+        }
+        if (def == null) return null;
+        const start = offsetToRange(def.posStart, text), end = offsetToRange(def.posEnd, text);
+        return Location.create(document.uri, {start, end})
     }
 
     public signatureHelp(document: TextDocument, position: Position): SignatureHelp {
@@ -151,34 +158,8 @@ export class LspService {
     //     } as CompletionList;
     // }
     //
-    // public hover(document: TextDocument, position: Position) { //todo add hover to func args
-    //     const match = (/[a-zA-z0-9_]+\.[a-zA-z0-9_.]*$/gm)
-    //         .exec(document.getText({start: {line: position.line, character: 0}, end: position}));
-    //     const line = document.getText().split('\n')[position.line];
-    //     const word = utils.getWordByPos(line, position.character);
-    //     utils.ctx.updateContext(document.getText());
-    //     const p: TPosition = {row: position.line, col: position.character + 1};
-    //     return {contents: utils.getHoverResult(word, (match ? match[0] : '').split('.'), p)};
-    // }
-    //
-    // public definition(document: TextDocument, position: Position): Definition {
-    //
-    //     const text = document.getText(),
-    //         line = text.split('\n')[position.line],
-    //         word = utils.getWordByPos(line, position.character),
-    //         {uri} = document,
-    //         func = utils.getDataByRegexp(text, /func[ \t]*(.*)\([ \t]*(.*)[ \t]*\)[ \t]*=[ \t]*/g)
-    //             .find(({name}) => name === word);
-    //
-    //     let pos;
-    //     if (func && func.namePos && func.row) pos = {line: func.row, character: func.namePos};
-    //     else pos = utils.getVarDefinition(word, position);
-    //
-    //     return pos
-    //         ? Location.create(uri, {start: pos, end: {...pos, character: pos.character + word.length}})
-    //         : null;
-    // }
-    //
+
+
     // public signatureHelp(document: TextDocument, position: Position): SignatureHelp {
     //
     //     const offset = document.offsetAt(position);

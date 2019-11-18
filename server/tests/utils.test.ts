@@ -1,4 +1,11 @@
-import { getNodeByOffset, offsetToRange, rangeToOffset } from "../src/utils";
+import {
+    getNodeByOffset,
+    getNodeDefinitionByName,
+    isIGetter,
+    isILet,
+    offsetToRange,
+    rangeToOffset
+} from "../src/utils";
 import { parseAndCompile } from "@waves/ride-js";
 
 const content = `{-# STDLIB_VERSION 3 #-}
@@ -14,23 +21,24 @@ func cooperSigned () = if(sigVerify(tx.bodyBytes, tx.proofs[2], cooperPubKey )) 
 aliceSigned() + bobSigned() + cooperSigned() >= 2 `;
 
 test('test rangeToOffset and offsetToRange', () => {
-    const offset = 246, row = 5, col = 15;
+    const offset = 246, line = 5, character = 15;
 
     const range = offsetToRange(offset, content);
-    expect(range).toStrictEqual({row, col});
-    expect(rangeToOffset(range.row, range.col, content)).toBe(offset);
+    expect(range).toStrictEqual({line, character});
+    expect(rangeToOffset(range.line, range.character, content)).toBe(offset);
 
-    const o = rangeToOffset(row, col, content);
+    const o = rangeToOffset(line, character, content);
     expect(o).toBe(offset);
-    expect(offsetToRange(o, content)).toStrictEqual({row, col});
+    expect(offsetToRange(o, content)).toStrictEqual({line, character});
 });
 
-test('test', () => {
-    const position = {line: 10, character: 39};
-    const parsedDoc = parseAndCompile(content);
-    const node = getNodeByOffset(parsedDoc.exprAst, rangeToOffset(position.line, position.character, content));
-    console.log(node)
-    // console.log( node.posStart, offsetToRange( node.posStart, text))
-    // console.log( node.posEnd, offsetToRange( node.posEnd, text))
 
+test('test getNodeByOffset', () => {
+    const parsedDoc = parseAndCompile(content);
+    expect(isIGetter(getNodeByOffset(parsedDoc.exprAst, 350))).toBe(true)
+})
+
+test('test getNodeDefinitionByName', () => {
+    const parsedDoc = parseAndCompile(content);
+    expect(isILet(getNodeDefinitionByName(parsedDoc.exprAst, 'bobPubKey', 300))).toBe(true)
 })
