@@ -13,7 +13,7 @@ import {
     SignatureHelp,
     TextDocument
 } from 'vscode-languageserver-types';
-import { parseAndCompile, scriptInfo } from '@waves/ride-js';
+import { IFunc, parseAndCompile, scriptInfo } from '@waves/ride-js';
 import suggestions from "./suggestions";
 import {
     getNodeByOffset,
@@ -57,9 +57,9 @@ export class LspService {
     }
 
     public completion(document: TextDocument, position: Position): CompletionItem[] | CompletionList {
-        // const text = document.getText();
-        // const parsedDoc = parseAndCompile(text);
-        // getNodeByOffset(parsedDoc.exprAst, rangeToOffset(position.line, position.character, text));
+        const text = document.getText();
+        const parsedDoc = parseAndCompile(text);
+        getNodeByOffset(parsedDoc.exprAst, rangeToOffset(position.line, position.character, text));
         return []
     }
 
@@ -67,6 +67,10 @@ export class LspService {
         const text = document.getText();
         const parsedDoc = parseAndCompile(text);
         const node = getNodeByOffset(parsedDoc.exprAst, rangeToOffset(position.line, position.character, text));
+
+        const getFuncHover = (n: IFunc) => `${n.name.value}(${n.argList.map(({argName: {value}, typeList}) =>
+            `${value}: ${typeList.map(({typeName: {value}}) => value).join('|')}`).join(', ')}): ${n.expr.resultType}`;
+
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
         if (isILet(node)) {
             contents.push(`${node.name.value}: ${node.expr.resultType}`)
@@ -75,9 +79,11 @@ export class LspService {
         } else if (isIRef(node)) {
             contents.push(`${node.name}: ${node.resultType}`)
         } else if (isIFunc(node)) {
-            contents.push(`${node.name.value}(): ${node.expr.resultType}`)
+            contents.push(getFuncHover(node))
         } else if (isIFunctionCall(node)) {
-            contents.push(`${node.name.value}(): ${node.resultType}`)
+            const def = getNodeDefinitionByName(parsedDoc.exprAst, node.name.value, node.posStart);
+            if (isIFunc(def)) contents.push(getFuncHover(def))
+
         } else {
         }
         return {contents};
