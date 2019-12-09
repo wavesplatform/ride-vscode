@@ -104,7 +104,6 @@ export function getNodeDefinitionByName(node: TNode, name: string, refPos: numbe
 
 }
 
-
 export function offsetToRange(startOffset: number, content: string): { line: number, character: number } {
     const sliced = content.slice(0, startOffset).split('\n');
     const line = sliced.length - 1, character = sliced[line].length === 0 ? 0 : sliced[line].length - 1;
@@ -116,3 +115,4 @@ export function rangeToOffset(line: number, character: number, content: string):
     return Array.from({length: line}, (_, i) => i)
         .reduce((acc, i) => acc + split[i].length + 1, 0) + character + 1;
 }
+

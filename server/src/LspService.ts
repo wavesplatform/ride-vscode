@@ -13,7 +13,7 @@ import {
     SignatureHelp,
     TextDocument
 } from 'vscode-languageserver-types';
-import { IFunc, parseAndCompile, scriptInfo } from '@waves/ride-js';
+import { IFunc, parseAndCompile, scriptInfo, TFunction } from '@waves/ride-js';
 import suggestions from "./suggestions";
 import {
     getNodeByOffset,
@@ -68,10 +68,13 @@ export class LspService {
         const parsedDoc = parseAndCompile(text);
         const node = getNodeByOffset(parsedDoc.exprAst, rangeToOffset(position.line, position.character, text));
 
-        const getFuncHover = (n: IFunc) => `${n.name.value}(${n.argList.map(({argName: {value}, typeList}) =>
+        const getFuncHoverByNode = (n: IFunc) => `${n.name.value}(${n.argList.map(({argName: {value}, typeList}) =>
             `${value}: ${typeList.map(({typeName: {value}}) => value).join('|')}`).join(', ')}): ${n.expr.resultType}`;
+        const getFuncHoverByTFunction = (f: TFunction)=> `${f.name}(${f.args.map(({name, type}) =>
+            `${name}: ${type}`).join(', ')}): ${f.resultType}`;
 
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
+
         if (isILet(node)) {
             contents.push(`${node.name.value}: ${node.expr.resultType}`)
         } else if (isIGetter(node)) {
@@ -79,11 +82,14 @@ export class LspService {
         } else if (isIRef(node)) {
             contents.push(`${node.name}: ${node.resultType}`)
         } else if (isIFunc(node)) {
-            contents.push(getFuncHover(node))
+            contents.push(getFuncHoverByNode(node))
         } else if (isIFunctionCall(node)) {
             const def = getNodeDefinitionByName(parsedDoc.exprAst, node.name.value, node.posStart);
-            if (isIFunc(def)) contents.push(getFuncHover(def))
-
+            if (isIFunc(def)) contents.push(getFuncHoverByNode(def))
+            if (def === null) {
+                const funcs = suggestions.functions.filter(({name}) => name === node.name.value);
+                contents = [...contents, ...funcs.map(f => getFuncHoverByTFunction(f))]
+            }
         } else {
         }
         return {contents};
