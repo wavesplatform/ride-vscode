@@ -154,6 +154,7 @@ export class LspServer {
             }
         });
 
+
         // Lsp callbacks
         // connection.onCodeAction(service.codeAction.bind(service));
         connection.onCompletion(async (textDocumentPosition: TextDocumentPositionParams): Promise<CompletionItem[] | CompletionList> => {

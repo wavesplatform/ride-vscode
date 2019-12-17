@@ -129,7 +129,7 @@ export class LspService {
         const word = utils.getWordByPos(line, position.character);
         utils.ctx.updateContext(document.getText());
         const p: TPosition = {row: position.line, col: position.character + 1};
-        return {contents: utils.getHoverResult(word, (match ? match[0] : '').split('.'), p)};
+        return {contents: utils.getHoverResult(word, (match ? match[0] : '').split('.'))};
     }
 
     public definition(document: TextDocument, position: Position): Definition {

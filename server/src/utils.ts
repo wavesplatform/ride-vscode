@@ -5,6 +5,7 @@ import { Context, suggestions, TPosition } from "./context";
 
 export const ctx = new Context();
 const { types, functions, globalVariables, globalSuggestions } = suggestions;
+import * as jsonSuggestions from './suggestions/suggestions.json';
 
 
 //======================DEFINITION=========================
@@ -121,13 +122,11 @@ export function getSignatureHelpResult(word: string, isShift: boolean) {
 
 //======================Hover==============================
 
-export function getHoverResult(word: string, inputWords: string[], p: TPosition) {
-
+export function getHoverResult(word: string, inputWords: string[]) {
 
     const getHoverFunctionDoc = (func: TFunction) => `**${func.name}** (${func.args.length > 0 ?
         `\n${func.args.map(({ name, type, doc }) => `\n * ${`${name}: ${getFunctionArgumentString(type)} - ${doc}`} \n`)}\n` :
         ' '}) : ${getFunctionArgumentString(func.resultType)} \n>_${func.doc}_`;
-
     return unique(
         getLadderCompletion(ctx, inputWords)
             .filter(({ name }) => name === word).map(item => `**${item.name}**: ` + getTypeDoc(item))
@@ -136,6 +135,8 @@ export function getHoverResult(word: string, inputWords: string[], p: TPosition)
             .concat(globalVariables.filter(({ name }) => name === word).map(({ doc }) => doc))
             .concat(getFunctionsByName(word).map((func: TFunction) => getHoverFunctionDoc(func)))
             .concat(types.filter(({ name }) => name === word).map(item => getTypeDoc(item)))
+            .concat(jsonSuggestions.snippets.filter(({ label, detail }) => label === word && detail)
+                .map(({detail}) => detail || ''))
     );
 }
 
