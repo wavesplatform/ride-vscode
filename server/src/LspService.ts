@@ -70,10 +70,12 @@ export class LspService {
 
         const getFuncHoverByNode = (n: IFunc) => `${n.name.value}(${n.argList.map(({argName: {value}, typeList}) =>
             `${value}: ${typeList.map(({typeName: {value}}) => value).join('|')}`).join(', ')}): ${n.expr.resultType}`;
-        const getFuncHoverByTFunction = (f: TFunction)=> `${f.name}(${f.args.map(({name, type}) =>
+        const getFuncHoverByTFunction = (f: TFunction) => `${f.name}(${f.args.map(({name, type}) =>
             `${name}: ${type}`).join(', ')}): ${f.resultType}`;
 
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
+
+        //todo Либо добавить позиции типы имена и доки либо оставить только имена
 
         if (isILet(node)) {
             contents.push(`${node.name.value}: ${node.expr.resultType}`)
@@ -85,10 +87,10 @@ export class LspService {
             contents.push(getFuncHoverByNode(node))
         } else if (isIFunctionCall(node)) {
             const def = getNodeDefinitionByName(parsedDoc.exprAst, node.name.value, node.posStart);
-            if (isIFunc(def)) contents.push(getFuncHoverByNode(def))
+            if (isIFunc(def)) contents.push(getFuncHoverByNode(def));
             if (def === null) {
-                const funcs = suggestions.functions.filter(({name}) => name === node.name.value);
-                contents = [...contents, ...funcs.map(f => getFuncHoverByTFunction(f))]
+                // parsedDoc.
+suggestions.functions.map(() => {})
             }
         } else {
         }
