@@ -11,23 +11,10 @@ import {
 	TransportKind
 } from 'vscode-languageclient';
 
-import { WavesReplPanel } from './WavesReplPanel'
 
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
-	// Activate REPL window
-    const appPath = context.asAbsolutePath(path.join('extension', 'out', 'repl'))
-	//const appPath = '/Users/siem/PycharmProjects/ride-repl/dist'
-	const startCommand = commands.registerCommand('waves-repl.start', () => {
-		WavesReplPanel.createOrShow(appPath);
-	});
-	if (WavesReplPanel.currentPanel){
-		WavesReplPanel.currentPanel
-	}
-	context.subscriptions.push(startCommand);
-	// runReplServer(appPath, appPort)
-
 	// Language Server
 	// The server is implemented in node
 	let serverModule = context.asAbsolutePath(

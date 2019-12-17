@@ -12,4 +12,3 @@ extension/node_modules/**
 !extension/node_modules/vscode-languageserver-protocol/**
 !extension/node_modules/vscode-languageserver-types/**
 !assets/*
-!extension/out/repl/*
