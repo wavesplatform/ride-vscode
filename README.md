@@ -25,7 +25,7 @@ Show documentation on hover
 ### ![](assets/hover.gif "Hover")
 
 ## Signature help
-Signature help. When you open the (while calling a function, a pop-up provides signature help for the function. As you keep typing the parameters, the hint (underline) moves to the next parameter. Tip: Use ⇧⌘Space (Windows, Linux Ctrl+Shift+Space) to manually trigger the signature help when the cursor is inside the in the function call.### ![](assets/gtd.gif "Go To Declaratio")
+Signature help. When you open the (while calling a function, a pop-up provides signature help for the function. As you keep typing the parameters, the hint (underline) moves to the next parameter. Tip: Use ⇧⌘Space (Windows, Linux Ctrl+Shift+Space) to manually trigger the signature help when the cursor is inside the in the function call.
 ### ![](assets/sh.gif "Signature help")
 
 ## Error highlighting
