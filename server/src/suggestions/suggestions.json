@@ -40,6 +40,12 @@
       "label": "base16",
       "insertText": "base16'$1'",
       "insertTextFormat": 2
+    },
+    {
+      "label": "FOLD",
+      "insertText": "FOLD<${1:STEP_MAX}>(${2:LIST}, ${3:ACCUMULATOR}, ${4:FUNCTION})",
+      "detail": "FOLD: list : List[A] - list of values; acc : B - accumulator, foldFunc: func(acc:B, value: A) : B - folding function, takes values from list one by one",
+      "insertTextFormat": 2
     }
   ]
 }
