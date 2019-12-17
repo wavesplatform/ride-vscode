@@ -16,15 +16,15 @@ Use standard Ctrl/Command + Space to autocomplete. Global functions, variables, 
 matching and if/else statements supported via snippets
 ### ![](assets/completion.gif "Code completion")
 
-##Go To Declaration
+## Go To Declaration
 Go To Declaration is a feature that allows you to jump to the declaration of a variable or procedure. This can be done by placing the mouse over the name you want to see the declaration for, push control or command(on macOS) and left click
 ### ![](assets/gtd.gif "Go To Declaration")
 
-##Hover
+## Hover
 Show documentation on hover
 ### ![](assets/hover.gif "Hover")
 
-##Signature help
+## Signature help
 Signature help. When you open the (while calling a function, a pop-up provides signature help for the function. As you keep typing the parameters, the hint (underline) moves to the next parameter. Tip: Use ⇧⌘Space (Windows, Linux Ctrl+Shift+Space) to manually trigger the signature help when the cursor is inside the in the function call.### ![](assets/gtd.gif "Go To Declaratio")
 ### ![](assets/sh.gif "Hover")
 
