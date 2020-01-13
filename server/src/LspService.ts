@@ -16,6 +16,9 @@ import * as utils from './utils';
 import { suggestions, TPosition } from "./context";
 
 export class LspService {
+
+    public compile = compile;
+
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         try {
             const info = scriptInfo(document.getText());
