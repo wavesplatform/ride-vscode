@@ -11,7 +11,7 @@ import {
     SignatureHelp,
     TextDocument
 } from 'vscode-languageserver-types';
-import * as compiler from '@waves/ride-js';
+import { compile, scriptInfo } from '@waves/ride-js';
 import * as utils from './utils';
 import { suggestions, TPosition } from "./context";
 
@@ -19,11 +19,9 @@ export class LspService {
 
     public static TextDocument = TextDocument;
 
-    public static compiler = compiler;
-
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         try {
-            const info = compiler.scriptInfo(document.getText());
+            const info = scriptInfo(document.getText());
             if ('error' in info) throw info.error;
             const {stdLibVersion, scriptType} = info;
             suggestions.updateSuggestions(stdLibVersion, scriptType === 2);
@@ -32,7 +30,7 @@ export class LspService {
         }
 
         let diagnostics: Diagnostic[] = [];
-        let resultOrError = compiler.compile(document.getText());
+        let resultOrError = compile(document.getText());
         if ('error' in resultOrError) {
             const errorText = resultOrError.error;
             const errRangesRegxp = /\d+-\d+/gm;
