@@ -17,7 +17,9 @@ import { suggestions, TPosition } from "./context";
 
 export class LspService {
 
-    public compile = compile;
+    public static compile = compile;
+
+    public static TextDocument = TextDocument;
 
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         try {
