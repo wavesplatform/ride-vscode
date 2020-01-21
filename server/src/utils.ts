@@ -12,11 +12,19 @@ import {
     ILet,
     IMatch,
     IMatchCase,
+    IPos,
     IRef,
     IScript,
     ITrue,
-    TNode
+    TArgument,
+    TFunction,
+    TList,
+    TNode,
+    TStruct,
+    TStructField,
+    TUnion
 } from "@waves/ride-js";
+import suggestions, { isList, isPrimitive, isStruct, isUnion } from "./suggestions";
 
 export const isIConstByteStr = (node: TNode | null): node is IConstByteStr => node != null && node.type === "CONST_BYTESTR";
 export const isIConstLong = (node: TNode | null): node is IConstLong => node != null && node.type === "CONST_LONG";
@@ -53,7 +61,6 @@ const findNodeByFunc = (node: TNode, f: (node: TNode) => TNode | null): TNode | 
     }
 };
 
-
 export function getNodeByOffset(node: TNode, pos: number): TNode {
 
     const validateNodeByPos = (pos: number) => (node: TNode): TNode | null =>
@@ -63,45 +70,13 @@ export function getNodeByOffset(node: TNode, pos: number): TNode {
     return (goodChild) ? getNodeByOffset(goodChild, pos) : node
 }
 
-const getNodeChildren = (node: TNode): TNode[] => {
-    if (isIBlock(node)) {
-        return [node.dec, node.body]
-    } else if (isILet(node) || isIMatch(node) || isIMatchCase(node) || isIFunc(node) || isIScript(node) || isIDApp(node)) {
-        return [node.expr]
-    } else if (isIIf(node)) {
-        return [node.cond, node.ifTrue, node.ifFalse]
-    } else if (isIFunctionCall(node)) {
-        return node.args
-    } else if (isIGetter(node)) {
-        return [node.ref]
-    } else if (isIMatch(node)) {
-        return node.cases
-    } else {
-        return []
+export function getFunctionDefinition(exprAst: TNode, node: IFunctionCall): IFunc | null {
+    const defPos = node.ctx.find(({name}) => name === node.name.value);
+    if (defPos) {
+        const def = getNodeByOffset(exprAst, defPos.posStart);
+        if (isIFunc(def)) return def;
     }
-};
-
-
-export function getNodeDefinitionByName(node: TNode, name: string, refPos: number): TNode | null {
-    const out: TNode[] = [];
-
-    const validateNodeByName = (n: TNode): boolean => ((isIFunc(n) || isILet(n)) && n.name.value === name);
-
-    function go(n: TNode) {
-        const children = getNodeChildren(n);
-        children.forEach(child => {
-            validateNodeByName(child) && out.push(child);
-            go(child)
-        })
-    }
-
-    go(node);
-    return out
-        .map(node => ({distance: refPos - node.posStart, node}))
-        .filter(({distance}) => distance > 0)
-        .map(({node}) => node)
-        .pop() || null
-
+    return null
 }
 
 export function offsetToRange(startOffset: number, content: string): { line: number, character: number } {
@@ -116,3 +91,92 @@ export function rangeToOffset(line: number, character: number, content: string):
         .reduce((acc, i) => acc + split[i].length + 1, 0) + character + 1;
 }
 
+export const getFuncArgumentOrTypeByPos = (node: IFunc, pos: number): string | null => {
+    let out: string | null = null;
+    node.argList.forEach((arg) => {
+        if (validateByPos(pos, arg.argName)) {
+            out = getFuncArgNameHover(arg);
+        } else {
+            for (const {typeName} of arg.typeList) {
+                if (validateByPos(pos, typeName)) {
+                    const type = suggestions.types.find(({name}) => name === typeName.value);
+                    out = type ? getTypeDoc(type) : typeName.value;
+                    break;
+                }
+            }
+        }
+    })
+    return out
+}
+
+export const validateByPos = (pos: number, node: IPos) => (node.posStart <= pos && node.posEnd >= pos);
+
+export const getFuncHoverByNode = (n: IFunc) => `${n.name.value}(${n.argList.map(({argName: {value}, typeList}) =>
+    `${value}: ${typeList.map(({typeName: {value}}) => value).join('|')}`).join(', ')}): ${n.expr.resultType}`;
+export const getFuncHoverByTFunction = (f: TFunction) => `${f.name}(${f.args.map(({name, type}) =>
+    `${name}: ${type}`).join(', ')}): ${f.resultType}`;
+export const getFuncArgNameHover = ({argName: {value: name}, typeList}: TArgument) => `${name}: ${
+    typeList.map(({typeName: {value: name}}) => `${name}`).join(' | ')}`;
+
+export const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
+    const type = item.type;
+    let typeDoc = 'Unknown';
+    switch (true) {
+        case isPrimitive(type):
+            typeDoc = type as string;
+            break;
+        case isStruct(type):
+            typeDoc = isRec ? (type as TStruct).typeName :
+                `**${(type as TStruct).typeName}**(\n- ` + (type as TStruct).fields
+                    .map((v) => `${v.name}: ${getTypeDoc(v, true)}`).join('\n- ') + '\n\n)';
+            break;
+        case isUnion(type):
+            typeDoc = (type as TUnion).map(field => isStruct(field) ? field.typeName : field).join('|');
+            break;
+        case isList(type):
+            typeDoc = `LIST[ ` +
+                `${((type as TList).listOf as TStruct).typeName || (type as TList).listOf}]`;
+            break;
+    }
+    return typeDoc;
+};
+
+// const getNodeChildren = (node: TNode): TNode[] => {
+//     if (isIBlock(node)) {
+//         return [node.dec, node.body]
+//     } else if (isILet(node) || isIMatch(node) || isIMatchCase(node) || isIFunc(node) || isIScript(node) || isIDApp(node)) {
+//         return [node.expr]
+//     } else if (isIIf(node)) {
+//         return [node.cond, node.ifTrue, node.ifFalse]
+//     } else if (isIFunctionCall(node)) {
+//         return node.args
+//     } else if (isIGetter(node)) {
+//         return [node.ref]
+//     } else if (isIMatch(node)) {
+//         return node.cases
+//     } else {
+//         return []
+//     }
+// };
+//
+// export function getNodeDefinitionByName(node: TNode, name: string, refPos: number): TNode | null {
+//     const out: TNode[] = [];
+//
+//     const validateNodeByName = (n: TNode): boolean => ((isIFunc(n) || isILet(n)) && n.name.value === name);
+//
+//     function go(n: TNode) {
+//         const children = getNodeChildren(n);
+//         children.forEach(child => {
+//             validateNodeByName(child) && out.push(child);
+//             go(child)
+//         })
+//     }
+//
+//     go(node);
+//     return out
+//         .map(node => ({distance: refPos - node.posStart, node}))
+//         .filter(({distance}) => distance > 0)
+//         .map(({node}) => node)
+//         .pop() || null
+//
+// }
