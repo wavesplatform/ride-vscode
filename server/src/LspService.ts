@@ -51,10 +51,11 @@ export class LspService {
                             Position.create(end.line, end.character)
                         ),
                         severity: DiagnosticSeverity.Error,
-                        message
+                        message: `${message}, start: ${start.line+1}:${start.character+1}; len: ${posEnd - posStart}`
                     })
                 });
         } catch (e) {
+            console.error(e)
             suggestions.updateSuggestions();
         }
         return []
