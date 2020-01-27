@@ -14,33 +14,38 @@ import {
     TextDocument
 } from 'vscode-languageserver-types';
 import { parseAndCompile, scriptInfo } from '@waves/ride-js';
-import suggestions from "./suggestions";
+import suggestions from './suggestions';
 import {
+    convertToCompletion,
+    getCompletionDefaultResult,
     getFuncArgumentOrTypeByPos,
     getFuncHoverByNode,
     getFuncHoverByTFunction,
     getFunctionDefinition,
     getNodeByOffset,
+    getNodeType,
     isIFunc,
     isIFunctionCall,
     isIGetter,
     isILet,
     isIRef,
+    isIScript, isParseError,
     offsetToRange,
     rangeToOffset
-} from "./utils";
+} from './utils';
 
 export class LspService {
 
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         const text = document.getText();
         try {
-            const parsedDoc = parseAndCompile(text);
+            const parsedResult = parseAndCompile(text);
+            if (isParseError(parsedResult)) throw parsedResult.error;
             const info = scriptInfo(text);
             if ('error' in info) throw info.error;
             const {stdLibVersion, scriptType} = info;
             suggestions.updateSuggestions(stdLibVersion, scriptType === 2);
-            return parsedDoc.errorList
+            return (parsedResult.errorList || [])
                 .map(({posStart, posEnd, msg: message}) => {
                     const start = offsetToRange(posStart, text);
                     const end = offsetToRange(posEnd, text);
@@ -51,54 +56,76 @@ export class LspService {
                             Position.create(end.line, end.character)
                         ),
                         severity: DiagnosticSeverity.Error,
-                        message: `${message}, start: ${start.line+1}:${start.character+1}; len: ${posEnd - posStart}`
-                    })
+                        message: `${message}, start: ${start.line + 1}:${start.character + 1}; len: ${posEnd - posStart}`
+                    });
                 });
         } catch (e) {
-            console.error(e)
-            suggestions.updateSuggestions();
+            console.error(e);
         }
-        return []
+        return [];
     }
 
     public completion(document: TextDocument, position: Position): CompletionItem[] | CompletionList {
+        const offset = document.offsetAt(position);
         const text = document.getText();
-        try {
-            const {exprAst: parsedDoc} = parseAndCompile(text);
-        } catch (e) {
-            console.error(e)
+        const character = text.substring(offset - 1, offset);
+        const cursor = rangeToOffset(position.line, position.character, text);
+        let items: CompletionItem[] = [];
+
+        const parsedResult = parseAndCompile(text);
+        if (isParseError(parsedResult)) throw parsedResult.error;
+        const ast = parsedResult.exprAst || parsedResult.dAppAst;
+        if(!ast) return [];
+
+        const node = getNodeByOffset(ast, cursor);
+        if (character === '@') {
+
+        } else if (character === ':') {
+
+        } else if (isIGetter(node)) {
+            items = getNodeType(node.ref).map((item) => convertToCompletion(item));
         }
-        // const node = getNodeByOffset(parsedDoc, rangeToOffset(position.line, position.character, text));
-        // console.error(node)
-        return []
+        // case'@': // IScript
+        // case':': //IFunc IMatch
+        if (items.length === 0) {
+            const {ctx} = isIScript(node) ? node.expr : node;
+            items = getCompletionDefaultResult(ctx);
+        }
+
+        return {isIncomplete: false, items} as CompletionList;
     }
 
     public hover(document: TextDocument, position: Position): Hover {
         const text = document.getText();
-        const parsedDoc = parseAndCompile(text);
-        const cursor = rangeToOffset(position.line, position.character, text)
-        const node = getNodeByOffset(parsedDoc.exprAst, cursor);
+
+        const parsedResult = parseAndCompile(text);
+        if (isParseError(parsedResult)) throw parsedResult.error;
+        const ast = parsedResult.exprAst || parsedResult.dAppAst;
+        if(!ast) return {contents: []};
+
+        const cursor = rangeToOffset(position.line, position.character, text);
+        const node = getNodeByOffset(ast, cursor);
 
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
         if (isILet(node)) {
-            contents.push(`${node.name.value}: ${node.expr.resultType}`)
+            contents.push(`${node.name.value}: ${node.expr.resultType}`);
         } else if (isIGetter(node)) {
-            contents.push(node.resultType)
+            contents.push(node.resultType);
         } else if (isIRef(node)) {
             const refDocs = suggestions.globalVariables
                 .filter(({name, doc}) => node.name === name && doc != null).map(({doc}) => doc);
             contents.push(`${node.name}: ${node.resultType}`);
-            contents = [...contents, ...refDocs]
+            contents = [...contents, ...refDocs];
         } else if (isIFunc(node)) {
-            contents.push(getFuncArgumentOrTypeByPos(node, cursor) || getFuncHoverByNode(node))
+            contents.push(getFuncArgumentOrTypeByPos(node, cursor) || getFuncHoverByNode(node));
         } else if (isIFunctionCall(node)) {
-            const def = getFunctionDefinition(parsedDoc.exprAst, node);
+            const def = getFunctionDefinition(ast, node);
             if (def) {
                 contents.push(getFuncHoverByNode(def));
             } else {
                 const globalFunctionsMatches = suggestions.functions
                     .filter(({name}) => node.name.value === name).map(f => getFuncHoverByTFunction(f));
-                contents = [...contents, ...globalFunctionsMatches]
+                contents = [...contents, ...globalFunctionsMatches];
             }
         } else {
         }
@@ -107,8 +134,12 @@ export class LspService {
 
     public definition(document: TextDocument, {line, character}: Position): Definition {
         const text = document.getText();
-        const {exprAst: parsedDoc} = parseAndCompile(text);
-        const node = getNodeByOffset(parsedDoc, rangeToOffset(line, character, text));
+        const parsedResult = parseAndCompile(text);
+        if (isParseError(parsedResult)) throw parsedResult.error;
+        const ast = parsedResult.exprAst || parsedResult.dAppAst;
+        if(!ast) return null;
+
+        const node = getNodeByOffset(ast, rangeToOffset(line, character, text));
         if (!node.ctx) return null;
         let nodeName: string | null = null;
         if (isIRef(node)) nodeName = node.name;
@@ -118,11 +149,11 @@ export class LspService {
         //todo remake definition area after ctx fixes
         if (def == null) return null;
         const start = offsetToRange(def.posStart + 1, text), end = offsetToRange(def.posStart + 2, text);
-        return Location.create(document.uri, {start, end})
+        return Location.create(document.uri, {start, end});
     }
 
     public signatureHelp(document: TextDocument, position: Position): SignatureHelp {
-        console.error('s')
+        console.error('s');
         return {
             activeParameter: null,
             activeSignature: null,

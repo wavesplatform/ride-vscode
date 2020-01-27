@@ -1,10 +1,10 @@
 import {
-    getNodeByOffset,
+    getNodeByOffset, getNodeType,
     isIGetter,
     isILet,
     offsetToRange,
     rangeToOffset
-} from "../src/utils";
+} from '../src/utils';
 import { parseAndCompile, version } from "@waves/ride-js";
 
 const content = `{-# STDLIB_VERSION 3 #-}
@@ -43,6 +43,32 @@ test('test getNodeByOffset', () => {
 // })
 import suggestions from "../src/suggestions";
 
+test('get node type', () => {
+    const text = `{-# STDLIB_VERSION 3 #-}
+
+#define public keys
+let alicePubKey  = base58'5AzfA9UfpWVYiwFwvdr77k6LWupSTGLb14b24oVdEpMM'
+let bobPubKey    = base58'2KwU4vzdgPmKyf7q354H9kSyX9NZjNiq4qbnH2wi2VDF'
+let cooperPubKey = base58'GbrUeGaBfmyFJjSQb9Z8uTCej5GzjXfRDVGJGrmgt5cD'
+
+#check whoever provided the valid proof
+let aliceSigned  = if(sigVerify(tx.bodyBytes, tx.proofs[0], alicePubKey  )) then 1 else 0
+let bobSigned    = if(sigVerify(tx.bodyBytes, tx.proofs[1], bobPubKey    )) then 1 else 0
+
+func cooperSigned(key: ByteVector) = if(sigVerify(tx.bodyBytes, tx.proofs[2], key)) then 1 else 0 
+func testFunc(t: BurnTransaction | ExchangeTransaction) = if(true) then t else 0 
+
+tx.sender.
+
+ aliceSigned + bobSigned + cooperSigned(cooperPubKey) >= 2`
+    const {exprAst: parsedDoc} = parseAndCompile(text);
+    let node = getNodeByOffset(parsedDoc, 677);
+    if(isIGetter(node)) node = node.ref
+    const res = getNodeType(node)
+    expect(res.some(({name}) => name === 'bytes')).toBe(true)
+
+})
+
 test('test', () => {
     suggestions.updateSuggestions(3);
     const globalSuggestions = suggestions.globalSuggestions
@@ -51,3 +77,4 @@ test('test', () => {
     const functions = suggestions.functions
     console.log(globalVariables)
 })
+
