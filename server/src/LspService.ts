@@ -85,7 +85,7 @@ export class LspService {
         } else if (isIGetter(node)) {
             items = getNodeType(node.ref).map((item) => convertToCompletion(item));
         }
-        // case'@': // IScript
+        // case'@': // IScript && dAppAst
         // case':': //IFunc IMatch
         if (items.length === 0) {
             const {ctx} = isIScript(node) ? node.expr : node;

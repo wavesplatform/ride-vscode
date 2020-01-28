@@ -87,6 +87,7 @@ export function getNodeType(node: TNode) {
             if (!field) return [];
             return intersection(isUnion(field.type) ? field.type : [field.type]);
         } else if (isIRef(node)) {
+            //todo add ctx search
             let def = suggestions.globalVariables.find(({name}) => name === node.name);
             if (!def) return [];
             return intersection(isUnion(def.type) ? def.type : [def.type]);
