@@ -18,6 +18,7 @@ import suggestions from './suggestions';
 import {
     convertToCompletion,
     getCompletionDefaultResult,
+    getExpressionType,
     getFuncArgumentOrTypeByPos,
     getFuncHoverByNode,
     getFuncHoverByTFunction,
@@ -29,7 +30,8 @@ import {
     isIGetter,
     isILet,
     isIRef,
-    isIScript, isParseError,
+    isIScript,
+    isParseError,
     offsetToRange,
     rangeToOffset
 } from './utils';
@@ -75,7 +77,7 @@ export class LspService {
         const parsedResult = parseAndCompile(text);
         if (isParseError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
-        if(!ast) return [];
+        if (!ast) return [];
 
         const node = getNodeByOffset(ast, cursor);
         if (character === '@') {
@@ -101,20 +103,26 @@ export class LspService {
         const parsedResult = parseAndCompile(text);
         if (isParseError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
-        if(!ast) return {contents: []};
+        if (!ast) return {contents: []};
 
         const cursor = rangeToOffset(position.line, position.character, text);
         const node = getNodeByOffset(ast, cursor);
 
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
         if (isILet(node)) {
-            contents.push(`${node.name.value}: ${node.expr.resultType}`);
+            contents.push(`${node.name.value}: ${getExpressionType(node.expr.resultType)}`);
         } else if (isIGetter(node)) {
-            contents.push(node.resultType);
+            contents.push(getExpressionType(node.resultType));
         } else if (isIRef(node)) {
             const refDocs = suggestions.globalVariables
                 .filter(({name, doc}) => node.name === name && doc != null).map(({doc}) => doc);
-            contents.push(`${node.name}: ${node.resultType}`);
+            const defCtx = node.ctx.find(({name}) => name === node.name);
+            if (defCtx) {
+                const def = getNodeByOffset(ast, defCtx.posStart + 1);
+                if (isILet(def)) {
+                    contents.push(`${def.name.value}: ${getExpressionType(def.expr.resultType)}`);
+                }
+            }
             contents = [...contents, ...refDocs];
         } else if (isIFunc(node)) {
             contents.push(getFuncArgumentOrTypeByPos(node, cursor) || getFuncHoverByNode(node));
@@ -137,7 +145,7 @@ export class LspService {
         const parsedResult = parseAndCompile(text);
         if (isParseError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
-        if(!ast) return null;
+        if (!ast) return null;
 
         const node = getNodeByOffset(ast, rangeToOffset(line, character, text));
         if (!node.ctx) return null;
@@ -153,6 +161,18 @@ export class LspService {
     }
 
     public signatureHelp(document: TextDocument, position: Position): SignatureHelp {
+        // const text = document.getText();
+        // const cursor = rangeToOffset(position.line, position.character, text);
+        //
+        // const parsedResult = parseAndCompile(text);
+        // if (isParseError(parsedResult)) throw parsedResult.error;
+        // const ast = parsedResult.exprAst || parsedResult.dAppAst;
+        // let node;
+        // if (ast) {
+        //     node = getNodeByOffset(ast, cursor);
+        //
+        // }
+
         console.error('s');
         return {
             activeParameter: null,

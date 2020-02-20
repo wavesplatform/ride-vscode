@@ -20,6 +20,7 @@ import {
     IScript,
     ITrue,
     TArgument,
+    TExprResultType,
     TFunction,
     TList,
     TNode,
@@ -141,7 +142,7 @@ export const getFuncArgumentOrTypeByPos = (node: IFunc, pos: number): string | n
 export const validateByPos = (pos: number, node: IPos) => (node.posStart <= pos && node.posEnd >= pos);
 
 export const getFuncHoverByNode = (n: IFunc) => `${n.name.value}(${n.argList.map(({argName: {value}, typeList}) =>
-    `${value}: ${typeList.map(({typeName: {value}}) => value).join('|')}`).join(', ')}): ${n.expr.resultType}`;
+    `${value}: ${typeList.map(({typeName: {value}}) => value).join('|')}`).join(', ')}): ${getExpressionType(n.expr.resultType)}`;
 export const getFuncHoverByTFunction = (f: TFunction) => `${f.name}(${f.args.map(({name, type}) =>
     `${name}: ${type}`).join(', ')}): ${f.resultType}`;
 export const getFuncArgNameHover = ({argName: {value: name}, typeList}: TArgument) => `${name}: ${
@@ -170,6 +171,18 @@ export const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
     return typeDoc;
 };
 
+export const getExpressionType = (resultType: TExprResultType): string => {
+    if ('type' in resultType) {
+        return resultType.type;
+    }
+    if ('unionTypes' in resultType) {
+        return resultType.unionTypes.map((t: TExprResultType) => getExpressionType(t)).join(' | ');
+    }
+    if ('listOf' in resultType) {
+        return `${getExpressionType(resultType.listOf)}[]`;
+    }
+    return '';
+};
 
 export const getCompletionDefaultResult = (ctx: IContext[] = []) => [
     ...ctx.map(({name: label}) => ({label, kind: ItemKind.Variable})),
