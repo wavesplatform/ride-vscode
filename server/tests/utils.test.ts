@@ -34,6 +34,7 @@ test('test rangeToOffset and offsetToRange', () => {
 
 test('test getNodeByOffset', () => {
     const parsedDoc = parseAndCompile(content);
+    if('error' in parsedDoc) throw 'error'
     expect(isIGetter(getNodeByOffset(parsedDoc.exprAst, 350))).toBe(true)
 })
 
@@ -61,8 +62,9 @@ func testFunc(t: BurnTransaction | ExchangeTransaction) = if(true) then t else 0
 tx.sender.
 
  aliceSigned + bobSigned + cooperSigned(cooperPubKey) >= 2`
-    const {exprAst: parsedDoc} = parseAndCompile(text);
-    let node = getNodeByOffset(parsedDoc, 677);
+    const parsedDoc = parseAndCompile(text);
+    if('error' in parsedDoc) throw 'error'
+    let node = getNodeByOffset(parsedDoc.exprAst, 677);
     if(isIGetter(node)) node = node.ref
     const res = getNodeType(node)
     expect(res.some(({name}) => name === 'bytes')).toBe(true)

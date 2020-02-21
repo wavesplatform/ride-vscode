@@ -1,5 +1,6 @@
 import {
     CompletionItem,
+    CompletionItemKind,
     CompletionList,
     Definition,
     Diagnostic,
@@ -25,6 +26,7 @@ import {
     getFunctionDefinition,
     getNodeByOffset,
     getNodeType,
+    isIBlock,
     isIFunc,
     isIFunctionCall,
     isIGetter,
@@ -81,15 +83,16 @@ export class LspService {
 
         const node = getNodeByOffset(ast, cursor);
         if (character === '@') {
-
+            items = [
+                {label: 'Callable', kind: CompletionItemKind.Interface},
+                {label: 'Verifier', kind: CompletionItemKind.Interface}
+            ];
         } else if (character === ':') {
 
-        } else if (isIGetter(node)) {
-            items = getNodeType(node.ref).map((item) => convertToCompletion(item));
+        } else if (isIBlock(node) && isILet(node.dec) && isIGetter(node.dec.expr)) {
+            items = getNodeType(node.dec.expr).map((item) => convertToCompletion(item));
         }
-        // case'@': // IScript && dAppAst
-        // case':': //IFunc IMatch
-        if (items.length === 0) {
+        if (items.length === 0 && character != '.') {
             const {ctx} = isIScript(node) ? node.expr : node;
             items = getCompletionDefaultResult(ctx);
         }
@@ -154,9 +157,8 @@ export class LspService {
         else if (isIFunctionCall(node)) nodeName = node.name.value;
         const def = node.ctx
             .find(({name, posEnd, posStart}) => name === nodeName && posEnd !== -1 && posStart !== -1);
-        //todo remake definition area after ctx fixes
         if (def == null) return null;
-        const start = offsetToRange(def.posStart + 1, text), end = offsetToRange(def.posStart + 2, text);
+        const start = offsetToRange(def.posStart + 1, text), end = offsetToRange(def.posEnd, text);
         return Location.create(document.uri, {start, end});
     }
 
