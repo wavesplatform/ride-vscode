@@ -14,7 +14,7 @@ import {
     SignatureHelp,
     TextDocument
 } from 'vscode-languageserver-types';
-import { parseAndCompile, scriptInfo } from '@waves/ride-js';
+import { IRef, parseAndCompile, scriptInfo } from '@waves/ride-js';
 import suggestions from './suggestions';
 import {
     convertToCompletion,
@@ -25,7 +25,7 @@ import {
     getFuncHoverByTFunction,
     getFunctionDefinition,
     getNodeByOffset,
-    getNodeType,
+    getNodeType, intersection,
     isIBlock,
     isIFunc,
     isIFunctionCall,
@@ -89,8 +89,17 @@ export class LspService {
             ];
         } else if (character === ':') {
 
-        } else if (isIBlock(node) && isILet(node.dec) && isIGetter(node.dec.expr)) {
-            items = getNodeType(node.dec.expr).map((item) => convertToCompletion(item));
+        } else if (isIBlock(node) && isILet(node.dec)) {
+            if (isIGetter(node.dec.expr)) {
+                items = getNodeType(node.dec.expr).map((item) => convertToCompletion(item));
+            }
+            if(isIRef(node.dec.expr)){
+                const refDocs = suggestions.globalVariables
+                    .filter(({name, doc}) => (node.dec.expr as IRef).name === name );
+                if(refDocs){
+                    items = intersection(refDocs.map(({type}) => type)).map((item) => convertToCompletion(item));
+                }
+            }
         }
         if (items.length === 0 && character != '.') {
             const {ctx} = isIScript(node) ? node.expr : node;
