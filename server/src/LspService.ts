@@ -14,7 +14,7 @@ import {
     SignatureHelp,
     TextDocument
 } from 'vscode-languageserver-types';
-import { IRef, parseAndCompile, scriptInfo } from '@waves/ride-js';
+import { IDApp, IRef, parseAndCompile, scriptInfo } from '@waves/ride-js';
 import suggestions from './suggestions';
 import {
     convertToCompletion,
@@ -184,7 +184,7 @@ export class LspService {
         //
         // }
 
-        console.error('s');
+        // console.error('s');
         return {
             activeParameter: null,
             activeSignature: null,

@@ -27,7 +27,9 @@ import {
     TStruct,
     TStructField,
     TType,
-    TUnion
+    TUnion,
+    IAnnotation,
+    IAnnotatedFunc
 } from '@waves/ride-js';
 import suggestions, { isList, isPrimitive, isStruct, isUnion, listToString, unionToString } from './suggestions';
 import { CompletionItem, CompletionItemKind as ItemKind } from 'vscode-languageserver-types';
@@ -48,6 +50,8 @@ export const isIMatchCase = (node: TNode | null): node is IMatchCase => node != 
 export const isIFunc = (node: TNode | null): node is IFunc => node != null && node.type === 'FUNC';
 export const isIScript = (node: TNode | null): node is IScript => node != null && node.type === 'SCRIPT';
 export const isIDApp = (node: TNode | null): node is IDApp => node != null && node.type === 'DAPP';
+export const isIAnnotatedFunc = (node: TNode | null): node is IAnnotatedFunc => node != null && node.type === 'ANNOTATEDFUNC';
+export const isIAnnotation = (node: TNode | null): node is IAnnotation => node != null && node.type === 'ANNOTATION';
 
 export const isParseError = (res: IParseAndCompileResult | ICompilationError): res is ICompilationError => 'error' in res;
 
@@ -55,7 +59,11 @@ export const isParseError = (res: IParseAndCompileResult | ICompilationError): r
 const findNodeByFunc = (node: TNode, f: (node: TNode) => TNode | null): TNode | null => {
     if (isIBlock(node)) {
         return f(node.body) || f(node.dec);
-    } else if (isILet(node) || isIMatch(node) || isIMatchCase(node) || isIFunc(node) || isIScript(node) || isIDApp(node)) {
+    } else if(isIDApp(node)){
+        return node.decList.find(node => f(node) != null) || null;
+    }else if(isIAnnotatedFunc(node)){
+        return f(node.func);
+    } else if (isILet(node) || isIMatch(node) || isIMatchCase(node) || isIFunc(node) || isIScript(node)) {
         return f(node.expr);
     } else if (isIIf(node)) {
         return f(node.cond) || f(node.ifTrue) || f(node.ifFalse);
