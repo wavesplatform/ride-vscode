@@ -1,5 +1,6 @@
 import {
     CompletionItem,
+    CompletionItemKind as ItemKind,
     CompletionItemKind,
     CompletionList,
     Definition,
@@ -14,7 +15,7 @@ import {
     SignatureHelp,
     TextDocument
 } from 'vscode-languageserver-types';
-import { IDApp, IRef, parseAndCompile, scriptInfo } from '@waves/ride-js';
+import { IRef, parseAndCompile, scriptInfo } from '@waves/ride-js';
 import suggestions from './suggestions';
 import {
     convertToCompletion,
@@ -25,8 +26,11 @@ import {
     getFuncHoverByTFunction,
     getFunctionDefinition,
     getNodeByOffset,
-    getNodeType, intersection,
+    getNodeType,
+    getPostfixFunctions,
+    intersection,
     isIBlock,
+    isIDApp,
     isIFunc,
     isIFunctionCall,
     isIGetter,
@@ -36,7 +40,8 @@ import {
     isParseError,
     offsetToRange,
     rangeToOffset
-} from './utils';
+} from './utils/index';
+
 
 export class LspService {
 
@@ -93,19 +98,27 @@ export class LspService {
             if (isIGetter(node.dec.expr)) {
                 items = getNodeType(node.dec.expr).map((item) => convertToCompletion(item));
             }
-            if(isIRef(node.dec.expr)){
+            // if (isPrimitiveNode(node.dec.expr) && 'type' in node.dec.expr.resultType) {
+            //     items = getPostfixFunctions(node.dec.expr.resultType.type)
+            //         .map(({name: label, doc: detail}) => ({label, detail, kind: ItemKind.Field}));
+            // }
+            if (isIRef(node.dec.expr)) {
                 const refDocs = suggestions.globalVariables
-                    .filter(({name, doc}) => (node.dec.expr as IRef).name === name );
-                if(refDocs){
+                    .filter(({name, doc}) => (node.dec.expr as IRef).name === name);
+                if (refDocs) {
                     items = intersection(refDocs.map(({type}) => type)).map((item) => convertToCompletion(item));
                 }
+            }
+            if ('type' in node.dec.expr.resultType) {
+                items = [...items, ...getPostfixFunctions(node.dec.expr.resultType.type)
+                    .map(({name: label, doc: detail}) => ({label, detail, kind: ItemKind.Function}))];
             }
         }
         if (items.length === 0 && character != '.') {
             const {ctx} = isIScript(node) ? node.expr : node;
             items = getCompletionDefaultResult(ctx);
         }
-
+        console.error(items)
         return {isIncomplete: false, items} as CompletionList;
     }
 
@@ -115,8 +128,9 @@ export class LspService {
         const parsedResult = parseAndCompile(text);
         if (isParseError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
-        if (!ast) return {contents: []};
 
+        if (!ast) return {contents: []};
+        if (isIDApp(ast)) ast.annFuncList = (ast.annFuncList as any)();
         const cursor = rangeToOffset(position.line, position.character, text);
         const node = getNodeByOffset(ast, cursor);
 
