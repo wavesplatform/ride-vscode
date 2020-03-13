@@ -5,7 +5,7 @@ Ride is the language used in Waves blockchain to create smart accounts. This ext
 * Syntax highlighting
 * Code completion for global functions and fields
 * Snippets
-* Interactive console console for Waves blockchain
+* Interactive console for Waves blockchain
 
 # Usage
 
