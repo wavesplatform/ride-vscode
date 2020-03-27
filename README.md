@@ -75,5 +75,5 @@ Default seed
 ```
 Node URL
 ```
-"rideExtention.repl.API_BASE": "https://testnodes.wavesnodes.com"
+"rideExtention.repl.API_BASE": "https://nodes-testnet.wavesnodes.com"
 ```

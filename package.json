@@ -84,7 +84,7 @@
 				},
 				"rideExtension.repl.API_BASE": {
 					"type": "string",
-					"default": "https://testnodes.wavesnodes.com/",
+					"default": "https://nodes-testnet.wavesnodes.com/",
 					"description": "Node url to send transactions"
 				}
 			}
