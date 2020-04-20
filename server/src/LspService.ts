@@ -24,9 +24,9 @@ export class LspService {
             const info = scriptInfo(document.getText());
             if ('error' in info) throw info.error;
             const {stdLibVersion, scriptType} = info;
-            suggestions.updateSuggestions(stdLibVersion, scriptType === 2);
+            suggestions.updateSuggestions(stdLibVersion || 4, scriptType === 2);
         } catch (e) {
-            suggestions.updateSuggestions();
+            suggestions.updateSuggestions(4);
         }
 
         let diagnostics: Diagnostic[] = [];

@@ -92,7 +92,7 @@ export class Suggestions {
 
         this.regexps.typesRegExp = new RegExp(`\\b${types.map(({name}) => name).join('\\b|\\b')}\\b`, 'g');
         this.regexps.functionsRegExp = new RegExp(`^[!]*(\\b${
-            functions.filter(({name}) => ['*', '\\', '/', '%', '+',].indexOf(name) === -1).map(({name}) => name).join('\\b|\\b')
+            functions.filter(({name}) => ['*', '\\', '/', '%', '+',':+', '++'].indexOf(name) === -1).map(({name}) => name).join('\\b|\\b')
             }\\b)[ \\t]*\\(`);
 
         this.globalSuggestions.push(
