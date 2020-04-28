@@ -1,5 +1,5 @@
-# Waves Ride language extention and REPL for Visual Studio Code
-## Ride compiler version 1.1.2-15-gd668071
+# Waves Ride language extention and Waves JS Console for Visual Studio Code
+## Ride compiler version 1.2.3-57-ge2602df
 
 Ride is the language used in Waves blockchain to create smart accounts. This extention provides:
 * Syntax highlighting
@@ -22,10 +22,10 @@ Currently shows first compilation error. Invalid base64 and base58 strings are h
 ### ![](assets/error.gif "Error highlighting")
 ## Interactive console
 
-To open interactive console run "Start Waves Repl" task via command palette (Shift + Command + P).
-Waves Repl is a javascript console with convenient functions to interact with blockchain.
+To open interactive console run "Start Waves JS Console" task via command palette (Shift + Command + P).
+Waves JS Console is a javascript console with convenient functions to interact with blockchain.
 Console provides help method for this functions. 
-### ![](assets/repl.gif "Repl")
+### ![](assets/repl.gif "Waves JS Console")
 
 #### Available functions
 ##### Transactions:
@@ -75,5 +75,5 @@ Default seed
 ```
 Node URL
 ```
-"rideExtention.repl.API_BASE": "https://testnodes.wavesnodes.com"
+"rideExtention.repl.API_BASE": "https://nodes-testnet.wavesnodes.com"
 ```

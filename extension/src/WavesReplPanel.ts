@@ -31,7 +31,7 @@ export class WavesReplPanel {
 
     private constructor(column: vscode.ViewColumn, private _appPath: string) {
         // Create and show a new webview panel
-        this._panel = vscode.window.createWebviewPanel(WavesReplPanel.viewType, "RideRepl", column, {
+        this._panel = vscode.window.createWebviewPanel(WavesReplPanel.viewType, "Waves JS Console", column, {
             // Enable javascript in the webview
             enableScripts: true,
             // Act as background tab
