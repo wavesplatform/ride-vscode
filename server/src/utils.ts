@@ -195,8 +195,7 @@ export const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
             typeDoc = (type as TUnion).map(field => isStruct(field) ? field.typeName : field).join('|');
             break;
         case isList(type):
-            typeDoc = `LIST[ ` +
-                `${((type as TList).listOf as TStruct).typeName || (type as TList).listOf}]`;
+            typeDoc = listToString(type as TList);
             break;
     }
     return typeDoc;
