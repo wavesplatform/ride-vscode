@@ -39,7 +39,17 @@ export const isStruct = (item: TType): item is TStruct => typeof item === 'objec
 
 export const isList = (item: TType): item is TList => typeof item === 'object' && 'listOf' in item;
 
-export const listToString = (type: TList) => `LIST[ ${isStruct(type.listOf) ? type.listOf.typeName : type.listOf}]`;
+export const listToString = (type: TList) => {
+    let listof;
+    if(isStruct(type.listOf)){
+       listof =  type.listOf.typeName
+    }else if(isUnion(type.listOf)){
+        listof = ((type as TList).listOf as TUnion).map((v) => (v as TStruct).typeName || v).join('|')
+    }else{
+        listof = type.listOf
+    }
+    return `LIST[ ${listof}]`
+};
 
 
 //----------------------TUnion-----------------------------
@@ -92,7 +102,7 @@ export class Suggestions {
 
         this.regexps.typesRegExp = new RegExp(`\\b${types.map(({name}) => name).join('\\b|\\b')}\\b`, 'g');
         this.regexps.functionsRegExp = new RegExp(`^[!]*(\\b${
-            functions.filter(({name}) => ['*', '\\', '/', '%', '+',].indexOf(name) === -1).map(({name}) => name).join('\\b|\\b')
+            functions.filter(({name}) => ['*', '\\', '/', '%', '+',':+', '++'].indexOf(name) === -1).map(({name}) => name).join('\\b|\\b')
             }\\b)[ \\t]*\\(`);
 
         this.globalSuggestions.push(
