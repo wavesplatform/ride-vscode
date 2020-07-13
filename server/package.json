@@ -1,7 +1,7 @@
 {
 	"name": "@waves/ride-language-server",
 	"description": "Language server for Wavesplatfor RIDE language",
-	"version": "0.9.16",
+	"version": "1.0.0-beta.3",
 	"author": "Wavesplatform",
 	"license": "MIT",
 	"main": "src/index.ts",
