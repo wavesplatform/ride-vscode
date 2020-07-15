@@ -30,7 +30,7 @@ export class LspService {
         }
 
         let diagnostics: Diagnostic[] = [];
-        let resultOrError = compile(document.getText());
+        let resultOrError = compile(document.getText(), 3);
         if ('error' in resultOrError) {
             const errorText = resultOrError.error;
             const errRangesRegxp = /\d+-\d+/gm;
