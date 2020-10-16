@@ -5,7 +5,7 @@ import {
     offsetToRange,
     rangeToOffset
 } from '../src/utils';
-import { parseAndCompile, version } from "@waves/ride-js";
+import { parseAndCompile, version, TNode } from "@waves/ride-js";
 
 const content = `{-# STDLIB_VERSION 3 #-}
 {-# CONTENT_TYPE EXPRESSION #-}
@@ -33,13 +33,13 @@ test('test rangeToOffset and offsetToRange', () => {
 
 
 test('test getNodeByOffset', () => {
-    const parsedDoc = parseAndCompile(content);
+    const parsedDoc = parseAndCompile(content, 3);
     if('error' in parsedDoc) throw 'error'
-    expect(isIGetter(getNodeByOffset(parsedDoc.exprAst, 350))).toBe(true)
+    expect(isIGetter(getNodeByOffset(parsedDoc.exprAst as TNode, 350))).toBe(true)
 })
 
 // test('test getNodeDefinitionByName', () => {
-//     const parsedDoc = parseAndCompile(content);
+//     const parsedDoc = parseAndCompile(content, 3);
 //     expect(isILet(getNodeDefinitionByName(parsedDoc.exprAst, 'bobPubKey', 300))).toBe(true)
 // })
 import suggestions from "../src/suggestions";
@@ -62,9 +62,9 @@ func testFunc(t: BurnTransaction | ExchangeTransaction) = if(true) then t else 0
 tx.sender.
 
  aliceSigned + bobSigned + cooperSigned(cooperPubKey) >= 2`
-    const parsedDoc = parseAndCompile(text);
+    const parsedDoc = parseAndCompile(text, 3);
     if('error' in parsedDoc) throw 'error'
-    let node = getNodeByOffset(parsedDoc.exprAst, 677);
+    let node = getNodeByOffset(parsedDoc.exprAst as TNode, 677);
     if(isIGetter(node)) node = node.ref
     const res = getNodeType(node)
     expect(res.some(({name}) => name === 'bytes')).toBe(true)

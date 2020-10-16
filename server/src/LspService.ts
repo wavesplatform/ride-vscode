@@ -48,7 +48,7 @@ export class LspService {
     public validateTextDocument(document: TextDocument): Diagnostic[] {
         const text = document.getText();
         try {
-            const parsedResult = parseAndCompile(text);
+            const parsedResult = parseAndCompile(text, 3);
             if (isParseError(parsedResult)) throw parsedResult.error;
             const info = scriptInfo(text);
             if ('error' in info) throw info.error;
@@ -81,7 +81,7 @@ export class LspService {
         const cursor = rangeToOffset(position.line, position.character, text);
         let items: CompletionItem[] = [];
 
-        const parsedResult = parseAndCompile(text);
+        const parsedResult = parseAndCompile(text, 3);
         if (isParseError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
         if (!ast) return [];
@@ -125,7 +125,7 @@ export class LspService {
     public hover(document: TextDocument, position: Position): Hover {
         const text = document.getText();
 
-        const parsedResult = parseAndCompile(text);
+        const parsedResult = parseAndCompile(text, 3);
         if (isParseError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
 
@@ -168,7 +168,7 @@ export class LspService {
 
     public definition(document: TextDocument, {line, character}: Position): Definition {
         const text = document.getText();
-        const parsedResult = parseAndCompile(text);
+        const parsedResult = parseAndCompile(text, 3);
         if (isParseError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
         if (!ast) return null;
@@ -189,7 +189,7 @@ export class LspService {
         // const text = document.getText();
         // const cursor = rangeToOffset(position.line, position.character, text);
         //
-        // const parsedResult = parseAndCompile(text);
+        // const parsedResult = parseAndCompile(text, 3);
         // if (isParseError(parsedResult)) throw parsedResult.error;
         // const ast = parsedResult.exprAst || parsedResult.dAppAst;
         // let node;

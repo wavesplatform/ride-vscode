@@ -74,7 +74,7 @@ const findNodeByFunc = (node: TNode, f: (node: TNode) => TNode | null): TNode | 
         return node.decList.find(node => f(node) != null) || null;
     } else if (isIAnnotatedFunc(node)) {
         return f(node.func);
-    } else if (isILet(node) || isIMatch(node) || isIMatchCase(node) || isIFunc(node) || isIScript(node)) {
+    } else if (isILet(node) || isIMatchCase(node) || isIFunc(node) || isIScript(node)) {
         return f(node.expr);
     } else if (isIIf(node)) {
         return f(node.cond) || f(node.ifTrue) || f(node.ifFalse);
