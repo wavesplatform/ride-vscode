@@ -1,5 +1,5 @@
 {
-	"name": "waves-ride",
+	"name": "waves-ride-stagenet",
 	"displayName": "RIDE",
 	"description": "Waves Ride language support and Waves JS Console for Visual Studio Code with experimental features",
 	"author": "wavesplatform",
@@ -7,7 +7,7 @@
 	"version": "1.2.8-stagenet",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/wavesplatform/ride-vscode"
+		"url": "https://github.com/wavesplatform/ride-vscode/tree/stagenet"
 	},
 	"icon": "assets/icon_128.png",
 	"publisher": "wavesplatform",
