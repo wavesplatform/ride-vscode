@@ -47,6 +47,7 @@ export class LspServer {
             document = await new Promise<TextDocument>((resolve) => {
                 fs.access(path, (err) => {
                     if (err) {
+                        // @ts-ignore
                         resolve(undefined)
                     } else {
                         fs.readFile(path, (_, data) => {
