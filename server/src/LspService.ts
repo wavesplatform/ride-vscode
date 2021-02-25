@@ -49,23 +49,11 @@ export class LspService {
             try {
                 libraries[uri] = this.fileContentProvider.getContent(uri, document.uri)
             }catch (e) {
-                // diagnostics.push(noRangeError(`Failed to resolve file "${uri}"`))
+                diagnostics.push(noRangeError(`Failed to resolve file "${uri}"`))
             }
         }
 
         let resultOrError = compile(document.getText(), 3, libraries);
-        // try {
-        //     const info = scriptInfo(document.getText());
-        //     if ('error' in info) throw info.error;
-        //     const {stdLibVersion, scriptType} = info;
-        //     suggestions.updateSuggestions(stdLibVersion || 4, scriptType === 2);
-        // } catch (e) {
-        //     suggestions.updateSuggestions(4);
-        // }
-        //
-        // let diagnostics: Diagnostic[] = [];
-        // let resultOrError = compile(document.getText(), 3);
-
 
         if ('error' in resultOrError) {
             const errorText = resultOrError.error;

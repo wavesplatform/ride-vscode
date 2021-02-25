@@ -17,6 +17,7 @@ export class FileContentProvider implements IFileContentProvider{
             filePath = path.resolve(__dirname, folder, filePath)
         }
         const uri = URI.file(filePath).toString();
+        
         if (this.inmemoryStorage[uri] != null){
             return this.inmemoryStorage[uri].getText()
         } else {
