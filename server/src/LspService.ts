@@ -124,8 +124,16 @@ export class LspService {
 
     public hover(document: TextDocument, position: Position): Hover {
         const text = document.getText();
-
+        // console.log('parseAndCompile', parseAndCompile("{-# STDLIB_VERSION 3 #-}\n" +
+        //     "{-# CONTENT_TYPE DAPP #-}\n" +
+        //     "{-# SCRIPT_TYPE ACCOUNT #-}\n" +
+        //     "\n" +
+        //     "func foo() = 3\n" +
+        //     "\n" +
+        //     "@Callable(i)\n" +
+        //     "func bar() = WriteSet([])", 3))
         const parsedResult = parseAndCompile(text, 3);
+        // console.log('parsedResult', parsedResult)
         if (isParseError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
 
@@ -133,9 +141,10 @@ export class LspService {
         if (isIDApp(ast)) ast.annFuncList = (ast.annFuncList as any)();
         const cursor = rangeToOffset(position.line, position.character, text);
         const node = getNodeByOffset(ast, cursor);
-
+        
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
         if (isILet(node)) {
+            console.log('isILet', node)
             contents.push(`${node.name.value}: ${getExpressionType(node.expr.resultType)}`);
         } else if (isIGetter(node)) {
             contents.push(getExpressionType(node.resultType));
@@ -151,7 +160,13 @@ export class LspService {
             }
             contents = [...contents, ...refDocs];
         } else if (isIFunc(node)) {
-            contents.push(getFuncArgumentOrTypeByPos(node, cursor) || getFuncHoverByNode(node));
+            // console.log('node', node)
+            // @ts-ignore
+            // console.log('typeName', node.argList[0].type.typeName)
+            // console.log('typeParam', node.argList[0].type.typeParam.value.typeList[0])
+            contents.push(
+                getFuncArgumentOrTypeByPos(node, cursor) || getFuncHoverByNode(node)
+            );
         } else if (isIFunctionCall(node)) {
             const def = getFunctionDefinition(ast, node);
             if (def) {
@@ -289,6 +304,5 @@ export class LspService {
     public completionResolve(item: CompletionItem) {
         return item;
     }
-
 }
 

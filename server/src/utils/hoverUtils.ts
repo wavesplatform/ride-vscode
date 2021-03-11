@@ -9,9 +9,9 @@ import {
     TStructField,
     TUnion
 } from '@waves/ride-js';
-import suggestions, { isList, isPrimitive, isStruct, isUnion } from '../suggestions';
+import suggestions, {isList, isPrimitive, isStruct, isUnion} from '../suggestions';
 
-export const validateByPos = (pos: number, node: IPos) => (node.posStart <= pos && node.posEnd >= pos);
+export const validateByPos = (pos: number, node: IPos & { value: string }) => (node.posStart <= pos && node.posEnd >= pos);
 
 export const getExpressionType = (resultType: TExprResultType): string => {
     if ('type' in resultType) {
@@ -26,12 +26,38 @@ export const getExpressionType = (resultType: TExprResultType): string => {
     return '';
 };
 
-export const getFuncHoverByNode = (n: IFunc) => `${n.name.value}(${n.argList.map(({argName: {value}, typeList}) =>
-    `${value}: ${typeList.map(({typeName: {value}}) => value).join('|')}`).join(', ')}): ${getExpressionType(n.expr.resultType)}`;
-export const getFuncHoverByTFunction = (f: TFunction) => `${f.name}(${f.args.map(({name, type}) =>
-    `${name}: ${type}`).join(', ')}): ${f.resultType}`;
-export const getFuncArgNameHover = ({argName: {value: name}, typeList}: TArgument) => `${name}: ${
-    typeList.map(({typeName: {value: name}}) => `${name}`).join(' | ')}`;
+export const getFuncHoverByNode = (n: IFunc) => {
+    const functionName = n.name.value;
+    const args = n.argList;
+    console.log('getFuncHoverByNode')
+    // console.log('args.length', args.length)
+    const argumentString = args.length !== 0
+        ? args.map(({argName: {value}, type}) =>
+            `${value}: ${
+                !type.typeParam
+                    ? !!args ? type.typeName.value : ''
+                    : `${type.typeName.value}[${type.typeParam.value.typeList.map(x => x.typeName.value).join(' | ')}]`
+            }`).join(', ')
+        : ''
+    // console.log('argumentString', argumentString)
+    // console.log('args.length', args.length !== 0 ? args[0].type.typeName.value : '')
+    return `${functionName}(${argumentString}): ${getExpressionType(n.expr.resultType)}`;
+};
+
+export const getFuncHoverByTFunction = (f: TFunction) => {
+    console.log('getFuncHoverByTFunction')
+    return `${f.name}(${f.args.map(({name, type}) =>
+        `${name}: ${type}`).join(', ')}): ${f.resultType}`;
+}
+
+export const getFuncArgNameHover = ({argName: {value: name}, type}: TArgument) => {
+    console.log('getFuncArgNameHover');
+    // ${type.map(({typeName: {value: name}}) => `${name}`).join(' | ')}
+    const argType = !type.typeParam
+        ? type.typeName.value
+        : `${type.typeName.value}[${type.typeParam.value.typeList.map(x => x.typeName.value).join(' | ')}]`
+    return (`${name}: ${argType}`);
+}
 
 export const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
     const type = item.type;
@@ -57,19 +83,25 @@ export const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
 };
 
 export const getFuncArgumentOrTypeByPos = (node: IFunc, pos: number): string | null => {
-    let out: string | null = null;
-    node.argList.forEach((arg) => {
-        if (validateByPos(pos, arg.argName)) {
-            out = getFuncArgNameHover(arg);
-        } else {
-            for (const {typeName} of arg.typeList) {
+    try {
+        let out: string | null = null;
+        console.log('node.argList', node.argList)
+        node.argList.forEach((arg) => {
+            if (validateByPos(pos, arg.argName)) {
+                out = getFuncArgNameHover(arg);
+            } else {
+                // for (const {typeName} of arg.type) {
+                const {typeName} = arg.type
                 if (validateByPos(pos, typeName)) {
                     const type = suggestions.types.find(({name}) => name === typeName.value);
                     out = type ? getTypeDoc(type) : typeName.value;
-                    break;
+                    // break;
                 }
+                // }
             }
-        }
-    });
-    return out;
+        });
+        return out;
+    } catch (e) {
+        throw new Error(e)
+    }
 };
