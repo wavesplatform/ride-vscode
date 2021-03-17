@@ -132,16 +132,23 @@ export class LspService {
         //     "\n" +
         //     "@Callable(i)\n" +
         //     "func bar() = WriteSet([])", 3))
+        // console.log('text',text)
         const parsedResult = parseAndCompile(text, 3);
         // console.log('parsedResult', parsedResult)
+        // @ts-ignore
+        // console.log('body', parsedResult.exprAst.expr.body)
+        // @ts-ignore
+        // console.log('body', parsedResult.exprAst)
         if (isParseError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
 
         if (!ast) return {contents: []};
         if (isIDApp(ast)) ast.annFuncList = (ast.annFuncList as any)();
+        console.log()
         const cursor = rangeToOffset(position.line, position.character, text);
         const node = getNodeByOffset(ast, cursor);
-        
+        console.log('node', node)
+        //захерачить для даппов
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
         if (isILet(node)) {
             console.log('isILet', node)
@@ -186,34 +193,40 @@ export class LspService {
         const parsedResult = parseAndCompile(text, 3);
         if (isParseError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
+        console.log('ast', ast)
         if (!ast) return null;
 
         const node = getNodeByOffset(ast, rangeToOffset(line, character, text));
+        console.log('node', node)
         if (!node.ctx) return null;
         let nodeName: string | null = null;
         if (isIRef(node)) nodeName = node.name;
         else if (isIFunctionCall(node)) nodeName = node.name.value;
+        console.log('nodeName', nodeName)
         const def = node.ctx
             .find(({name, posEnd, posStart}) => name === nodeName && posEnd !== -1 && posStart !== -1);
+        console.log('def', def)
         if (def == null) return null;
         const start = offsetToRange(def.posStart + 1, text), end = offsetToRange(def.posEnd, text);
+        console.log('start', start)
         return Location.create(document.uri, {start, end});
     }
 
     public signatureHelp(document: TextDocument, position: Position): SignatureHelp {
-        // const text = document.getText();
-        // const cursor = rangeToOffset(position.line, position.character, text);
-        //
-        // const parsedResult = parseAndCompile(text, 3);
-        // if (isParseError(parsedResult)) throw parsedResult.error;
-        // const ast = parsedResult.exprAst || parsedResult.dAppAst;
-        // let node;
-        // if (ast) {
-        //     node = getNodeByOffset(ast, cursor);
-        //
-        // }
+        const text = document.getText();
+        const cursor = rangeToOffset(position.line, position.character, text);
 
-        // console.error('s');
+        const parsedResult = parseAndCompile(text, 3);
+        if (isParseError(parsedResult)) throw parsedResult.error;
+        const ast = parsedResult.exprAst || parsedResult.dAppAst;
+        let node;
+        if (ast) {
+            node = getNodeByOffset(ast, cursor);
+
+            console.log('node', node)
+        }
+
+        console.error('s');
         return {
             activeParameter: null,
             activeSignature: null,
