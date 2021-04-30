@@ -1,5 +1,5 @@
 import {
-    IFunc,
+    IFunc, IFunctionCall,
     IPos,
     TArgument,
     TExprResultType,
@@ -39,20 +39,25 @@ export const getFuncHoverByNode = (n: IFunc) => {
                     : `${type.typeName.value}[${type.typeParam.value.typeList.map(x => x.typeName.value).join(' | ')}]`
             }`).join(', ')
         : ''
-    // console.log('argumentString', argumentString)
-    // console.log('args.length', args.length !== 0 ? args[0].type.typeName.value : '')
     return `${functionName}(${argumentString}): ${getExpressionType(n.expr.resultType)}`;
 };
 
+export const getFunctionCallHover = (n: IFunctionCall): string => {
+    const name = n.name.value
+    // @ts-ignore
+    const args = n.args.length !== 0 ? n.args.map(x => `${x.resultType.type.toLowerCase()}: ${x.resultType.type}`).join(', ') : ''
+
+    // @ts-ignore
+    return `${name}(${args}): ${n.resultType.type}`
+}
+
 export const getFuncHoverByTFunction = (f: TFunction) => {
-    console.log('getFuncHoverByTFunction')
     return `${f.name}(${f.args.map(({name, type}) =>
         `${name}: ${type}`).join(', ')}): ${f.resultType}`;
 }
 
 export const getFuncArgNameHover = ({argName: {value: name}, type}: TArgument) => {
     console.log('getFuncArgNameHover');
-    // ${type.map(({typeName: {value: name}}) => `${name}`).join(' | ')}
     const argType = !type.typeParam
         ? type.typeName.value
         : `${type.typeName.value}[${type.typeParam.value.typeList.map(x => x.typeName.value).join(' | ')}]`

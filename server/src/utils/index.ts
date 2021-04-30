@@ -1,7 +1,19 @@
-
-import { getFuncArgumentOrTypeByPos, getTypeDoc, validateByPos, getFuncHoverByNode, getFuncHoverByTFunction, getExpressionType } from './hoverUtils';
-import { getPostfixFunctions, getCompletionDefaultResult, convertToCompletion, intersection, getNodeType } from './completionUtils';
-import { getFunctionDefinition } from './definitionUtils';
+import {
+    getExpressionType,
+    getFuncArgumentOrTypeByPos,
+    getFuncHoverByNode,
+    getFuncHoverByTFunction,
+    getTypeDoc,
+    validateByPos
+} from './hoverUtils';
+import {
+    convertToCompletion,
+    getCompletionDefaultResult,
+    getNodeType,
+    getPostfixFunctions,
+    intersection
+} from './completionUtils';
+import {getFunctionDefinition} from './definitionUtils';
 import {
     IAnnotatedFunc,
     IAnnotation,
@@ -23,6 +35,8 @@ import {
     IRef,
     IScript,
     ITrue,
+    TDecl,
+    TExpr,
     TNode,
     TPrimitiveNode
 } from '@waves/ride-js';
@@ -65,15 +79,13 @@ export const isIDApp = (node: TNode | null): node is IDApp => node != null && no
 export const isIAnnotatedFunc = (node: TNode | null): node is IAnnotatedFunc => node != null && node.type === 'ANNOTATEDFUNC';
 export const isIAnnotation = (node: TNode | null): node is IAnnotation => node != null && node.type === 'ANNOTATION';
 export const isParseError = (res: IParseAndCompileResult | ICompilationError): res is ICompilationError => 'error' in res;
-export const isPrimitiveNode = (node: TNode): node is TPrimitiveNode => isIConstStr(node) || isIConstByteStr(node) || isIConstLong(node)|| isITrue(node)|| isIFalse(node)
+export const isPrimitiveNode = (node: TNode): node is TPrimitiveNode => isIConstStr(node) || isIConstByteStr(node) || isIConstLong(node) || isITrue(node) || isIFalse(node)
 
 const findNodeByFunc = (node: TNode, f: (node: TNode) => TNode | null): TNode | null => {
     if (isIBlock(node)) {
         return f(node.body) || f(node.dec);
     } else if (isIDApp(node)) {
         return node.decList.find(node => f(node) != null) || null;
-    } else if (isIAnnotatedFunc(node)) {
-        return f(node.func);
     } else if (isILet(node) || isIMatchCase(node) || isIFunc(node) || isIScript(node)) {
         return f(node.expr);
     } else if (isIIf(node)) {
@@ -89,6 +101,16 @@ const findNodeByFunc = (node: TNode, f: (node: TNode) => TNode | null): TNode | 
     }
 };
 
+const findNodeByDApp = (node: IDApp, position: number) => {
+    const validateNodeByPos = (node: TNode, pos: number) =>
+        (node.posStart <= pos && node.posEnd >= pos) ? node : null;
+
+    const annotatedFunc = findAnnotatedFunc(node.annFuncList, position)
+    const constants = !!annotatedFunc ? getConstantsFromFunction(annotatedFunc.func) : []
+    const constant = getSelectedConst(constants, position)
+
+    return node.decList.find(node => validateNodeByPos(node, position) != null) || constant || validateNodeByPos(annotatedFunc.func, position)
+}
 
 export function offsetToRange(startOffset: number, content: string): { line: number, character: number } {
     const sliced = content.slice(0, startOffset).split('\n');
@@ -104,11 +126,39 @@ export function rangeToOffset(line: number, character: number, content: string):
 
 
 export function getNodeByOffset(node: TNode, pos: number): TNode {
+    const validateNodeByPos = (node: TNode, pos: number) => (node: TNode): TNode | null =>
+            (node.posStart <= pos && node.posEnd >= pos) ? node : null;
 
-    const validateNodeByPos = (pos: number) => (node: TNode): TNode | null =>
-        (node.posStart <= pos && node.posEnd >= pos) ? node : null;
+    if (!isIDApp(node)) {
+        const goodChild = findNodeByFunc(node, validateNodeByPos(node, pos));
+        return (goodChild) ? getNodeByOffset(goodChild, pos) : node;
+    } else {
+        const goodChild = findNodeByDApp(node, pos)
+        return (goodChild) ? getNodeByOffset(goodChild, pos) : node;
+    }
 
-    const goodChild = findNodeByFunc(node, validateNodeByPos(pos));
-    return (goodChild) ? getNodeByOffset(goodChild, pos) : node;
 }
 
+export function findAnnotatedFunc(funcList: any[], pos: number): any {
+    return funcList.find(i => (i.posStart <= pos) && (i.posEnd >= pos))
+}
+
+export function getConstantsFromFunction(funcNode: IFunc): TDecl[] {
+    const result = [] as TDecl[]
+    const recursiveFunc = (node: TExpr) => {
+        if (isIBlock(node)) {
+            result.push(node.dec)
+            recursiveFunc(node.body)
+        }
+    }
+    recursiveFunc(funcNode.expr)
+    return result
+}
+
+export function getSelectedConst(constants: TDecl[], position: number): TDecl | undefined {
+    const validateNodeByPos = (node: TDecl, pos: number): boolean => pos >= node.posStart && pos <= node.posEnd
+    return constants.find(node => {
+        return validateNodeByPos(node, position)
+    })
+}
+// export function getAllArguments(funcNode: IFunc): TArgument

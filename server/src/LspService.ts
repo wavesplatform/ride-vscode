@@ -15,7 +15,7 @@ import {
     SignatureHelp,
     TextDocument
 } from 'vscode-languageserver-types';
-import { IRef, parseAndCompile, scriptInfo } from '@waves/ride-js';
+import {IRef, parseAndCompile, scriptInfo} from '@waves/ride-js';
 import suggestions from './suggestions';
 import {
     convertToCompletion,
@@ -24,13 +24,11 @@ import {
     getFuncArgumentOrTypeByPos,
     getFuncHoverByNode,
     getFuncHoverByTFunction,
-    getFunctionDefinition,
     getNodeByOffset,
     getNodeType,
     getPostfixFunctions,
     intersection,
     isIBlock,
-    isIDApp,
     isIFunc,
     isIFunctionCall,
     isIGetter,
@@ -41,6 +39,7 @@ import {
     offsetToRange,
     rangeToOffset
 } from './utils/index';
+import {getFunctionCallHover} from "./utils/hoverUtils";
 
 
 export class LspService {
@@ -88,6 +87,7 @@ export class LspService {
 
         const node = getNodeByOffset(ast, cursor);
         if (character === '@') {
+            console.log('wtf')
             items = [
                 {label: 'Callable', kind: CompletionItemKind.Interface},
                 {label: 'Verifier', kind: CompletionItemKind.Interface}
@@ -124,34 +124,20 @@ export class LspService {
 
     public hover(document: TextDocument, position: Position): Hover {
         const text = document.getText();
-        // console.log('parseAndCompile', parseAndCompile("{-# STDLIB_VERSION 3 #-}\n" +
-        //     "{-# CONTENT_TYPE DAPP #-}\n" +
-        //     "{-# SCRIPT_TYPE ACCOUNT #-}\n" +
-        //     "\n" +
-        //     "func foo() = 3\n" +
-        //     "\n" +
-        //     "@Callable(i)\n" +
-        //     "func bar() = WriteSet([])", 3))
-        // console.log('text',text)
+        const range = rangeToOffset(position.line, position.character, document.getText())
+
         const parsedResult = parseAndCompile(text, 3);
-        // console.log('parsedResult', parsedResult)
-        // @ts-ignore
-        // console.log('body', parsedResult.exprAst.expr.body)
-        // @ts-ignore
-        // console.log('body', parsedResult.exprAst)
         if (isParseError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
 
         if (!ast) return {contents: []};
-        if (isIDApp(ast)) ast.annFuncList = (ast.annFuncList as any)();
-        console.log()
+
         const cursor = rangeToOffset(position.line, position.character, text);
         const node = getNodeByOffset(ast, cursor);
-        console.log('node', node)
-        //захерачить для даппов
+
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
+
         if (isILet(node)) {
-            console.log('isILet', node)
             contents.push(`${node.name.value}: ${getExpressionType(node.expr.resultType)}`);
         } else if (isIGetter(node)) {
             contents.push(getExpressionType(node.resultType));
@@ -167,22 +153,14 @@ export class LspService {
             }
             contents = [...contents, ...refDocs];
         } else if (isIFunc(node)) {
-            // console.log('node', node)
-            // @ts-ignore
-            // console.log('typeName', node.argList[0].type.typeName)
-            // console.log('typeParam', node.argList[0].type.typeParam.value.typeList[0])
+            console.log('func', node)
             contents.push(
                 getFuncArgumentOrTypeByPos(node, cursor) || getFuncHoverByNode(node)
             );
         } else if (isIFunctionCall(node)) {
-            const def = getFunctionDefinition(ast, node);
-            if (def) {
-                contents.push(getFuncHoverByNode(def));
-            } else {
-                const globalFunctionsMatches = suggestions.functions
-                    .filter(({name}) => node.name.value === name).map(f => getFuncHoverByTFunction(f));
-                contents = [...contents, ...globalFunctionsMatches];
-            }
+            const findedGlobalFunc = suggestions.functions.find(({name}) => node.name.value === name)
+            let result = !!findedGlobalFunc ? getFuncHoverByTFunction(findedGlobalFunc) : getFunctionCallHover(node)
+            contents = [...contents, result];
         } else {
         }
         return {contents};
