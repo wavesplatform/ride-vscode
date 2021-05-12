@@ -72,7 +72,6 @@ export const isIIf = (node: TNode | null): node is IIf => node != null && node.t
 export const isIFunctionCall = (node: TNode | null): node is IFunctionCall => node != null && node.type === 'FUNCTION_CALL';
 export const isIGetter = (node: TNode | null): node is IGetter => node != null && node.type === 'GETTER';
 export const isIMatch = (node: TNode | null): node is IMatch => node != null && node.type === 'MATCH';
-export const isIMatchCase = (node: TNode | null): node is IMatchCase => node != null && node.type === 'MATCH_CASE';
 export const isIFunc = (node: TNode | null): node is IFunc => node != null && node.type === 'FUNC';
 export const isIScript = (node: TNode | null): node is IScript => node != null && node.type === 'SCRIPT';
 export const isIDApp = (node: TNode | null): node is IDApp => node != null && node.type === 'DAPP';
@@ -83,13 +82,16 @@ export const isPrimitiveNode = (node: TNode): node is TPrimitiveNode => isIConst
 
 const findNodeByFunc = (node: TNode, f: (node: TNode) => TNode | null): TNode | null => {
     if (isIBlock(node)) {
+        console.log('block', `${node.posStart} / ${node.posEnd}`)
         return f(node.body) || f(node.dec);
     } else if (isIDApp(node)) {
         return node.decList.find(node => f(node) != null) || null;
-    } else if (isILet(node) || isIMatchCase(node) || isIFunc(node) || isIScript(node)) {
+    } else if (isILet(node) || isIFunc(node) || isIScript(node)) {
+        console.log('let', `${node.posStart} / ${node.posEnd}`)
         return f(node.expr);
     } else if (isIIf(node)) {
-        return f(node.cond) || f(node.ifTrue) || f(node.ifFalse);
+        console.log('if', `${node.posStart} / ${node.posEnd}`)
+        return f(node.ifTrue) || f(node.ifFalse) || f(node.cond);
     } else if (isIFunctionCall(node)) {
         return node.args.find(node => f(node) != null) || null;
     } else if (isIGetter(node)) {

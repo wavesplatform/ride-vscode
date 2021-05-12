@@ -35,7 +35,7 @@ import {
     isILet,
     isIRef,
     isIScript,
-    isParseError,
+    isParseError, isPrimitiveNode,
     offsetToRange,
     rangeToOffset
 } from './utils/index';
@@ -98,10 +98,10 @@ export class LspService {
             if (isIGetter(node.dec.expr)) {
                 items = getNodeType(node.dec.expr).map((item) => convertToCompletion(item));
             }
-            // if (isPrimitiveNode(node.dec.expr) && 'type' in node.dec.expr.resultType) {
-            //     items = getPostfixFunctions(node.dec.expr.resultType.type)
-            //         .map(({name: label, doc: detail}) => ({label, detail, kind: ItemKind.Field}));
-            // }
+            if (isPrimitiveNode(node.dec.expr) && 'type' in node.dec.expr.resultType) {
+                items = getPostfixFunctions(node.dec.expr.resultType.type)
+                    .map(({name: label, doc: detail}) => ({label, detail, kind: ItemKind.Field}));
+            }
             if (isIRef(node.dec.expr)) {
                 const refDocs = suggestions.globalVariables
                     .filter(({name, doc}) => (node.dec.expr as IRef).name === name);
@@ -132,16 +132,20 @@ export class LspService {
 
         if (!ast) return {contents: []};
 
+        console.log('ast', JSON.stringify(ast))
         const cursor = rangeToOffset(position.line, position.character, text);
         const node = getNodeByOffset(ast, cursor);
 
+        // console.log('node', JSON.stringify(node))
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
 
         if (isILet(node)) {
+            // console.log('let')
             contents.push(`${node.name.value}: ${getExpressionType(node.expr.resultType)}`);
         } else if (isIGetter(node)) {
             contents.push(getExpressionType(node.resultType));
         } else if (isIRef(node)) {
+            // console.log('ref')
             const refDocs = suggestions.globalVariables
                 .filter(({name, doc}) => node.name === name && doc != null).map(({doc}) => doc);
             const defCtx = node.ctx.find(({name}) => name === node.name);
@@ -153,11 +157,12 @@ export class LspService {
             }
             contents = [...contents, ...refDocs];
         } else if (isIFunc(node)) {
-            console.log('func', node)
+            // console.log('func', node)
             contents.push(
                 getFuncArgumentOrTypeByPos(node, cursor) || getFuncHoverByNode(node)
             );
         } else if (isIFunctionCall(node)) {
+            // console.log('functionCall')
             const findedGlobalFunc = suggestions.functions.find(({name}) => node.name.value === name)
             let result = !!findedGlobalFunc ? getFuncHoverByTFunction(findedGlobalFunc) : getFunctionCallHover(node)
             contents = [...contents, result];
