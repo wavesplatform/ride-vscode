@@ -30,7 +30,6 @@ import {
     IIf,
     ILet,
     IMatch,
-    IMatchCase,
     IParseAndCompileResult,
     IRef,
     IScript,
@@ -82,22 +81,21 @@ export const isPrimitiveNode = (node: TNode): node is TPrimitiveNode => isIConst
 
 const findNodeByFunc = (node: TNode, f: (node: TNode) => TNode | null): TNode | null => {
     if (isIBlock(node)) {
-        console.log('block', `${node.posStart} / ${node.posEnd}`)
-        return f(node.body) || f(node.dec);
+        return node.dec.name.value.startsWith('$match')
+            ? (f((node.body as IIf).ifTrue) || f((node.body as IIf).ifFalse))
+            : (f(node.body) || f(node.dec));
     } else if (isIDApp(node)) {
         return node.decList.find(node => f(node) != null) || null;
-    } else if (isILet(node) || isIFunc(node) || isIScript(node)) {
-        console.log('let', `${node.posStart} / ${node.posEnd}`)
-        return f(node.expr);
+    } else if (isILet(node)) {
+        return f(node.expr)
+    } else if (isIFunc(node) || isIScript(node)) {
+        return f(node.expr)
     } else if (isIIf(node)) {
-        console.log('if', `${node.posStart} / ${node.posEnd}`)
         return f(node.ifTrue) || f(node.ifFalse) || f(node.cond);
     } else if (isIFunctionCall(node)) {
         return node.args.find(node => f(node) != null) || null;
     } else if (isIGetter(node)) {
         return f(node.ref);
-    } else if (isIMatch(node)) {
-        return node.cases.find(node => f(node) != null) || null;
     } else {
         return null;
     }
@@ -122,14 +120,15 @@ export function offsetToRange(startOffset: number, content: string): { line: num
 
 export function rangeToOffset(line: number, character: number, content: string): number {
     const split = content.split('\n');
-    return Array.from({length: line}, (_, i) => i)
-        .reduce((acc, i) => acc + split[i].length + 1, 0) + character + 1;
+    const position = Array.from({length: line}, (_, i) => i)
+        .reduce((acc, i) => acc + split[i].length + 1, 0) + character
+    return line !== 0 ? position + 1 : position
 }
 
 
 export function getNodeByOffset(node: TNode, pos: number): TNode {
     const validateNodeByPos = (node: TNode, pos: number) => (node: TNode): TNode | null =>
-            (node.posStart <= pos && node.posEnd >= pos) ? node : null;
+        (node.posStart <= pos && node.posEnd >= pos) ? node : null;
 
     if (!isIDApp(node)) {
         const goodChild = findNodeByFunc(node, validateNodeByPos(node, pos));
@@ -163,4 +162,3 @@ export function getSelectedConst(constants: TDecl[], position: number): TDecl | 
         return validateNodeByPos(node, position)
     })
 }
-// export function getAllArguments(funcNode: IFunc): TArgument

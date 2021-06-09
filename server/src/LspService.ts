@@ -93,7 +93,7 @@ export class LspService {
                 {label: 'Verifier', kind: CompletionItemKind.Interface}
             ];
         } else if (character === ':') {
-
+            items = suggestions.types.reduce((acc, t) => [...acc, convertToCompletion(t)], new Array())
         } else if (isIBlock(node) && isILet(node.dec)) {
             if (isIGetter(node.dec.expr)) {
                 items = getNodeType(node.dec.expr).map((item) => convertToCompletion(item));
@@ -118,11 +118,12 @@ export class LspService {
             const {ctx} = isIScript(node) ? node.expr : node;
             items = getCompletionDefaultResult(ctx);
         }
-        console.error(items)
+        // console.error(items)
         return {isIncomplete: false, items} as CompletionList;
     }
 
     public hover(document: TextDocument, position: Position): Hover {
+
         const text = document.getText();
         const range = rangeToOffset(position.line, position.character, document.getText())
 
@@ -131,8 +132,7 @@ export class LspService {
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
 
         if (!ast) return {contents: []};
-
-        console.log('ast', JSON.stringify(ast))
+        // console.log('ast', JSON.stringify(ast))
         const cursor = rangeToOffset(position.line, position.character, text);
         const node = getNodeByOffset(ast, cursor);
 
@@ -140,21 +140,23 @@ export class LspService {
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
 
         if (isILet(node)) {
-            // console.log('let')
             contents.push(`${node.name.value}: ${getExpressionType(node.expr.resultType)}`);
         } else if (isIGetter(node)) {
             contents.push(getExpressionType(node.resultType));
         } else if (isIRef(node)) {
-            // console.log('ref')
             const refDocs = suggestions.globalVariables
                 .filter(({name, doc}) => node.name === name && doc != null).map(({doc}) => doc);
             const defCtx = node.ctx.find(({name}) => name === node.name);
             if (defCtx) {
-                const def = getNodeByOffset(ast, defCtx.posStart + 1);
+                // console.log('defCtx', defCtx)
+                const def = getNodeByOffset(ast, defCtx.posStart);
+                // console.log('def', def)
                 if (isILet(def)) {
                     contents.push(`${def.name.value}: ${getExpressionType(def.expr.resultType)}`);
                 }
             }
+            // @ts-ignore
+            // node.name && node.resultType.type && contents.push(`${node.name}: ${getExpressionType(node.resultType.type)}`)
             contents = [...contents, ...refDocs];
         } else if (isIFunc(node)) {
             // console.log('func', node)
@@ -168,6 +170,7 @@ export class LspService {
             contents = [...contents, result];
         } else {
         }
+        contents = [...contents, `line: ${position.line}, character: ${position.character}, position: ${range}, posStart: ${ast.posStart}`];
         return {contents};
     }
 
@@ -176,22 +179,24 @@ export class LspService {
         const parsedResult = parseAndCompile(text, 3);
         if (isParseError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
-        console.log('ast', ast)
         if (!ast) return null;
 
+        // console.log('ast', JSON.stringify(ast))
         const node = getNodeByOffset(ast, rangeToOffset(line, character, text));
-        console.log('node', node)
+        // console.log('node', node)
+        // console.log('Offset', rangeToOffset(line, character, text))
         if (!node.ctx) return null;
         let nodeName: string | null = null;
+        // console.log('node', JSON.stringify(node))
         if (isIRef(node)) nodeName = node.name;
         else if (isIFunctionCall(node)) nodeName = node.name.value;
-        console.log('nodeName', nodeName)
+        // console.log('nodeName', nodeName)
         const def = node.ctx
             .find(({name, posEnd, posStart}) => name === nodeName && posEnd !== -1 && posStart !== -1);
-        console.log('def', def)
+        // console.log('def', def)
         if (def == null) return null;
         const start = offsetToRange(def.posStart + 1, text), end = offsetToRange(def.posEnd, text);
-        console.log('start', start)
+        // console.log('start', start)
         return Location.create(document.uri, {start, end});
     }
 
@@ -206,7 +211,7 @@ export class LspService {
         if (ast) {
             node = getNodeByOffset(ast, cursor);
 
-            console.log('node', node)
+            // console.log('node', node)
         }
 
         console.error('s');

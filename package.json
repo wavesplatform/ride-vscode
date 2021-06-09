@@ -105,7 +105,7 @@
 	},
 	"devDependencies": {
 		"@types/mocha": "^5.2.0",
-		"@types/node": "^8.0.0",
+		"@types/node": "^14.14.41",
 		"typescript": "3.5.2"
 	},
 	"dependencies": {
