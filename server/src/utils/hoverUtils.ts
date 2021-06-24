@@ -52,8 +52,9 @@ export const getFunctionCallHover = (n: IFunctionCall): string => {
 }
 
 export const getFuncHoverByTFunction = (f: TFunction) => {
+    console.log('f', JSON.stringify(f))
     return `${f.name}(${f.args.map(({name, type}) =>
-        `${name}: ${type}`).join(', ')}): ${f.resultType}`;
+        `${name}: ${type}`).join(', ')}): ${f.resultType.toString()}`;
 }
 
 export const getFuncArgNameHover = ({argName: {value: name}, type}: TArgument) => {
