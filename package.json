@@ -107,7 +107,7 @@
 	"devDependencies": {
 		"@types/mocha": "^5.2.0",
 		"@types/node": "^8.10.29",
-		"typescript": "3.2.2"
+		"typescript": "3.9.10"
 	},
 	"dependencies": {
 		"vscode-languageserver-types": "^3.12.0"

@@ -53,7 +53,7 @@ export class LspService {
             }
         }
 
-        let resultOrError = compile(document.getText(), 3, libraries);
+        let resultOrError = compile(document.getText(), 3, false, false, libraries);
 
         if ('error' in resultOrError) {
             const errorText = resultOrError.error;
