@@ -3,7 +3,7 @@
 	"description": "VSCode part of ride extention",
 	"author": "",
 	"license": "MIT",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"publisher": "",
 	"repository": {
 		"type": "git",
@@ -17,8 +17,8 @@
 		"postinstall": "node ./node_modules/vscode/bin/install"
 	},
 	"dependencies": {
-		"@waves/ride-js": "^2.0.0",
-		"@waves/waves-repl": "^3.0.0",
+		"@waves/ride-js": "^2.1.1",
+		"@waves/waves-repl": "^3.0.0-beta.3",
 		"react": "^16.5.2",
 		"react-dom": "^16.5.2",
 		"vscode": "^1.1.34",
