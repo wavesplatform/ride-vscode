@@ -11,7 +11,7 @@ import {
 } from '@waves/ride-js';
 import suggestions, {isList, isPrimitive, isStruct, isUnion} from '../suggestions';
 
-export const validateByPos = (pos: number, node: IPos & { value: string }) => (node.posStart <= pos && node.posEnd >= pos);
+export const validateByPos = (pos: number, node: IPos & { value: string }) => node && node.posStart && node.posEnd &&(node.posStart <= pos && node.posEnd >= pos);
 
 export const getExpressionType = (resultType: TExprResultType): string => {
     if ('type' in resultType) {
@@ -52,9 +52,14 @@ export const getFunctionCallHover = (n: IFunctionCall): string => {
 }
 
 export const getFuncHoverByTFunction = (f: TFunction) => {
-    console.log('f', JSON.stringify(f))
-    return `${f.name}(${f.args.map(({name, type}) =>
-        `${name}: ${type}`).join(', ')}): ${f.resultType.toString()}`;
+    // console.log('f', JSON.stringify(f))
+    const args = f.args.map(({name, type}) => {
+        if (Array.isArray(type)) {
+            const types = type.map((x: any) => x.typeName)
+            return `${name}: ${types.join(' | ')}`
+        } else return `${name}: ${type}`
+    })
+    return `${f.name}(${args.join(', ')}): ${f.resultType.toString()}`;
 }
 
 export const getFuncArgNameHover = ({argName: {value: name}, type}: TArgument) => {
@@ -91,7 +96,7 @@ export const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
 export const getFuncArgumentOrTypeByPos = (node: IFunc, pos: number): string | null => {
     try {
         let out: string | null = null;
-        console.log('node.argList', node.argList)
+        // console.log('node.argList', node.argList)
         node.argList.forEach((arg) => {
             if (validateByPos(pos, arg.argName)) {
                 out = getFuncArgNameHover(arg);

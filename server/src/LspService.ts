@@ -130,13 +130,13 @@ export class LspService {
         const parsedResult = parseAndCompile(text, 3);
         if (isParseError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
-
-        if (!ast) return {contents: []};
         // console.log('ast', JSON.stringify(ast))
+        if (!ast) return {contents: []};
         const cursor = rangeToOffset(position.line, position.character, text);
+        console.log('cursor', cursor)
         const node = getNodeByOffset(ast, cursor);
 
-        // console.log('node', JSON.stringify(node))
+        console.log('node', JSON.stringify(node))
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
 
         if (isILet(node)) {
@@ -168,13 +168,13 @@ export class LspService {
             const findedGlobalFunc = suggestions.functions.find(({name}) => node.name.value === name)
             let result = !!findedGlobalFunc ? getFuncHoverByTFunction(findedGlobalFunc) : getFunctionCallHover(node)
             contents = [...contents, result];
-        } else {
         }
+        console.log(JSON.stringify(contents))
         contents = [...contents, `line: ${position.line}, character: ${position.character}, position: ${range}, posStart: ${ast.posStart}`];
         return {contents};
     }
 
-    public definition(document: TextDocument, {line, character}: Position): Definition {
+    public definition(document: TextDocument, {line, character}: Position): Definition | null{
         const text = document.getText();
         const parsedResult = parseAndCompile(text, 3);
         if (isParseError(parsedResult)) throw parsedResult.error;

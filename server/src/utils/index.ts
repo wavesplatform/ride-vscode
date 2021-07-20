@@ -85,7 +85,7 @@ const findNodeByFunc = (node: TNode, f: (node: TNode) => TNode | null): TNode | 
             ? (f((node.body as IIf).ifTrue) || f((node.body as IIf).ifFalse))
             : (f(node.body) || f(node.dec));
     } else if (isIDApp(node)) {
-        return node.decList.find(node => f(node) != null) || null;
+        return node.decList.find(node => f(node) != null) || node.annFuncList.find(node => f(node) != null) || null;
     } else if (isILet(node)) {
         return f(node.expr)
     } else if (isIFunc(node) || isIScript(node)) {
@@ -106,16 +106,24 @@ const findNodeByDApp = (node: IDApp, position: number) => {
         (node.posStart <= pos && node.posEnd >= pos) ? node : null;
 
     const annotatedFunc = findAnnotatedFunc(node.annFuncList, position)
+    console.log('annotatedFunc', JSON.stringify(annotatedFunc))
     const constants = !!annotatedFunc ? getConstantsFromFunction(annotatedFunc.func) : []
+    console.log('constants', constants)
     const constant = getSelectedConst(constants, position)
+    console.log('constant', constant)
 
     return node.decList.find(node => validateNodeByPos(node, position) != null) || constant || validateNodeByPos(annotatedFunc.func, position)
 }
 
+// @ts-ignore
 export function offsetToRange(startOffset: number, content: string): { line: number, character: number } {
-    const sliced = content.slice(0, startOffset).split('\n');
-    const line = sliced.length - 1, character = sliced[line].length === 0 ? 0 : sliced[line].length - 1;
-    return {line, character};
+    try {
+        const sliced = content.slice(0, startOffset).split('\n');
+        const line = sliced.length - 1, character = sliced[line].length === 0 ? 0 : sliced[line].length - 1;
+        return {line, character};
+    } catch (e) {
+        console.error('offsetToRange', e)
+    }
 }
 
 export function rangeToOffset(line: number, character: number, content: string): number {
@@ -126,22 +134,33 @@ export function rangeToOffset(line: number, character: number, content: string):
 }
 
 
+// @ts-ignore
 export function getNodeByOffset(node: TNode, pos: number): TNode {
-    const validateNodeByPos = (node: TNode, pos: number) => (node: TNode): TNode | null =>
-        (node.posStart <= pos && node.posEnd >= pos) ? node : null;
+    console.log(node.type)
+    const validateNodeByPos = (node: TNode, pos: number) => (node: TNode): TNode | null => {
+        console.log(node)
+        return (!!node && !!node.posStart && !!node.posEnd && (node.posStart <= pos && node.posEnd >= pos)) ? node : null;
+    }
 
     if (!isIDApp(node)) {
         const goodChild = findNodeByFunc(node, validateNodeByPos(node, pos));
+        // @ts-ignore
+        console.log('getNodeByOffset(goodChild, pos)', getNodeByOffset(goodChild, pos))
+
         return (goodChild) ? getNodeByOffset(goodChild, pos) : node;
     } else {
-        const goodChild = findNodeByDApp(node, pos)
-        return (goodChild) ? getNodeByOffset(goodChild, pos) : node;
+        try {
+            const goodChild = findNodeByDApp(node, pos)
+            console.log(goodChild)
+            return (goodChild) ? getNodeByOffset(goodChild, pos) : node;
+        } catch (e) {
+            console.error('dapp', e)
+        }
     }
-
 }
 
 export function findAnnotatedFunc(funcList: any[], pos: number): any {
-    return funcList.find(i => (i.posStart <= pos) && (i.posEnd >= pos))
+    return Array.isArray(funcList) ? funcList.find(i => (i.posStart <= pos) && (i.posEnd >= pos)) : null
 }
 
 export function getConstantsFromFunction(funcNode: IFunc): TDecl[] {
@@ -157,7 +176,7 @@ export function getConstantsFromFunction(funcNode: IFunc): TDecl[] {
 }
 
 export function getSelectedConst(constants: TDecl[], position: number): TDecl | undefined {
-    const validateNodeByPos = (node: TDecl, pos: number): boolean => pos >= node.posStart && pos <= node.posEnd
+    const validateNodeByPos = (node: TDecl, pos: number): boolean => !!node && !!node.posStart && pos >= node.posStart && pos <= node.posEnd
     return constants.find(node => {
         return validateNodeByPos(node, position)
     })
