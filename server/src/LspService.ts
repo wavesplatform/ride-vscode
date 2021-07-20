@@ -169,7 +169,6 @@ export class LspService {
             let result = !!findedGlobalFunc ? getFuncHoverByTFunction(findedGlobalFunc) : getFunctionCallHover(node)
             contents = [...contents, result];
         }
-        console.log(JSON.stringify(contents))
         contents = [...contents, `line: ${position.line}, character: ${position.character}, position: ${range}, posStart: ${ast.posStart}`];
         return {contents};
     }

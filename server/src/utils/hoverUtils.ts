@@ -1,5 +1,6 @@
 import {
-    IFunc, IFunctionCall,
+    IFunc,
+    IFunctionCall,
     IPos,
     TArgument,
     TExprResultType,
@@ -7,6 +8,7 @@ import {
     TList,
     TStruct,
     TStructField,
+    TType,
     TUnion
 } from '@waves/ride-js';
 import suggestions, {isList, isPrimitive, isStruct, isUnion} from '../suggestions';
@@ -59,7 +61,7 @@ export const getFuncHoverByTFunction = (f: TFunction) => {
             return `${name}: ${types.join(' | ')}`
         } else return `${name}: ${type}`
     })
-    return `${f.name}(${args.join(', ')}): ${f.resultType.toString()}`;
+    return `${f.name}(${args.join(', ')}): ${convertResultType(f.resultType)}`;
 }
 
 export const getFuncArgNameHover = ({argName: {value: name}, type}: TArgument) => {
@@ -116,3 +118,35 @@ export const getFuncArgumentOrTypeByPos = (node: IFunc, pos: number): string | n
         throw new Error(e)
     }
 };
+
+export function convertResultType(type: TType): string {
+    const result: string[] = []
+
+    function recursiveFunc(type: TType, result: string[]) {
+        //primitive
+        if (typeof type === 'string') {
+            result.push(type)
+        }
+        //union
+        if (Array.isArray(type)) {
+            type.map(x => recursiveFunc(x, result))
+        }
+        //list
+        if ((type as TList).listOf !== undefined) {
+            const result: string[] = []
+            // @ts-ignore
+            recursiveFunc((type as TList).listOf, result)
+            result.push(`List[${result.join(', ')}]`)
+        }
+        //struct
+        if ((type as TStruct).typeName !== undefined) {
+            result.push((type as TStruct).typeName)
+        } else {
+            console.log('type', type)
+        }
+    }
+
+    recursiveFunc(type, result)
+
+    return result.join(', ')
+}
