@@ -11,7 +11,7 @@ import {
 } from '@waves/ride-js';
 import suggestions, {isList, isPrimitive, isStruct, isUnion} from '../suggestions';
 
-export const validateByPos = (pos: number, node: IPos & { value: string }) => node && node.posStart && node.posEnd &&(node.posStart <= pos && node.posEnd >= pos);
+export const validateByPos = (pos: number, node: IPos & { value: string }) => node.posStart <= pos && node.posEnd >= pos;
 
 export const getExpressionType = (resultType: TExprResultType): string => {
     if ('type' in resultType) {

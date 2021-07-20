@@ -106,24 +106,16 @@ const findNodeByDApp = (node: IDApp, position: number) => {
         (node.posStart <= pos && node.posEnd >= pos) ? node : null;
 
     const annotatedFunc = findAnnotatedFunc(node.annFuncList, position)
-    console.log('annotatedFunc', JSON.stringify(annotatedFunc))
     const constants = !!annotatedFunc ? getConstantsFromFunction(annotatedFunc.func) : []
-    console.log('constants', constants)
     const constant = getSelectedConst(constants, position)
-    console.log('constant', constant)
 
     return node.decList.find(node => validateNodeByPos(node, position) != null) || constant || validateNodeByPos(annotatedFunc.func, position)
 }
 
-// @ts-ignore
 export function offsetToRange(startOffset: number, content: string): { line: number, character: number } {
-    try {
-        const sliced = content.slice(0, startOffset).split('\n');
-        const line = sliced.length - 1, character = sliced[line].length === 0 ? 0 : sliced[line].length - 1;
-        return {line, character};
-    } catch (e) {
-        console.error('offsetToRange', e)
-    }
+    const sliced = content.slice(0, startOffset).split('\n');
+    const line = sliced.length - 1, character = sliced[line].length === 0 ? 0 : sliced[line].length - 1;
+    return {line, character};
 }
 
 export function rangeToOffset(line: number, character: number, content: string): number {
@@ -134,28 +126,19 @@ export function rangeToOffset(line: number, character: number, content: string):
 }
 
 
-// @ts-ignore
 export function getNodeByOffset(node: TNode, pos: number): TNode {
     console.log(node.type)
     const validateNodeByPos = (node: TNode, pos: number) => (node: TNode): TNode | null => {
         console.log(node)
-        return (!!node && !!node.posStart && !!node.posEnd && (node.posStart <= pos && node.posEnd >= pos)) ? node : null;
+        return (node.posStart <= pos && node.posEnd >= pos) ? node : null;
     }
 
     if (!isIDApp(node)) {
         const goodChild = findNodeByFunc(node, validateNodeByPos(node, pos));
-        // @ts-ignore
-        console.log('getNodeByOffset(goodChild, pos)', getNodeByOffset(goodChild, pos))
-
         return (goodChild) ? getNodeByOffset(goodChild, pos) : node;
     } else {
-        try {
-            const goodChild = findNodeByDApp(node, pos)
-            console.log(goodChild)
-            return (goodChild) ? getNodeByOffset(goodChild, pos) : node;
-        } catch (e) {
-            console.error('dapp', e)
-        }
+        const goodChild = findNodeByDApp(node, pos)
+        return (goodChild) ? getNodeByOffset(goodChild, pos) : node;
     }
 }
 
