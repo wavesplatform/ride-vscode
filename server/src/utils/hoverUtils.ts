@@ -141,8 +141,6 @@ export function convertResultType(type: TType): string {
         //struct
         if ((type as TStruct).typeName !== undefined) {
             result.push((type as TStruct).typeName)
-        } else {
-            console.log('type', type)
         }
     }
 
