@@ -15,7 +15,7 @@ import {
     SignatureHelp,
     TextDocument
 } from 'vscode-languageserver-types';
-import {IRef, parseAndCompile, scriptInfo} from '@waves/ride-js';
+import {IRef, parseAndCompile, scriptInfo, TFunction, TStructField} from '@waves/ride-js';
 import suggestions from './suggestions';
 import {
     convertToCompletion,
@@ -35,7 +35,8 @@ import {
     isILet,
     isIRef,
     isIScript,
-    isParseError, isPrimitiveNode,
+    isParseError,
+    isPrimitiveNode,
     offsetToRange,
     rangeToOffset
 } from './utils/index';
@@ -119,9 +120,9 @@ export class LspService {
         }
 
         const obj = {} as any
-        items.forEach(function(d){
-            if ( ! obj[d.label] ) {
-                obj[d.label] = { label: d.label, kind: d.kind, detail: d.detail }
+        items.forEach(function (d) {
+            if (!obj[d.label]) {
+                obj[d.label] = {label: d.label, kind: d.kind, detail: d.detail}
             }
         })
         items = Object.values(obj);
@@ -176,7 +177,7 @@ export class LspService {
         return {contents};
     }
 
-    public definition(document: TextDocument, {line, character}: Position): Definition | null{
+    public definition(document: TextDocument, {line, character}: Position): Definition | null {
         const text = document.getText();
         const parsedResult = parseAndCompile(text, 3);
         if (isParseError(parsedResult)) throw parsedResult.error;
@@ -209,18 +210,30 @@ export class LspService {
         const parsedResult = parseAndCompile(text, 3);
         if (isParseError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
-        let node;
-        if (ast) {
-            node = getNodeByOffset(ast, cursor);
+        // @ts-ignore
+        const node = getNodeByOffset(ast, cursor);
 
-            // console.log('node', node)
+        console.log('node', JSON.stringify(node))
+        const func = suggestions.functions.find(x => x.name === (node as any).name.value)
+            || suggestions.types.find(x => x.name === (node as any).name.value)
+
+        let args
+
+        if (!!func) {
+            if((func as TFunction).args) {
+                args = (func as TFunction).args.reduce((acc, x) => [...acc, {label: x.name}], [] as any)
+            }
+            // @ts-ignore
+            if((func as TStructField).type.fields) {
+                // @ts-ignore
+                args = (func as TStructField).type.fields.reduce((acc, x) => [...acc, {label: x.name}], [] as any)
+            }
         }
 
-        console.error('s');
         return {
             activeParameter: null,
             activeSignature: null,
-            signatures: []
+            signatures: args
         };
     }
 
