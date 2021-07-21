@@ -31,8 +31,6 @@ export const getExpressionType = (resultType: TExprResultType): string => {
 export const getFuncHoverByNode = (n: IFunc) => {
     const functionName = n.name.value;
     const args = n.argList;
-    console.log('getFuncHoverByNode')
-    // console.log('args.length', args.length)
     const argumentString = args.length !== 0
         ? args.map(({argName: {value}, type}) =>
             `${value}: ${
@@ -54,7 +52,6 @@ export const getFunctionCallHover = (n: IFunctionCall): string => {
 }
 
 export const getFuncHoverByTFunction = (f: TFunction) => {
-    // console.log('f', JSON.stringify(f))
     const args = f.args.map(({name, type}) => {
         if (Array.isArray(type)) {
             const types = type.map((x: any) => x.typeName)
@@ -65,7 +62,6 @@ export const getFuncHoverByTFunction = (f: TFunction) => {
 }
 
 export const getFuncArgNameHover = ({argName: {value: name}, type}: TArgument) => {
-    console.log('getFuncArgNameHover');
     const argType = !type.typeParam
         ? type.typeName.value
         : `${type.typeName.value}[${type.typeParam.value.typeList.map(x => x.typeName.value).join(' | ')}]`
@@ -98,7 +94,6 @@ export const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
 export const getFuncArgumentOrTypeByPos = (node: IFunc, pos: number): string | null => {
     try {
         let out: string | null = null;
-        // console.log('node.argList', node.argList)
         node.argList.forEach((arg) => {
             if (validateByPos(pos, arg.argName)) {
                 out = getFuncArgNameHover(arg);
@@ -134,7 +129,6 @@ export function convertResultType(type: TType): string {
         //list
         if ((type as TList).listOf !== undefined) {
             const result: string[] = []
-            // @ts-ignore
             recursiveFunc((type as TList).listOf, result)
             result.push(`List[${result.join(', ')}]`)
         }

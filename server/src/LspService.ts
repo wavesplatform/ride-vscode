@@ -87,7 +87,6 @@ export class LspService {
 
         const node = getNodeByOffset(ast, cursor);
         if (character === '@') {
-            console.log('wtf')
             items = [
                 {label: 'Callable', kind: CompletionItemKind.Interface},
                 {label: 'Verifier', kind: CompletionItemKind.Interface}
@@ -118,7 +117,15 @@ export class LspService {
             const {ctx} = isIScript(node) ? node.expr : node;
             items = getCompletionDefaultResult(ctx);
         }
-        // console.error(items)
+
+        const obj = {} as any
+        items.forEach(function(d){
+            if ( ! obj[d.label] ) {
+                obj[d.label] = { label: d.label, kind: d.kind, detail: d.detail }
+            }
+        })
+        items = Object.values(obj);
+
         return {isIncomplete: false, items} as CompletionList;
     }
 
@@ -133,10 +140,10 @@ export class LspService {
         // console.log('ast', JSON.stringify(ast))
         if (!ast) return {contents: []};
         const cursor = rangeToOffset(position.line, position.character, text);
-        console.log('cursor', cursor)
+        // console.log('cursor', cursor)
         const node = getNodeByOffset(ast, cursor);
 
-        console.log('node', JSON.stringify(node))
+        // console.log('node', JSON.stringify(node))
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
 
         if (isILet(node)) {
@@ -148,9 +155,7 @@ export class LspService {
                 .filter(({name, doc}) => node.name === name && doc != null).map(({doc}) => doc);
             const defCtx = node.ctx.find(({name}) => name === node.name);
             if (defCtx) {
-                // console.log('defCtx', defCtx)
                 const def = getNodeByOffset(ast, defCtx.posStart);
-                // console.log('def', def)
                 if (isILet(def)) {
                     contents.push(`${def.name.value}: ${getExpressionType(def.expr.resultType)}`);
                 }
@@ -159,12 +164,10 @@ export class LspService {
             // node.name && node.resultType.type && contents.push(`${node.name}: ${getExpressionType(node.resultType.type)}`)
             contents = [...contents, ...refDocs];
         } else if (isIFunc(node)) {
-            // console.log('func', node)
             contents.push(
                 getFuncArgumentOrTypeByPos(node, cursor) || getFuncHoverByNode(node)
             );
         } else if (isIFunctionCall(node)) {
-            // console.log('functionCall')
             const findedGlobalFunc = suggestions.functions.find(({name}) => node.name.value === name)
             let result = !!findedGlobalFunc ? getFuncHoverByTFunction(findedGlobalFunc) : getFunctionCallHover(node)
             contents = [...contents, result];
