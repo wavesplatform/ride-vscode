@@ -19,7 +19,7 @@ export class LspService {
 
     public static TextDocument = TextDocument;
 
-    public validateTextDocument(document: TextDocument): Diagnostic[] {
+    public validateTextDocument(document: TextDocument, libraries?: Record<string, string>): Diagnostic[] {
         try {
             const info = scriptInfo(document.getText());
             if ('error' in info) throw info.error;
@@ -30,7 +30,7 @@ export class LspService {
         }
 
         let diagnostics: Diagnostic[] = [];
-        let resultOrError = compile(document.getText(), 3);
+        let resultOrError = compile(document.getText(), 3, undefined, undefined, libraries);
         if ('error' in resultOrError) {
             const errorText = resultOrError.error;
             const errRangesRegxp = /\d+-\d+/gm;
