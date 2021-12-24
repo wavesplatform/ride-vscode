@@ -51,7 +51,7 @@ export const getUnionItemName = (item: TUnionItem): string => {
 export const unionToString = (item: TUnion) => item.map(type => getUnionItemName(type)).join('|');
 
 //----------------------------------------------------------
-class Suggestions {
+export class Suggestions {
     types: TStructField[] = getTypes();
     functions: TFunction[] = getFunctionsDoc();
     globalVariables: IVarDoc[] = getVarsDoc();
@@ -62,7 +62,6 @@ class Suggestions {
     }
 
     updateSuggestions = (stdlibVersion?: number, isTokenContext?: boolean) => {
-
         const types = getTypes(stdlibVersion, isTokenContext);
         const functions = getFunctionsDoc(stdlibVersion, isTokenContext);
         const globalVariables = getVarsDoc(stdlibVersion, isTokenContext);

@@ -32,13 +32,14 @@ import {
     IMatch,
     IParseAndCompileResult,
     IRef,
-    IScript,
+    IScript, IScriptInfo,
     ITrue,
     TDecl,
     TExpr,
     TNode,
     TPrimitiveNode
 } from '@waves/ride-js';
+import {performance} from "perf_hooks";
 
 
 export {
@@ -76,7 +77,7 @@ export const isIScript = (node: TNode | null): node is IScript => node != null &
 export const isIDApp = (node: TNode | null): node is IDApp => node != null && node.type === 'DAPP';
 export const isIAnnotatedFunc = (node: TNode | null): node is IAnnotatedFunc => node != null && node.type === 'ANNOTATEDFUNC';
 export const isIAnnotation = (node: TNode | null): node is IAnnotation => node != null && node.type === 'ANNOTATION';
-export const isParseError = (res: IParseAndCompileResult | ICompilationError): res is ICompilationError => 'error' in res;
+export const isCompileError = (res: IParseAndCompileResult | IScriptInfo | ICompilationError): res is ICompilationError => 'error' in res;
 export const isPrimitiveNode = (node: TNode): node is TPrimitiveNode => isIConstStr(node) || isIConstByteStr(node) || isIConstLong(node) || isITrue(node) || isIFalse(node)
 
 const findNodeByFunc = (node: TNode, f: (node: TNode) => TNode | null): TNode | null => {
@@ -127,9 +128,7 @@ export function rangeToOffset(line: number, character: number, content: string):
 
 
 export function getNodeByOffset(node: TNode, pos: number): TNode {
-    console.log(node.type)
     const validateNodeByPos = (node: TNode, pos: number) => (node: TNode): TNode | null => {
-        console.log(node)
         return (node.posStart <= pos && node.posEnd >= pos) ? node : null;
     }
 
@@ -164,3 +163,5 @@ export function getSelectedConst(constants: TDecl[], position: number): TDecl | 
         return validateNodeByPos(node, position)
     })
 }
+
+export const getLastArrayElement = (arr: string[] | null): string => arr !== null ? [...arr].pop() || '' : '';

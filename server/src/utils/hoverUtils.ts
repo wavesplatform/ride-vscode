@@ -48,17 +48,21 @@ export const getFunctionCallHover = (n: IFunctionCall): string => {
     const args = n.args.length !== 0 ? n.args.map(x => `${x.resultType.type.toLowerCase()}: ${x.resultType.type}`).join(', ') : ''
 
     // @ts-ignore
-    return `${name}(${args}): ${n.resultType.type}`
+    return `**${name}**(${args}): ${n.resultType.type}`
 }
 
-export const getFuncHoverByTFunction = (f: TFunction) => {
-    const args = f.args.map(({name, type}) => {
-        if (Array.isArray(type)) {
-            const types = type.map((x: any) => x.typeName)
-            return `${name}: ${types.join(' | ')}`
-        } else return `${name}: ${type}`
+export const getFuncHoverByTFunction = (functions: TFunction[]) => {
+    const res = functions.map(f => {
+        const args = f.args.map(({name, type, doc}) => {
+            if (Array.isArray(type)) {
+                // @ts-ignore
+                const types = type.map((x: any) => x.typeName || x)
+                return `${name}: ${types.join(' | ')} — ${doc} \n`
+            } else return `${name}: ${type} — ${doc} \n`
+        })
+        return `**${f.name}**(${args.join('\n')}): ${convertResultType(f.resultType)} \n — ${f.doc}`;
     })
-    return `${f.name}(${args.join(', ')}): ${convertResultType(f.resultType)}`;
+    return res
 }
 
 export const getFuncArgNameHover = ({argName: {value: name}, type}: TArgument) => {
@@ -98,14 +102,11 @@ export const getFuncArgumentOrTypeByPos = (node: IFunc, pos: number): string | n
             if (validateByPos(pos, arg.argName)) {
                 out = getFuncArgNameHover(arg);
             } else {
-                // for (const {typeName} of arg.type) {
                 const {typeName} = arg.type
                 if (validateByPos(pos, typeName)) {
                     const type = suggestions.types.find(({name}) => name === typeName.value);
                     out = type ? getTypeDoc(type) : typeName.value;
-                    // break;
                 }
-                // }
             }
         });
         return out;
@@ -141,4 +142,22 @@ export function convertResultType(type: TType): string {
     recursiveFunc(type, result)
 
     return result.join(', ')
+}
+
+export function getWordByPos(string: string, character: number) {
+    let sep = ['"', '\'', '*', '(', ')', '{', '}', '[', ']', '!', '<', '>', '|', '\\', '/', '.', ',', ':', ';', '&', ' ', '=', '\t'];
+    let start = 0, end = string.length;
+    for (let i = character; i <= string.length; i++) {
+        if (~sep.indexOf(string[i])) {
+            end = i;
+            break;
+        }
+    }
+    for (let i = character; i >= 0; i--) {
+        if (~sep.indexOf(string[i])) {
+            start = ++i;
+            break;
+        }
+    }
+    return string.substring(start, end);
 }

@@ -19,6 +19,7 @@ import {
 } from 'vscode-languageserver';
 import * as fs from 'fs';
 import { LspService } from './LspService';
+import {rangeToOffset} from "./utils/index";
 
 export class LspServer {
     private hasConfigurationCapability: boolean = false;
@@ -149,7 +150,9 @@ export class LspServer {
             const changedDocument = this.applyChanges(document, didChangeTextDocumentParams);
             this.documents[didChangeTextDocumentParams.textDocument.uri] = changedDocument;
             if (document.getText() !== changedDocument.getText()) {
-                const diagnostics = service.validateTextDocument(changedDocument);
+                const positionOfLastSymbol = didChangeTextDocumentParams.contentChanges[0].range ? didChangeTextDocumentParams.contentChanges[0].range.end : undefined
+                const lastChangedSymbol = positionOfLastSymbol ? rangeToOffset(positionOfLastSymbol.line, positionOfLastSymbol.character, changedDocument.getText()) : undefined
+                const diagnostics = service.validateTextDocument(changedDocument, lastChangedSymbol);
                 this.sendDiagnostics(document.uri, diagnostics);
             }
         });
