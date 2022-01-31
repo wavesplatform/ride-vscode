@@ -19,6 +19,7 @@ import {
 } from 'vscode-languageserver';
 import * as fs from 'fs';
 import { LspService } from './LspService';
+import {FileContentProvider} from "./FileContentProvider";
 
 export class LspServer {
     private hasConfigurationCapability: boolean = false;
@@ -26,10 +27,10 @@ export class LspServer {
     private hasDiagnosticRelatedInformationCapability: boolean = false;
 
     private service: LspService;
-    private documents: { [uri: string]: TextDocument } = {};
+    private documents: Record<string, TextDocument> = {};
 
     constructor(private connection: IConnection) {
-        this.service = new LspService();
+        this.service = new LspService(new FileContentProvider(this.documents));
 
         // Bind connection events to server methods
         // Init

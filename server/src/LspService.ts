@@ -11,26 +11,50 @@ import {
     SignatureHelp,
     TextDocument
 } from 'vscode-languageserver-types';
-import { compile, scriptInfo } from '@waves/ride-js';
+import {compile, scriptInfo} from '@waves/ride-js';
 import * as utils from './utils';
-import { suggestions, TPosition } from "./context";
+import {suggestions, TPosition} from "./context";
+import {IFileContentProvider} from "./FileContentProvider";
+
+const noRangeError = (msg: string) => ({
+    range: Range.create(
+        Position.create(0, 0),
+        Position.create(0, 0)
+    ),
+    severity: DiagnosticSeverity.Error,
+    message: msg
+});
 
 export class LspService {
+    constructor(private fileContentProvider: IFileContentProvider) {
+    };
 
     public static TextDocument = TextDocument;
 
-    public validateTextDocument(document: TextDocument, libraries?: Record<string, string>): Diagnostic[] {
-        try {
-            const info = scriptInfo(document.getText());
-            if ('error' in info) throw info.error;
-            const {stdLibVersion, scriptType} = info;
-            suggestions.updateSuggestions(stdLibVersion || 4, scriptType === 2);
-        } catch (e) {
-            suggestions.updateSuggestions(4);
+    public validateTextDocument(document: TextDocument): Diagnostic[] {
+        let diagnostics: Diagnostic[] = [];
+
+        const info = scriptInfo(document.getText());
+        if ('error' in info) {
+            suggestions.updateSuggestions();
+            diagnostics.push(noRangeError(info.error));
+            return diagnostics
         }
 
-        let diagnostics: Diagnostic[] = [];
-        let resultOrError = compile(document.getText(), 3, undefined, undefined, libraries);
+        const {stdLibVersion, scriptType, imports} = info;
+
+        suggestions.updateSuggestions(stdLibVersion, scriptType === 2);
+        let libraries: Record<string, string> = {};
+        for (let uri of imports) {
+            try {
+                libraries[uri] = this.fileContentProvider.getContent(uri, document.uri)
+            } catch (e) {
+                diagnostics.push(noRangeError(`Failed to resolve file "${uri}"`))
+            }
+        }
+
+        let resultOrError = compile(document.getText(), 3, false, false, libraries);
+
         if ('error' in resultOrError) {
             const errorText = resultOrError.error;
             const errRangesRegxp = /\d+-\d+/gm;
@@ -125,7 +149,8 @@ export class LspService {
         } as CompletionList;
     }
 
-    public hover(document: TextDocument, position: Position) { //todo add hover to func args
+    public hover(document: TextDocument, position: Position) {
+        //todo add hover to func args
         const match = (/[a-zA-z0-9_]+\.[a-zA-z0-9_.]*$/gm)
             .exec(document.getText({start: {line: position.line, character: 0}, end: position}));
         const line = document.getText().split('\n')[position.line];
@@ -153,7 +178,8 @@ export class LspService {
             : null;
     }
 
-    public signatureHelp(document: TextDocument, position: Position): SignatureHelp {
+    public signatureHelp(document: TextDocument, position: Position):
+        SignatureHelp {
 
         const offset = document.offsetAt(position);
         const character = document.getText().substring(offset - 1, offset);
