@@ -3,7 +3,7 @@
 	"description": "VSCode part of ride extention",
 	"author": "",
 	"license": "MIT",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"publisher": "",
 	"repository": {
 		"type": "git",
@@ -17,7 +17,7 @@
 		"postinstall": "node ./node_modules/vscode/bin/install"
 	},
 	"dependencies": {
-		"@waves/ride-js": "^2.2.0-beta.1",
+		"@waves/ride-js": "^2.1.9",
 		"@waves/waves-repl": "^3.0.0",
 		"react": "^16.5.2",
 		"react-dom": "^16.5.2",
@@ -25,6 +25,7 @@
 		"vscode-languageclient": "^4.1.4"
 	},
 	"devDependencies": {
+		"@types/node": "^15.14.0",
 		"@types/react": "^16.4.17",
 		"@types/react-dom": "^16.0.9",
 		"autoprefixer": "^9.2.0",
@@ -34,7 +35,7 @@
 		"postcss-loader": "^3.0.0",
 		"style-loader": "^0.23.1",
 		"ts-loader": "^5.2.2",
-		"typescript": "^3.2.2",
+		"typescript": "3.9.10",
 		"webpack": "^4.20.2",
 		"webpack-cli": "^3.1.2"
 	}

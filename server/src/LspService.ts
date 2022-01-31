@@ -45,10 +45,10 @@ export class LspService {
 
         suggestions.updateSuggestions(stdLibVersion, scriptType === 2);
         let libraries: Record<string, string> = {};
-        for (let uri of imports){
+        for (let uri of imports) {
             try {
                 libraries[uri] = this.fileContentProvider.getContent(uri, document.uri)
-            }catch (e) {
+            } catch (e) {
                 diagnostics.push(noRangeError(`Failed to resolve file "${uri}"`))
             }
         }
@@ -98,12 +98,7 @@ export class LspService {
         return diagnostics;
     }
 
-    public completion(document
-                   :
-                   TextDocument, position
-                   :
-                   Position
-    ) {
+    public completion(document: TextDocument, position: Position) {
         const offset = document.offsetAt(position);
         const text = document.getText();
         const character = text.substring(offset - 1, offset);
@@ -154,12 +149,8 @@ export class LspService {
         } as CompletionList;
     }
 
-    public hover(document
-              :
-              TextDocument, position
-              :
-              Position
-    ) { //todo add hover to func args
+    public hover(document: TextDocument, position: Position) {
+        //todo add hover to func args
         const match = (/[a-zA-z0-9_]+\.[a-zA-z0-9_.]*$/gm)
             .exec(document.getText({start: {line: position.line, character: 0}, end: position}));
         const line = document.getText().split('\n')[position.line];
@@ -169,13 +160,7 @@ export class LspService {
         return {contents: utils.getHoverResult(word, (match ? match[0] : '').split('.'))};
     }
 
-    public definition(document
-                   :
-                   TextDocument, position
-                   :
-                   Position
-    ):
-        Definition {
+    public definition(document: TextDocument, position: Position): Definition {
 
         const text = document.getText(),
             line = text.split('\n')[position.line],
@@ -193,12 +178,7 @@ export class LspService {
             : null;
     }
 
-    public signatureHelp(document
-                      :
-                      TextDocument, position
-                      :
-                      Position
-    ):
+    public signatureHelp(document: TextDocument, position: Position):
         SignatureHelp {
 
         const offset = document.offsetAt(position);
@@ -225,10 +205,7 @@ export class LspService {
         };
     }
 
-    public completionResolve(item
-                          :
-                          CompletionItem
-    ) {
+    public completionResolve(item: CompletionItem) {
         return item;
     }
 
