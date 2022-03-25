@@ -1,4 +1,4 @@
-FROM node:10
+FROM node:15
 ARG token
 WORKDIR /app
 COPY . /app
