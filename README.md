@@ -1,5 +1,5 @@
 # Waves Ride language extention and Waves JS Console for Visual Studio Code
-## Ride compiler version 1.3.14-2-g4f67107
+## Ride compiler version 1.4.6-3-g43bc456
 
 Ride is the language used in Waves blockchain to create smart accounts. This extention provides:
 * Syntax highlighting
