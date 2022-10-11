@@ -1,11 +1,11 @@
-const path = './syntaxes/ride.tmLanguage.json';
+const path = '../syntaxes/ride.tmLanguage.json';
 const tmLanguage = require('.' + path);
 const fs = require('fs');
 const libVersion = 3;
 const funcsIndex = tmLanguage.patterns.findIndex(({name}) => name === 'entity.name.function.ride');
 const typesIndex = tmLanguage.patterns.findIndex(({name}) => name === 'entity.name.type.ride');
 
-const { getFunctionsDoc, getTypes } = require('../server/node_modules/@waves/ride-js');
+const { getFunctionsDoc, getTypes } = require('../node_modules/@waves/ride-js');
 
 tmLanguage.patterns[funcsIndex].match = `\\b(${
     getFunctionsDoc(libVersion)

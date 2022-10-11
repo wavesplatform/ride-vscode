@@ -40,15 +40,14 @@ import {
     offsetToRange,
     rangeToOffset, getTypeDoc
 } from './utils/index';
-import {getFunctionCallHover, getWordByPos} from "./utils/hoverUtils";
-import * as jsonSuggestions from './suggestions/suggestions.json';
+import {getFunctionCallHover} from "./utils/hoverUtils";
 
 export class LspService {
 
     public validateTextDocument(document: TextDocument, lastChangedSymbol?: number | undefined): Diagnostic[] {
         const text = document.getText();
         try {
-            const parsedResult = parseAndCompile(text, 3, lastChangedSymbol);
+            const parsedResult = parseAndCompile(text, 3);
             if (isCompileError(parsedResult)) throw parsedResult.error;
             const info = scriptInfo(text);
             if (info && isCompileError(info)) throw info.error;
@@ -139,10 +138,12 @@ export class LspService {
 
     public hover(document: TextDocument, position: Position): Hover {
 
+        // console.time('hover time')
         const text = document.getText();
         const range = rangeToOffset(position.line, position.character, document.getText())
+        console.time('parseAndCompile time')
         const parsedResult = parseAndCompile(text, 3);
-
+        console.timeEnd('parseAndCompile time')
         if (isCompileError(parsedResult)) throw parsedResult.error;
 
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
@@ -192,6 +193,7 @@ export class LspService {
             contents = [...contents, ...result];
         }
         contents = [...contents, `line: ${position.line}, character: ${position.character}, position: ${range}, posStart: ${ast.posStart}`];
+        // console.timeEnd('hover time')
         return {contents};
     }
 

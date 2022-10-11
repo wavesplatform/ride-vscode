@@ -110,6 +110,6 @@
 	},
 	"dependencies": {
 		"@waves/ride-js": "2.2.0-beta.2",
-		"vscode-languageserver-types": "^3.12.0"
+		"vscode-languageserver-types": "^3.16.0"
 	}
 }
