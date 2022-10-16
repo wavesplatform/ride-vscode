@@ -145,19 +145,7 @@ export function convertResultType(type: TType): string {
 }
 
 export function getWordByPos(string: string, character: number) {
-    let sep = ['"', '\'', '*', '(', ')', '{', '}', '[', ']', '!', '<', '>', '|', '\\', '/', '.', ',', ':', ';', '&', ' ', '=', '\t'];
-    let start = 0, end = string.length;
-    for (let i = character; i <= string.length; i++) {
-        if (~sep.indexOf(string[i])) {
-            end = i;
-            break;
-        }
-    }
-    for (let i = character; i >= 0; i--) {
-        if (~sep.indexOf(string[i])) {
-            start = ++i;
-            break;
-        }
-    }
-    return string.substring(start, end);
+    const text = string.substring(0, character - 1);
+    let n = text.replace(/[\[\]?.,\/#!$%\^&\*;:{}=\\|_~()]/g, "").split(" ");
+    return n[n.length - 1];
 }

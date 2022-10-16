@@ -17,6 +17,7 @@ import {
 } from 'vscode-languageserver-types';
 import {IRef, parseAndCompile, scriptInfo, TFunction, TStructField} from '@waves/ride-js';
 import suggestions from './suggestions';
+import * as jsonSuggestions from './suggestions/suggestions.json';
 import {
     convertToCompletion,
     getCompletionDefaultResult,
@@ -41,14 +42,15 @@ import {
     rangeToOffset, getTypeDoc
 } from './utils/index';
 import {getFunctionCallHover, getWordByPos} from "./utils/hoverUtils";
-import * as jsonSuggestions from './suggestions/suggestions.json';
 
 export class LspService {
+    public static TextDocument = TextDocument;
 
-    public validateTextDocument(document: TextDocument, lastChangedSymbol?: number | undefined): Diagnostic[] {
+    public validateTextDocument(document: TextDocument): Diagnostic[] {
         const text = document.getText();
         try {
-            const parsedResult = parseAndCompile(text, 3, lastChangedSymbol);
+            const parsedResult = parseAndCompile(text, 3);
+            // console.log('parsedResult', JSON.stringify(parsedResult, null, ' '))
             if (isCompileError(parsedResult)) throw parsedResult.error;
             const info = scriptInfo(text);
             if (info && isCompileError(info)) throw info.error;
@@ -118,13 +120,14 @@ export class LspService {
             items = getCompletionDefaultResult(ctx);
         }
 
-        // const lastWord = getWordByPos(text, cursor)
-        // const snippet = jsonSuggestions.snippets.find(({ label }) => label === lastWord)
-        //
-        // if (snippet) {
-        //     const {label, insertText} = snippet
-        //     items.push({label, insertText, kind: ItemKind.Function, insertTextFormat: InsertTextFormat.Snippet})
-        // }
+        const lastWord = getWordByPos(text, cursor)
+        console.log('lastWord', lastWord)
+        const snippet = jsonSuggestions.snippets.find(({ label }) => label.includes(lastWord))
+        if (snippet) {
+            const {label, insertText} = snippet
+            items.push({label, insertText, kind: ItemKind.Function, insertTextFormat: InsertTextFormat.Snippet})
+            return {items} as CompletionList;
+        }
 
         const obj = {} as any
         items.forEach(function (d) {
@@ -142,7 +145,6 @@ export class LspService {
         const text = document.getText();
         const range = rangeToOffset(position.line, position.character, document.getText())
         const parsedResult = parseAndCompile(text, 3);
-
         if (isCompileError(parsedResult)) throw parsedResult.error;
 
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
@@ -150,6 +152,7 @@ export class LspService {
         const cursor = rangeToOffset(position.line, position.character, text);
 
         const node = getNodeByOffset(ast, cursor);
+        console.log('node', node)
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
 
         if (isILet(node)) {

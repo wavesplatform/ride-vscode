@@ -152,7 +152,7 @@ export class LspServer {
             if (document.getText() !== changedDocument.getText()) {
                 const positionOfLastSymbol = didChangeTextDocumentParams.contentChanges[0].range ? didChangeTextDocumentParams.contentChanges[0].range.end : undefined
                 const lastChangedSymbol = positionOfLastSymbol ? rangeToOffset(positionOfLastSymbol.line, positionOfLastSymbol.character, changedDocument.getText()) : undefined
-                const diagnostics = service.validateTextDocument(changedDocument, lastChangedSymbol);
+                const diagnostics = service.validateTextDocument(changedDocument);
                 this.sendDiagnostics(document.uri, diagnostics);
             }
         });

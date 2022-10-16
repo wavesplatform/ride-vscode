@@ -1,6 +1,7 @@
 {
   "keywords": [
     "let",
+    "strict",
     "true",
     "false",
     "if",
@@ -13,6 +14,8 @@
     "{-# STDLIB_VERSION 1 #-}",
     "{-# STDLIB_VERSION 2 #-}",
     "{-# STDLIB_VERSION 3 #-}",
+    "{-# STDLIB_VERSION 4 #-}",
+    "{-# STDLIB_VERSION 5 #-}",
     "{-# SCRIPT_TYPE ACCOUNT #-}",
     "{-# SCRIPT_TYPE ASSET #-}",
     "{-# CONTENT_TYPE DAPP #-}",

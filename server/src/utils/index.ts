@@ -105,12 +105,17 @@ const findNodeByFunc = (node: TNode, f: (node: TNode) => TNode | null): TNode | 
 const findNodeByDApp = (node: IDApp, position: number) => {
     const validateNodeByPos = (node: TNode, pos: number) =>
         (node.posStart <= pos && node.posEnd >= pos) ? node : null;
+    const dec = node.decList.find(node => validateNodeByPos(node, position) != null); //func or let
 
-    const annotatedFunc = findAnnotatedFunc(node.annFuncList, position)
-    const constants = !!annotatedFunc ? getConstantsFromFunction(annotatedFunc.func) : []
-    const constant = getSelectedConst(constants, position)
+    if (!dec) {
+        const annotatedFunc = findAnnotatedFunc(node.annFuncList, position)
+        const constants = !!annotatedFunc && annotatedFunc.func ? getConstantsFromFunction(annotatedFunc.func) : []
+        const constant = getSelectedConst(constants, position)
 
-    return node.decList.find(node => validateNodeByPos(node, position) != null) || constant || validateNodeByPos(annotatedFunc.func, position)
+        if (!constant) {
+            return validateNodeByPos(annotatedFunc.func, position);
+        } else return constant
+    } else return dec
 }
 
 export function offsetToRange(startOffset: number, content: string): { line: number, character: number } {
@@ -137,6 +142,8 @@ export function getNodeByOffset(node: TNode, pos: number): TNode {
         return (goodChild) ? getNodeByOffset(goodChild, pos) : node;
     } else {
         const goodChild = findNodeByDApp(node, pos)
+        console.log('goodChild', goodChild)
+        // @ts-ignore
         return (goodChild) ? getNodeByOffset(goodChild, pos) : node;
     }
 }

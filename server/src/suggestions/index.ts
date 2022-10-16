@@ -1,4 +1,4 @@
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types';
+import {CompletionItem, CompletionItemKind, InsertTextFormat} from 'vscode-languageserver-types';
 import * as suggestions from './suggestions.json';
 import {
     getFunctionsDoc,
@@ -78,7 +78,10 @@ export class Suggestions {
         this.globalSuggestions.push(
             ...suggestions.directives.map(directive => ({label: directive, kind: CompletionItemKind.Reference})),
             ...suggestions.keywords.map((label: string) => <CompletionItem>({label, kind: CompletionItemKind.Keyword})),
-            ...suggestions.snippets.map(({label}) => ({label, kind: CompletionItemKind.Snippet})),
+            // ...suggestions.snippets.map(({label, insertText}) => ({label,
+            //     insertText,
+            //     kind: CompletionItemKind.Function,
+            //     insertTextFormat: InsertTextFormat.Snippet,})),
             ...functions.map(({name, doc}) => ({detail: doc, kind: CompletionItemKind.Function, label: name}))
         )
     };
