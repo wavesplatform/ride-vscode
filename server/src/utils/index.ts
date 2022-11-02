@@ -106,16 +106,23 @@ const findNodeByDApp = (node: IDApp, position: number) => {
     const validateNodeByPos = (node: TNode, pos: number) =>
         (node.posStart <= pos && node.posEnd >= pos) ? node : null;
     const dec = node.decList.find(node => validateNodeByPos(node, position) != null); //func or let
-
+    if (dec) {
+        return dec;
+    }
+    if (!('annFuncList' in node && node.annFuncList.some(annFunc => validateNodeByPos(annFunc, position)) //совпадение на аннФункции
+        || 'decList' in node && node.decList.some(dec => validateNodeByPos(dec, position)))) { //совпадение на декларации
+        return null //если нет содержимого, то уходим
+    }
     if (!dec) {
         const annotatedFunc = findAnnotatedFunc(node.annFuncList, position)
-        const constants = !!annotatedFunc && annotatedFunc.func ? getConstantsFromFunction(annotatedFunc.func) : []
+        const constants = !!annotatedFunc && 'func' in annotatedFunc ? getConstantsFromFunction(annotatedFunc.func) : []
         const constant = getSelectedConst(constants, position)
-
         if (!constant) {
             return validateNodeByPos(annotatedFunc.func, position);
         } else return constant
-    } else return dec
+    } else {
+        return dec
+    }
 }
 
 export function offsetToRange(startOffset: number, content: string): { line: number, character: number } {
@@ -137,12 +144,15 @@ export function getNodeByOffset(node: TNode, pos: number): TNode {
         return (node.posStart <= pos && node.posEnd >= pos) ? node : null;
     }
 
+
     if (!isIDApp(node)) {
         const goodChild = findNodeByFunc(node, validateNodeByPos(node, pos));
         return (goodChild) ? getNodeByOffset(goodChild, pos) : node;
     } else {
+        // console.log('до goodChild', node)
+        // console.log('pos до goodChild', pos)
         const goodChild = findNodeByDApp(node, pos)
-        console.log('goodChild', goodChild)
+        // console.log('goodChild', goodChild)
         // @ts-ignore
         return (goodChild) ? getNodeByOffset(goodChild, pos) : node;
     }

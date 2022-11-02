@@ -15,7 +15,7 @@ import {
     SignatureHelp,
     TextDocument
 } from 'vscode-languageserver-types';
-import {IRef, parseAndCompile, scriptInfo, TFunction, TStructField} from '@waves/ride-js';
+import {compile, decompile, IRef, parseAndCompile, scriptInfo, TFunction, TStructField} from '@waves/ride-js';
 import suggestions from './suggestions';
 import * as jsonSuggestions from './suggestions/suggestions.json';
 import {
@@ -46,11 +46,10 @@ import {getFunctionCallHover, getWordByPos} from "./utils/hoverUtils";
 export class LspService {
     public static TextDocument = TextDocument;
 
-    public validateTextDocument(document: TextDocument): Diagnostic[] {
+    public async validateTextDocument(document: TextDocument, libs: Record<string, string>): Promise<Diagnostic[]> {
         const text = document.getText();
         try {
-            const parsedResult = parseAndCompile(text, 3);
-            // console.log('parsedResult', JSON.stringify(parsedResult, null, ' '))
+            const parsedResult = parseAndCompile(text, 3, undefined, undefined, libs);
             if (isCompileError(parsedResult)) throw parsedResult.error;
             const info = scriptInfo(text);
             if (info && isCompileError(info)) throw info.error;
@@ -76,18 +75,21 @@ export class LspService {
         return [];
     }
 
-    public completion(document: TextDocument, position: Position): CompletionItem[] | CompletionList {
+    public completion(document: TextDocument, position: Position, libs: Record<string, string>): CompletionItem[] | CompletionList {
         const offset = document.offsetAt(position);
         const text = document.getText();
         const character = text.substring(offset - 1, offset);
         const cursor = rangeToOffset(position.line, position.character, text);
         let items: CompletionItem[] = [];
-        const parsedResult = parseAndCompile(text, 3);
+        const parsedResult = parseAndCompile(text, 3, undefined, undefined, libs);
         if (isCompileError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
+        // console.log(JSON.stringify(ast, null, ' '))
+
         if (!ast) return [];
 
         const node = getNodeByOffset(ast, cursor);
+        // console.log(JSON.stringify(node, null, ' '))
         if (character === '@') {
             items = [
                 {label: 'Callable', kind: CompletionItemKind.Interface},
@@ -121,7 +123,7 @@ export class LspService {
         }
 
         const lastWord = getWordByPos(text, cursor)
-        console.log('lastWord', lastWord)
+        // console.log('lastWord', lastWord)
         const snippet = jsonSuggestions.snippets.find(({ label }) => label.includes(lastWord))
         if (snippet) {
             const {label, insertText} = snippet
@@ -137,70 +139,77 @@ export class LspService {
         })
         items = Object.values(obj);
 
-        return {isIncomplete: false, items} as CompletionList;
+        return {isIncomplete: false, items: items} as CompletionList;
     }
 
-    public hover(document: TextDocument, position: Position): Hover {
-
-        const text = document.getText();
-        const range = rangeToOffset(position.line, position.character, document.getText())
-        const parsedResult = parseAndCompile(text, 3);
-        if (isCompileError(parsedResult)) throw parsedResult.error;
-
-        const ast = parsedResult.exprAst || parsedResult.dAppAst;
-        if (!ast) return {contents: []};
-        const cursor = rangeToOffset(position.line, position.character, text);
-
-        const node = getNodeByOffset(ast, cursor);
-        console.log('node', node)
+    public hover(document: TextDocument, position: Position, libs: Record<string, string>): Hover {
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
+        try {
+            const text = document.getText();
+            const parsedResult = parseAndCompile(text, 3, undefined, undefined, libs);
+            if (isCompileError(parsedResult)) throw parsedResult.error;
 
-        if (isILet(node)) {
-            contents.push(`${node.name.value}: ${getExpressionType(node.expr.resultType)}`);
-        } else if (isIGetter(node)) {
-            contents.push(getExpressionType(node.resultType));
-        } else if (isIRef(node)) {
-            const refDocs = suggestions.globalVariables
-                .filter(({name, doc}) => node.name === name && doc != null).map(({doc}) => doc);
-            const defCtx = node.ctx.find(({name}) => name === node.name);
-            if (defCtx) {
-                const def = getNodeByOffset(ast, defCtx.posStart);
-                if (isILet(def)) {
-                    contents.push(`${def.name.value}: ${getExpressionType(def.expr.resultType)}`);
+            // @ts-ignore
+            const ast = parsedResult.exprAst || parsedResult.dAppAst;
+            if (!ast) return {contents: []};
+            const cursor = rangeToOffset(position.line, position.character, text);
+            // console.log('cursor', cursor)
+            // console.log('ast', JSON.stringify(ast, undefined, ' '))
+            const node = getNodeByOffset(ast, cursor);
+            // console.log('node', node)
+            // console.log('cursor', cursor)
+
+            if (isILet(node)) {
+                contents.push(`${node.name.value}: ${getExpressionType(node.expr.resultType)}`);
+            } else if (isIGetter(node)) {
+                contents.push(getExpressionType(node.resultType));
+            } else if (isIRef(node)) {
+                const refDocs = suggestions.globalVariables
+                    .filter(({name, doc}) => node.name === name && doc != null).map(({doc}) => doc);
+                const defCtx = node.ctx.find(({name}) => name === node.name);
+                if (defCtx) {
+                    const def = getNodeByOffset(ast, defCtx.posStart);
+                    if (isILet(def)) {
+                        contents.push(`${def.name.value}: ${getExpressionType(def.expr.resultType)}`);
+                    }
+                    if (isIFunc(def)) {
+                        contents.push(
+                            getFuncArgumentOrTypeByPos(def, cursor) || getFuncHoverByNode(def)
+                        );
+                    }
                 }
-                if (isIFunc(def)) {
-                    contents.push(
-                        getFuncArgumentOrTypeByPos(def, cursor) || getFuncHoverByNode(def)
-                    );
+                contents = [...contents, ...refDocs];
+            } else if (isIFunc(node)) {
+                contents.push(
+                    getFuncArgumentOrTypeByPos(node, cursor) || getFuncHoverByNode(node)
+                );
+            } else if (isIFunctionCall(node)) {
+                const findedGlobalFunc = suggestions.functions.filter(({name}) => node.name.value === name)
+                const findedGlobalType = suggestions.types.find(({name}) => node.name.value === name)
+
+                let result
+                if (findedGlobalFunc.length) {
+                    result = getFuncHoverByTFunction(findedGlobalFunc)
+                } else if (findedGlobalType) {
+                    result = [getTypeDoc(findedGlobalType)]
+                } else {
+                    result = [getFunctionCallHover(node)]
                 }
-            }
-            contents = [...contents, ...refDocs];
-        } else if (isIFunc(node)) {
-            contents.push(
-                getFuncArgumentOrTypeByPos(node, cursor) || getFuncHoverByNode(node)
-            );
-        } else if (isIFunctionCall(node)) {
-            const findedGlobalFunc = suggestions.functions.filter(({name}) => node.name.value === name)
-            const findedGlobalType = suggestions.types.find(({name}) => node.name.value === name)
 
-            let result
-            if(findedGlobalFunc.length) {
-                result = getFuncHoverByTFunction(findedGlobalFunc)
-            } else if (findedGlobalType) {
-                result = [getTypeDoc(findedGlobalType)]
-            } else {
-                result = [getFunctionCallHover(node)]
+                contents = [...contents, ...result];
             }
-
-            contents = [...contents, ...result];
+            contents = [...contents];
+        } catch (e) {
+            console.error('VS-Code Language Service Failed: ', e)
         }
-        contents = [...contents, `line: ${position.line}, character: ${position.character}, position: ${range}, posStart: ${ast.posStart}`];
+        // contents = [...contents, `line: ${position.line}, character: ${position.character}, position: ${range}, posStart: ${ast.posStart}`];
+        // console.log('contents', contents)
         return {contents};
     }
 
-    public definition(document: TextDocument, {line, character}: Position): Definition | null {
+    public definition(document: TextDocument, {line, character}: Position, libs: Record<string, string>): Definition | null {
         const text = document.getText();
-        const parsedResult = parseAndCompile(text, 3);
+        const parsedResult = parseAndCompile(text, 3, undefined, undefined, libs);
         if (isCompileError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
         if (!ast) return null;
@@ -216,11 +225,11 @@ export class LspService {
         return Location.create(document.uri, {start, end});
     }
 
-    public signatureHelp(document: TextDocument, position: Position): SignatureHelp {
+    public signatureHelp(document: TextDocument, position: Position, libs: Record<string, string>): SignatureHelp {
         const text = document.getText();
         const cursor = rangeToOffset(position.line, position.character, text);
 
-        const parsedResult = parseAndCompile(text, 3);
+        const parsedResult = parseAndCompile(text, 3, undefined, undefined, libs);
         if (isCompileError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
         // @ts-ignore

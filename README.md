@@ -1,5 +1,5 @@
 # Waves Ride language extention and REPL for Visual Studio Code
-## Ride compiler version 1.4.0-19-g3ab1b58
+## Ride compiler version 1.4.10-62-g3fd957c
 
 Ride is the language used in Waves blockchain to create smart accounts. This extention provides:
 * Syntax highlighting

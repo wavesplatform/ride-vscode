@@ -1,25 +1,26 @@
 'use strict';
 
 import {
-    TextDocument,
-    Diagnostic,
-    InitializeParams,
-    DidChangeConfigurationNotification,
-    DidOpenTextDocumentParams,
-    DidCloseTextDocumentParams,
-    DidChangeTextDocumentParams,
     CompletionItem,
-    TextDocumentPositionParams,
-    IConnection,
-    Files,
-    TextDocumentSyncKind,
     CompletionList,
+    Diagnostic,
+    DidChangeConfigurationNotification,
+    DidChangeTextDocumentParams,
+    DidCloseTextDocumentParams,
+    DidOpenTextDocumentParams,
+    Files,
     Hover,
-    SignatureHelp
+    IConnection,
+    InitializeParams,
+    SignatureHelp,
+    TextDocument,
+    TextDocumentPositionParams,
+    TextDocumentSyncKind
 } from 'vscode-languageserver';
 import * as fs from 'fs';
-import { LspService } from './LspService';
-import {rangeToOffset} from "./utils/index";
+import {LspService} from './LspService';
+import {scriptInfo} from "../../../ride-js";
+import {getLibURI} from "./utils/getLibURI";
 
 export class LspServer {
     private hasConfigurationCapability: boolean = false;
@@ -41,7 +42,7 @@ export class LspServer {
         this.connection.listen();
     }
 
-    private async getDocument(uri: string) {
+    private async getDocument(uri: string, libPath?: string) {
         let document = this.documents[uri];
         if (!document) {
             const path = Files.uriToFilePath(uri) || './';
@@ -58,6 +59,23 @@ export class LspServer {
             })
         }
         return document
+    }
+
+    private async getLibsContent(document: TextDocument) {
+        let libs = {} as Record<string, string>
+        try {
+            const info = scriptInfo(document.getText());
+            if ('imports' in info) {
+                const {imports} = info;
+                for (const libPath of imports) {
+                    const file = await this.getDocument(getLibURI(document.uri, libPath))
+                    libs[libPath] = file.getText();
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        return libs
     }
 
     private applyChanges(document: TextDocument, didChangeTextDocumentParams: DidChangeTextDocumentParams): TextDocument {
@@ -134,25 +152,27 @@ export class LspServer {
         });
     }
 
-    private bindCallbacks(connection: IConnection = this.connection, service: LspService = this.service) {
+    private async bindCallbacks(connection: IConnection = this.connection, service: LspService = this.service) {
         // Document changes
-        connection.onDidOpenTextDocument((didOpenTextDocumentParams: DidOpenTextDocumentParams): void => {
+        connection.onDidOpenTextDocument(async (didOpenTextDocumentParams: DidOpenTextDocumentParams): Promise<void> => {
             let document = TextDocument.create(didOpenTextDocumentParams.textDocument.uri, didOpenTextDocumentParams.textDocument.languageId, didOpenTextDocumentParams.textDocument.version, didOpenTextDocumentParams.textDocument.text);
             this.documents[didOpenTextDocumentParams.textDocument.uri] = document;
-            const diagnostics = service.validateTextDocument(document);
+            const libs = (await this.getLibsContent(document))
+            const diagnostics = await service.validateTextDocument(document, libs);
             this.sendDiagnostics(document.uri, diagnostics);
         });
+
         connection.onDidCloseTextDocument((didCloseTextDocumentParams: DidCloseTextDocumentParams): void => {
             delete this.documents[didCloseTextDocumentParams.textDocument.uri];
         });
-        connection.onDidChangeTextDocument((didChangeTextDocumentParams: DidChangeTextDocumentParams): void => {
+
+        connection.onDidChangeTextDocument(async (didChangeTextDocumentParams: DidChangeTextDocumentParams): Promise<void> => {
             const document = this.documents[didChangeTextDocumentParams.textDocument.uri];
             const changedDocument = this.applyChanges(document, didChangeTextDocumentParams);
             this.documents[didChangeTextDocumentParams.textDocument.uri] = changedDocument;
             if (document.getText() !== changedDocument.getText()) {
-                const positionOfLastSymbol = didChangeTextDocumentParams.contentChanges[0].range ? didChangeTextDocumentParams.contentChanges[0].range.end : undefined
-                const lastChangedSymbol = positionOfLastSymbol ? rangeToOffset(positionOfLastSymbol.line, positionOfLastSymbol.character, changedDocument.getText()) : undefined
-                const diagnostics = service.validateTextDocument(changedDocument);
+                const libs = await this.getLibsContent(document);
+                const diagnostics = await service.validateTextDocument(changedDocument, libs);
                 this.sendDiagnostics(document.uri, diagnostics);
             }
         });
@@ -161,19 +181,23 @@ export class LspServer {
         // connection.onCodeAction(service.codeAction.bind(service));
         connection.onCompletion(async (textDocumentPosition: TextDocumentPositionParams): Promise<CompletionItem[] | CompletionList> => {
             const document = await this.getDocument(textDocumentPosition.textDocument.uri);
-            return service.completion(document, textDocumentPosition.position)
+            const libs = await this.getLibsContent(document)
+            return service.completion(document, textDocumentPosition.position, libs)
         });
         connection.onHover(async (textDocumentPosition: TextDocumentPositionParams): Promise<Hover> => {
             const document = await this.getDocument(textDocumentPosition.textDocument.uri);
-            return service.hover(document, textDocumentPosition.position)
+            const libs = await this.getLibsContent(document)
+            return service.hover(document, textDocumentPosition.position, libs)
         });
         connection.onSignatureHelp(async (textDocumentPosition: TextDocumentPositionParams): Promise<SignatureHelp> => {
             const document = await this.getDocument(textDocumentPosition.textDocument.uri);
-            return service.signatureHelp(document, textDocumentPosition.position);
+            const libs = await this.getLibsContent(document)
+            return service.signatureHelp(document, textDocumentPosition.position, libs);
         });
         connection.onDefinition(async (textDocumentPosition: TextDocumentPositionParams) => {
             const document = await this.getDocument(textDocumentPosition.textDocument.uri);
-            return service.definition(document, textDocumentPosition.position);
+            const libs = await this.getLibsContent(document)
+            return service.definition(document, textDocumentPosition.position, libs);
         });
 
         connection.onCompletionResolve(this.service.completionResolve.bind(service));
@@ -190,6 +214,6 @@ export class LspServer {
     }
 
     private sendDiagnostics(uri: string, diagnostics: Diagnostic[]) {
-        this.connection.sendDiagnostics({ uri, diagnostics })
+        this.connection.sendDiagnostics({uri, diagnostics})
     }
 }

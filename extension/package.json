@@ -1,6 +1,6 @@
 {
 	"name": "ride-lsp-client",
-	"description": "VSCode part of ride extention",
+	"description": "VSCode part of ride extension",
 	"author": "",
 	"license": "MIT",
 	"version": "0.1.2",

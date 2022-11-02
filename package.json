@@ -109,7 +109,7 @@
 		"typescript": "3.5.2"
 	},
 	"dependencies": {
-		"@waves/ride-js": "2.2.2-beta.1",
+		"@waves/ride-js": "^2.2.2-beta.4",
 		"vscode-languageserver-types": "^3.16.0"
 	}
 }
