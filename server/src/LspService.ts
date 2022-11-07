@@ -46,7 +46,7 @@ import {getFunctionCallHover, getWordByPos} from "./utils/hoverUtils";
 export class LspService {
     public static TextDocument = TextDocument;
 
-    public async validateTextDocument(document: TextDocument, libs: Record<string, string>): Promise<Diagnostic[]> {
+    public validateTextDocument(document: TextDocument, libs: Record<string, string>): Diagnostic[] {
         const text = document.getText();
         try {
             const parsedResult = parseAndCompile(text, 3, undefined, undefined, libs);
@@ -123,8 +123,13 @@ export class LspService {
         }
 
         const lastWord = getWordByPos(text, cursor)
-        // console.log('lastWord', lastWord)
-        const snippet = jsonSuggestions.snippets.find(({ label }) => label.includes(lastWord))
+        // console.log('node', node)
+        // if (node.ctx && node.ctx.length) {
+        //     const findedCtx = node.ctx.find(el => el.name.includes(lastWord))
+        //     findedCtx && items.push({label: findedCtx.name})
+        //     return {items} as CompletionList;
+        // }
+        const snippet = jsonSuggestions.snippets.find(({label}) => label.includes(lastWord))
         if (snippet) {
             const {label, insertText} = snippet
             items.push({label, insertText, kind: ItemKind.Function, insertTextFormat: InsertTextFormat.Snippet})
@@ -149,14 +154,14 @@ export class LspService {
             const parsedResult = parseAndCompile(text, 3, undefined, undefined, libs);
             if (isCompileError(parsedResult)) throw parsedResult.error;
 
+            // console.log('parsedResult', parsedResult)
             // @ts-ignore
             const ast = parsedResult.exprAst || parsedResult.dAppAst;
             if (!ast) return {contents: []};
             const cursor = rangeToOffset(position.line, position.character, text);
-            // console.log('cursor', cursor)
             // console.log('ast', JSON.stringify(ast, undefined, ' '))
             const node = getNodeByOffset(ast, cursor);
-            // console.log('node', node)
+            // console.log('node', JSON.stringify(node, undefined, ' '))
             // console.log('cursor', cursor)
 
             if (isILet(node)) {
@@ -207,7 +212,10 @@ export class LspService {
         return {contents};
     }
 
-    public definition(document: TextDocument, {line, character}: Position, libs: Record<string, string>): Definition | null {
+    public definition(document: TextDocument, {
+        line,
+        character
+    }: Position, libs: Record<string, string>): Definition | null {
         const text = document.getText();
         const parsedResult = parseAndCompile(text, 3, undefined, undefined, libs);
         if (isCompileError(parsedResult)) throw parsedResult.error;
