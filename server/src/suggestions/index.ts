@@ -61,7 +61,7 @@ export class Suggestions {
         this.updateSuggestions()
     }
 
-    updateSuggestions = (stdlibVersion?: number, isTokenContext?: boolean) => {
+    updateSuggestions = (stdlibVersion: number = 6, isTokenContext?: boolean) => {
         const types = getTypes(stdlibVersion, isTokenContext);
         const functions = getFunctionsDoc(stdlibVersion, isTokenContext);
         const globalVariables = getVarsDoc(stdlibVersion, isTokenContext);

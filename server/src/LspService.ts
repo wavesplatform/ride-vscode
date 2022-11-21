@@ -15,7 +15,15 @@ import {
     SignatureHelp,
     TextDocument
 } from 'vscode-languageserver-types';
-import {compile, decompile, IRef, parseAndCompile, scriptInfo, TFunction, TStructField} from '@waves/ride-js';
+import {
+    ICompilationError,
+    IParseAndCompileResult,
+    IRef,
+    parseAndCompile,
+    scriptInfo,
+    TFunction,
+    TStructField
+} from '@waves/ride-js';
 import suggestions from './suggestions';
 import * as jsonSuggestions from './suggestions/suggestions.json';
 import {
@@ -42,14 +50,18 @@ import {
     rangeToOffset, getTypeDoc
 } from './utils/index';
 import {getFunctionCallHover, getWordByPos} from "./utils/hoverUtils";
+import {getCharacter} from "./utils/getCharacter";
 
 export class LspService {
+    ast:  ICompilationError | IParseAndCompileResult | null = null;
+
     public static TextDocument = TextDocument;
 
     public validateTextDocument(document: TextDocument, libs: Record<string, string>): Diagnostic[] {
         const text = document.getText();
         try {
             const parsedResult = parseAndCompile(text, 3, undefined, undefined, libs);
+            this.ast = parsedResult;
             if (isCompileError(parsedResult)) throw parsedResult.error;
             const info = scriptInfo(text);
             if (info && isCompileError(info)) throw info.error;
@@ -78,10 +90,10 @@ export class LspService {
     public completion(document: TextDocument, position: Position, libs: Record<string, string>): CompletionItem[] | CompletionList {
         const offset = document.offsetAt(position);
         const text = document.getText();
-        const character = text.substring(offset - 1, offset);
+        const character = getCharacter(text, offset)
         const cursor = rangeToOffset(position.line, position.character, text);
         let items: CompletionItem[] = [];
-        const parsedResult = parseAndCompile(text, 3, undefined, undefined, libs);
+        const parsedResult = this.ast || parseAndCompile(text, 3, undefined, undefined, libs);
         if (isCompileError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
         // console.log(JSON.stringify(ast, null, ' '))
@@ -89,6 +101,7 @@ export class LspService {
         if (!ast) return [];
 
         const node = getNodeByOffset(ast, cursor);
+        // console.log('node', node)
         // console.log(JSON.stringify(node, null, ' '))
         if (character === '@') {
             items = [
@@ -151,17 +164,19 @@ export class LspService {
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
         try {
             const text = document.getText();
-            const parsedResult = parseAndCompile(text, 3, undefined, undefined, libs);
+            const parsedResult = this.ast || parseAndCompile(text, 3, undefined, undefined, libs);
             if (isCompileError(parsedResult)) throw parsedResult.error;
 
             // console.log('parsedResult', parsedResult)
             // @ts-ignore
             const ast = parsedResult.exprAst || parsedResult.dAppAst;
+            // console.log('ast', JSON.stringify(ast, undefined, ' '))
             if (!ast) return {contents: []};
             const cursor = rangeToOffset(position.line, position.character, text);
             // console.log('ast', JSON.stringify(ast, undefined, ' '))
             const node = getNodeByOffset(ast, cursor);
             // console.log('node', JSON.stringify(node, undefined, ' '))
+            // console.log('node', node)
             // console.log('cursor', cursor)
 
             if (isILet(node)) {
@@ -172,10 +187,13 @@ export class LspService {
                 const refDocs = suggestions.globalVariables
                     .filter(({name, doc}) => node.name === name && doc != null).map(({doc}) => doc);
                 const defCtx = node.ctx.find(({name}) => name === node.name);
-                if (defCtx) {
+                if (node.name && node.resultType) {
+                    contents.push(`**${node.name}**: ${getExpressionType(node.resultType)}`);
+                }
+                if (defCtx && !contents.length) {
                     const def = getNodeByOffset(ast, defCtx.posStart);
                     if (isILet(def)) {
-                        contents.push(`${def.name.value}: ${getExpressionType(def.expr.resultType)}`);
+                        contents.push(`**${def.name.value}**: ${getExpressionType(def.expr.resultType)}`);
                     }
                     if (isIFunc(def)) {
                         contents.push(
@@ -217,11 +235,14 @@ export class LspService {
         character
     }: Position, libs: Record<string, string>): Definition | null {
         const text = document.getText();
-        const parsedResult = parseAndCompile(text, 3, undefined, undefined, libs);
+        const parsedResult = this.ast || parseAndCompile(text, 3, undefined, undefined, libs);
         if (isCompileError(parsedResult)) throw parsedResult.error;
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
         if (!ast) return null;
         const node = getNodeByOffset(ast, rangeToOffset(line, character, text));
+        // console.log('node', node)
+        // console.log('node', JSON.stringify(node, null, ' '))
+        // console.log('position', rangeToOffset(line, character, text))
         if (!node.ctx) return null;
         let nodeName: string | null = null;
         if (isIRef(node)) nodeName = node.name;
@@ -242,6 +263,7 @@ export class LspService {
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
         // @ts-ignore
         const node = getNodeByOffset(ast, cursor);
+
 
         const func = suggestions.functions.find(x => x.name === (node as any).name.value)
             || suggestions.types.find(x => x.name === (node as any).name.value)

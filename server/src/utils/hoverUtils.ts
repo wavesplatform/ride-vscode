@@ -43,12 +43,18 @@ export const getFuncHoverByNode = (n: IFunc) => {
 };
 
 export const getFunctionCallHover = (n: IFunctionCall): string => {
+    // console.log('getFunctionCallHover', JSON.stringify(n, null, ' '))
     const name = n.name.value
+    // console.log('n.args', n.args)
     // @ts-ignore
-    const args = n.args.length !== 0 ? n.args.map(x => `${x.resultType.type.toLowerCase()}: ${x.resultType.type}`).join(', ') : ''
-
+    const args = n.args.length !== 0 ? n.args.map((x, i) => {
+        // console.log('convertResultType(x.resultType)', convertResultType(x.resultType))
+        // @ts-ignore
+        return `arg${i+1}: ${convertResultType(x.resultType.type || x.resultType)}`
+    }).join(', ') : ''
+    // console.log('n', n)
     // @ts-ignore
-    return `**${name}**(${args}): ${n.resultType.type}`
+    return `**${name}**(${args}): ${convertResultType(n.resultType)}`
 }
 
 export const getFuncHoverByTFunction = (functions: TFunction[]) => {
@@ -117,7 +123,7 @@ export const getFuncArgumentOrTypeByPos = (node: IFunc, pos: number): string | n
 
 export function convertResultType(type: TType): string {
     const result: string[] = []
-
+    // console.log('convertResultType type', JSON.stringify(type, null, ' '))
     function recursiveFunc(type: TType, result: string[]) {
         //primitive
         if (typeof type === 'string') {
@@ -129,18 +135,23 @@ export function convertResultType(type: TType): string {
         }
         //list
         if ((type as TList).listOf !== undefined) {
-            const result: string[] = []
-            recursiveFunc((type as TList).listOf, result)
-            result.push(`List[${result.join(', ')}]`)
+            const res: string[] = []
+            recursiveFunc((type as TList).listOf, res)
+            result.push(`List[${res.join(', ')}]`)
         }
         //struct
         if ((type as TStruct).typeName !== undefined) {
             result.push((type as TStruct).typeName)
         }
+        //union
+        if ((type as any).unionTypes !== undefined) {
+            // console.log('unionTypes', type)
+            // @ts-ignore
+            recursiveFunc(type.unionTypes, result)
+        }
     }
 
     recursiveFunc(type, result)
-
     return result.join(', ')
 }
 
