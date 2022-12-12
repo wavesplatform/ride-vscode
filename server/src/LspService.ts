@@ -47,10 +47,11 @@ import {
     isCompileError,
     isPrimitiveNode,
     offsetToRange,
-    rangeToOffset, getTypeDoc
+    rangeToOffset, getTypeDoc, isIConstStr
 } from './utils/index';
 import {getFunctionCallHover, getWordByPos} from "./utils/hoverUtils";
 import {getCharacter} from "./utils/getCharacter";
+import * as complitionUtils from './utils/complitionUtils';
 
 export class LspService {
     ast:  ICompilationError | IParseAndCompileResult | null = null;
@@ -65,8 +66,8 @@ export class LspService {
             if (isCompileError(parsedResult)) throw parsedResult.error;
             const info = scriptInfo(text);
             if (info && isCompileError(info)) throw info.error;
-            const {stdLibVersion, scriptType} = info;
-            suggestions.updateSuggestions(stdLibVersion, scriptType === 2);
+            const {stdLibVersion, scriptType, contentType} = info;
+            suggestions.updateSuggestions(stdLibVersion, scriptType === 2, contentType === 2);
             return (parsedResult.errorList || [])
                 .map(({posStart, posEnd, msg: message}) => {
                     const start = offsetToRange(posStart, text);
@@ -87,100 +88,81 @@ export class LspService {
         return [];
     }
 
-    public completion(document: TextDocument, position: Position, libs: Record<string, string>): CompletionItem[] | CompletionList {
+
+    public completion(document: TextDocument, position: Position) {
         const offset = document.offsetAt(position);
         const text = document.getText();
-        const character = getCharacter(text, offset)
-        const cursor = rangeToOffset(position.line, position.character, text);
-        let items: CompletionItem[] = [];
-        const parsedResult = this.ast || parseAndCompile(text, 3, undefined, undefined, libs);
-        if (isCompileError(parsedResult)) throw parsedResult.error;
-        const ast = parsedResult.exprAst || parsedResult.dAppAst;
-        // console.log(JSON.stringify(ast, null, ' '))
+        const character = text.substring(offset - 1, offset);
+        const line = document.getText({start: {line: position.line, character: 0}, end: position});
+        const p: {row: number, col: number} = {row: position.line, col: position.character + 1};
 
-        if (!ast) return [];
+        complitionUtils.ctx.updateContext(text);
 
-        const node = getNodeByOffset(ast, cursor);
-        // console.log('node', node)
-        // console.log(JSON.stringify(node, null, ' '))
-        if (character === '@') {
-            items = [
-                {label: 'Callable', kind: CompletionItemKind.Interface},
-                {label: 'Verifier', kind: CompletionItemKind.Interface}
-            ];
-        } else if (character === ':') {
-            items = suggestions.types.reduce((acc, t) => [...acc, convertToCompletion(t)], new Array())
-        } else if (isIBlock(node) && isILet(node.dec)) {
-            if (isIGetter(node.dec.expr)) {
-                items = getNodeType(node.dec.expr).map((item) => convertToCompletion(item));
+        let result: CompletionItem[] = [];
+        try {
+            let wordBeforeDot = line.match(/([a-zA-z0-9_]+)\.[a-zA-z0-9_]*\b$/);     // get text before dot (ex: [tx].test)
+            let firstWordMatch = (/([a-zA-z0-9_]+)\.[a-zA-z0-9_.]*$/gm).exec(line) || [];
+            switch (true) {
+                case (character === '.' || wordBeforeDot !== null):                 //auto completion after clicking on a dot
+                    let inputWord = (wordBeforeDot === null)                        //get word before dot or last word in line
+                        ? (complitionUtils.getLastArrayElement(line.match(/\b(\w*)\b\./g))).slice(0, -1)
+                        : wordBeforeDot[1];
+
+                    //TODO Make fashionable humanly
+                    if (firstWordMatch.length >= 2 && complitionUtils.ctx.getVariable(firstWordMatch[1])) {
+                        result = [
+                            ...complitionUtils.getCompletionResult(firstWordMatch[0].split('.')),
+                            ...complitionUtils.checkPostfixFunction(inputWord).map(({name}) => ({label: name}))
+                        ];
+                    }
+                    break;
+                //auto completion after clicking on a colon or pipe
+                case (line.match(/([a-zA-z0-9_]+)[ \t]*[|:][ \t]*[a-zA-z0-9_]*$/) !== null):
+                    result = complitionUtils.getColonOrPipeCompletionResult(text, p);
+                    break;
+                case (['@'].indexOf(character) !== -1):
+                    result = [
+                        {label: 'Callable', kind: CompletionItemKind.Interface},
+                        {label: 'Verifier', kind: CompletionItemKind.Interface}
+                    ];
+                    break;
+                default:
+                    result = complitionUtils.getCompletionDefaultResult(p);
+                    break;
             }
-            if (isPrimitiveNode(node.dec.expr) && 'type' in node.dec.expr.resultType) {
-                items = getPostfixFunctions(node.dec.expr.resultType.type)
-                    .map(({name: label, doc: detail}) => ({label, detail, kind: ItemKind.Field}));
-            }
-            if (isIRef(node.dec.expr)) {
-                const refDocs = suggestions.globalVariables
-                    .filter(({name, doc}) => (node.dec.expr as IRef).name === name);
-                if (refDocs) {
-                    items = intersection(refDocs.map(({type}) => type)).map((item) => convertToCompletion(item));
-                }
-            }
-            if ('type' in node.dec.expr.resultType) {
-                items = [...items, ...getPostfixFunctions(node.dec.expr.resultType.type)
-                    .map(({name: label, doc: detail}) => ({label, detail, kind: ItemKind.Function}))];
-            }
-        }
-        if (items.length === 0 && character != '.') {
-            const {ctx} = isIScript(node) ? node.expr : node;
-            items = getCompletionDefaultResult(ctx);
+        } catch (e) {
+            // console.error(e);
         }
 
-        const lastWord = getWordByPos(text, cursor)
-        // console.log('node', node)
-        // if (node.ctx && node.ctx.length) {
-        //     const findedCtx = node.ctx.find(el => el.name.includes(lastWord))
-        //     findedCtx && items.push({label: findedCtx.name})
-        //     return {items} as CompletionList;
-        // }
-        const snippet = jsonSuggestions.snippets.find(({label}) => label.includes(lastWord))
-        if (snippet) {
-            const {label, insertText} = snippet
-            items.push({label, insertText, kind: ItemKind.Function, insertTextFormat: InsertTextFormat.Snippet})
-            return {items} as CompletionList;
-        }
-
-        const obj = {} as any
-        items.forEach(function (d) {
-            if (!obj[d.label]) {
-                obj[d.label] = {label: d.label, kind: d.kind, detail: d.detail}
-            }
-        })
-        items = Object.values(obj);
-
-        return {isIncomplete: false, items: items} as CompletionList;
+        return {
+            isIncomplete: false,
+            items: result
+        } as CompletionList;
     }
+
 
     public hover(document: TextDocument, position: Position, libs: Record<string, string>): Hover {
         let contents: MarkupContent | MarkedString | MarkedString[] = [];
         try {
             const text = document.getText();
+
             const parsedResult = this.ast || parseAndCompile(text, 3, undefined, undefined, libs);
             if (isCompileError(parsedResult)) throw parsedResult.error;
-
             // console.log('parsedResult', parsedResult)
             // @ts-ignore
-            const ast = parsedResult.exprAst || parsedResult.dAppAst;
+            const ast = parsedResult.exprAst || parsedResult.dAppAst || parsedResult.ast;
             // console.log('ast', JSON.stringify(ast, undefined, ' '))
             if (!ast) return {contents: []};
             const cursor = rangeToOffset(position.line, position.character, text);
             // console.log('ast', JSON.stringify(ast, undefined, ' '))
             const node = getNodeByOffset(ast, cursor);
-            // console.log('node', JSON.stringify(node, undefined, ' '))
-            // console.log('node', node)
+            console.log('node', JSON.stringify(node, undefined, ' '))
             // console.log('cursor', cursor)
 
             if (isILet(node)) {
                 contents.push(`${node.name.value}: ${getExpressionType(node.expr.resultType)}`);
+            } else if (isIConstStr(node)) {
+                contents.push(`${getExpressionType(node.resultType)}`);
             } else if (isIGetter(node)) {
                 contents.push(getExpressionType(node.resultType));
             } else if (isIRef(node)) {
@@ -240,9 +222,6 @@ export class LspService {
         const ast = parsedResult.exprAst || parsedResult.dAppAst;
         if (!ast) return null;
         const node = getNodeByOffset(ast, rangeToOffset(line, character, text));
-        // console.log('node', node)
-        // console.log('node', JSON.stringify(node, null, ' '))
-        // console.log('position', rangeToOffset(line, character, text))
         if (!node.ctx) return null;
         let nodeName: string | null = null;
         if (isIRef(node)) nodeName = node.name;

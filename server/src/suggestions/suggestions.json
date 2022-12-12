@@ -16,6 +16,7 @@
     "{-# STDLIB_VERSION 3 #-}",
     "{-# STDLIB_VERSION 4 #-}",
     "{-# STDLIB_VERSION 5 #-}",
+    "{-# STDLIB_VERSION 6 #-}",
     "{-# SCRIPT_TYPE ACCOUNT #-}",
     "{-# SCRIPT_TYPE ASSET #-}",
     "{-# CONTENT_TYPE DAPP #-}",

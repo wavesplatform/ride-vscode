@@ -49,6 +49,8 @@ export const getUnionItemName = (item: TUnionItem): string => {
 };
 
 export const unionToString = (item: TUnion) => item.map(type => getUnionItemName(type)).join('|');
+export const letRegexp = /^[ \t]*let[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*=[ \t]*([^\n]+)/gm;
+export const caseRegexp = /\bcase[ \t]+([a-zA-z][a-zA-z0-9_]*)[ \t]*:(.*)=>*{*/gm;
 
 //----------------------------------------------------------
 export class Suggestions {
@@ -56,15 +58,24 @@ export class Suggestions {
     functions: TFunction[] = getFunctionsDoc();
     globalVariables: IVarDoc[] = getVarsDoc();
     globalSuggestions: CompletionItem[] = [];
+    regexps = {
+        typesRegExp: /[]/,
+        functionsRegExp: /[]/
+    };
 
     constructor() {
         this.updateSuggestions()
     }
 
-    updateSuggestions = (stdlibVersion: number = 6, isTokenContext?: boolean) => {
-        const types = getTypes(stdlibVersion, isTokenContext);
-        const functions = getFunctionsDoc(stdlibVersion, isTokenContext);
-        const globalVariables = getVarsDoc(stdlibVersion, isTokenContext);
+    updateSuggestions = (stdlibVersion: number = 6, isTokenContext?: boolean, isContract?: boolean) => {
+        const types = getTypes(stdlibVersion, isTokenContext, isContract);
+        const functions = getFunctionsDoc(stdlibVersion, isTokenContext, isContract);
+        const globalVariables = getVarsDoc(stdlibVersion, isTokenContext, isContract);
+
+        this.regexps.typesRegExp = new RegExp(`\\b${types.map(({name}) => name).join('\\b|\\b')}\\b`, 'g');
+        this.regexps.functionsRegExp = new RegExp(`^[!]*(\\b${
+            functions.filter(({name}) => ['*', '\\', '/', '%', '+',':+', '++'].indexOf(name) === -1).map(({name}) => name).join('\\b|\\b')
+        }\\b)[ \\t]*\\(`);
 
         this.types.length = 0;
         this.functions.length = 0;

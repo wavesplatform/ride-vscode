@@ -82,12 +82,18 @@ export const isPrimitiveNode = (node: TNode): node is TPrimitiveNode => isIConst
 
 const findNodeByFunc = (node: TNode, f: (node: TNode) => TNode | null): TNode | null => {
     if (isIBlock(node)) {
+        if (node.dec.name.value.startsWith('$match')) {
+            console.log('$match', f((node.body as IIf).ifTrue))
+        }
         return node.dec.name.value.startsWith('$match')
-            ? (f((node.body as IIf).ifTrue) || f((node.body as IIf).ifFalse) || f(node.dec))
+            ? (f((node.body as IIf).ifTrue) || f((node.body as IIf).ifFalse) || f((node.body as IIf).cond) || f(node.dec))
             : (f(node.body) || f(node.dec));
     } else if (isIDApp(node)) {
         return node.decList.find(node => f(node) != null) || node.annFuncList.find(node => f(node) != null) || null;
     } else if (isILet(node)) {
+        if (node.name.value.startsWith('$match')) {
+            console.log('$match')
+        }
         return f(node.expr)
     } else if (isIFunc(node) || isIScript(node)) {
         return f(node.expr)

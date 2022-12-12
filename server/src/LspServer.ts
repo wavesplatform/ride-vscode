@@ -182,7 +182,7 @@ export class LspServer {
         connection.onCompletion(async (textDocumentPosition: TextDocumentPositionParams): Promise<CompletionItem[] | CompletionList> => {
             const document = await this.getDocument(textDocumentPosition.textDocument.uri);
             const libs = await this.getLibsContent(document)
-            return service.completion(document, textDocumentPosition.position, libs)
+            return service.completion(document, textDocumentPosition.position)
         });
         connection.onHover(async (textDocumentPosition: TextDocumentPositionParams): Promise<Hover> => {
             const document = await this.getDocument(textDocumentPosition.textDocument.uri);
