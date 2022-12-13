@@ -20,7 +20,7 @@ export const getExpressionType = (resultType: TExprResultType): string => {
         return resultType.type;
     }
     if ('unionTypes' in resultType) {
-        return resultType.unionTypes.map((t: TExprResultType) => getExpressionType(t)).join(' | ');
+        return (resultType.unionTypes || []).map((t: TExprResultType) => getExpressionType(t)).join(' | ');
     }
     if ('listOf' in resultType) {
         return `${getExpressionType(resultType.listOf)}[]`;
@@ -47,7 +47,7 @@ export const getFunctionCallHover = (n: IFunctionCall): string => {
     // @ts-ignore
     const args = n.args.length !== 0 ? n.args.map((x, i) => {
         // @ts-ignore
-        return `arg${i+1}: ${convertResultType(x.resultType.type || x.resultType)}`
+        return `arg${i + 1}: ${convertResultType(x.resultType.type || x.resultType)}`
     }).join(', ') : ''
     // @ts-ignore
     return `**${name}**(${args}): ${convertResultType(n.resultType)}`
@@ -119,6 +119,7 @@ export const getFuncArgumentOrTypeByPos = (node: IFunc, pos: number): string | n
 
 export function convertResultType(type: TType): string {
     const result: string[] = []
+
     function recursiveFunc(type: TType, result: string[]) {
         //primitive
         if (typeof type === 'string') {
