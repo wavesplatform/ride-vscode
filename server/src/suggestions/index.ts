@@ -89,10 +89,10 @@ export class Suggestions {
         this.globalSuggestions.push(
             ...suggestions.directives.map(directive => ({label: directive, kind: CompletionItemKind.Reference})),
             ...suggestions.keywords.map((label: string) => <CompletionItem>({label, kind: CompletionItemKind.Keyword})),
-            // ...suggestions.snippets.map(({label, insertText}) => ({label,
-            //     insertText,
-            //     kind: CompletionItemKind.Function,
-            //     insertTextFormat: InsertTextFormat.Snippet,})),
+            ...suggestions.snippets.map(({label, insertText}) => ({label,
+                insertText,
+                kind: CompletionItemKind.Function,
+                insertTextFormat: InsertTextFormat.Snippet,})),
             ...functions.map(({name, doc}) => ({detail: doc, kind: CompletionItemKind.Function, label: name}))
         )
     };

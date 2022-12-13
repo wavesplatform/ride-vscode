@@ -39,20 +39,16 @@ export const getFuncHoverByNode = (n: IFunc) => {
                     : `${type.typeName.value}[${type.typeParam.value.typeList.map(x => x.typeName.value).join(' | ')}]`
             }`).join(', ')
         : ''
-    return `${functionName}(${argumentString}): ${getExpressionType(n.expr.resultType)}`;
+    return `*${functionName}*(${argumentString}): ${getExpressionType(n.expr.resultType)}`;
 };
 
 export const getFunctionCallHover = (n: IFunctionCall): string => {
-    // console.log('getFunctionCallHover', JSON.stringify(n, null, ' '))
     const name = n.name.value
-    // console.log('n.args', n.args)
     // @ts-ignore
     const args = n.args.length !== 0 ? n.args.map((x, i) => {
-        // console.log('convertResultType(x.resultType)', convertResultType(x.resultType))
         // @ts-ignore
         return `arg${i+1}: ${convertResultType(x.resultType.type || x.resultType)}`
     }).join(', ') : ''
-    // console.log('n', n)
     // @ts-ignore
     return `**${name}**(${args}): ${convertResultType(n.resultType)}`
 }
@@ -123,7 +119,6 @@ export const getFuncArgumentOrTypeByPos = (node: IFunc, pos: number): string | n
 
 export function convertResultType(type: TType): string {
     const result: string[] = []
-    // console.log('convertResultType type', JSON.stringify(type, null, ' '))
     function recursiveFunc(type: TType, result: string[]) {
         //primitive
         if (typeof type === 'string') {
@@ -145,7 +140,6 @@ export function convertResultType(type: TType): string {
         }
         //union
         if ((type as any).unionTypes !== undefined) {
-            // console.log('unionTypes', type)
             // @ts-ignore
             recursiveFunc(type.unionTypes, result)
         }

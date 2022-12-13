@@ -148,19 +148,17 @@ export class LspService {
 
             const parsedResult = this.ast || parseAndCompile(text, 3, undefined, undefined, libs);
             if (isCompileError(parsedResult)) throw parsedResult.error;
-            // console.log('parsedResult', parsedResult)
             // @ts-ignore
             const ast = parsedResult.exprAst || parsedResult.dAppAst || parsedResult.ast;
-            // console.log('ast', JSON.stringify(ast, undefined, ' '))
             if (!ast) return {contents: []};
             const cursor = rangeToOffset(position.line, position.character, text);
             // console.log('ast', JSON.stringify(ast, undefined, ' '))
             const node = getNodeByOffset(ast, cursor);
-            console.log('node', JSON.stringify(node, undefined, ' '))
+            // console.log('node', JSON.stringify(node, undefined, ' '))
             // console.log('cursor', cursor)
 
             if (isILet(node)) {
-                contents.push(`${node.name.value}: ${getExpressionType(node.expr.resultType)}`);
+                contents.push(`**${node.name.value}**: ${getExpressionType(node.expr.resultType)}`);
             } else if (isIConstStr(node)) {
                 contents.push(`${getExpressionType(node.resultType)}`);
             } else if (isIGetter(node)) {
@@ -207,8 +205,6 @@ export class LspService {
         } catch (e) {
             console.error('VS-Code Language Service Failed: ', e)
         }
-        // contents = [...contents, `line: ${position.line}, character: ${position.character}, position: ${range}, posStart: ${ast.posStart}`];
-        // console.log('contents', contents)
         return {contents};
     }
 

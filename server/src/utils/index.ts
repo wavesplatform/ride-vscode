@@ -81,60 +81,36 @@ export const isCompileError = (res: IParseAndCompileResult | IScriptInfo | IComp
 export const isPrimitiveNode = (node: TNode): node is TPrimitiveNode => isIConstStr(node) || isIConstByteStr(node) || isIConstLong(node) || isITrue(node) || isIFalse(node)
 
 const findNodeByFunc = (node: TNode, f: (node: TNode) => TNode | null): TNode | null => {
-    if (isIBlock(node)) {
-        if (node.dec.name.value.startsWith('$match')) {
-            console.log('$match', f((node.body as IIf).ifTrue))
-        }
+    if (isIDApp(node)) {
+        return node.decList.find(dec => f(dec) != null) || node.annFuncList.find(node => f(node) != null) || null;
+    } else if (isIAnnotatedFunc(node)) {
+        return f(node.func) || node.annList.find(annotation => f(annotation) != null) || null
+    } else if (isIBlock(node)) {
         return node.dec.name.value.startsWith('$match')
-            ? (f((node.body as IIf).ifTrue) || f((node.body as IIf).ifFalse) || f((node.body as IIf).cond) || f(node.dec))
-            : (f(node.body) || f(node.dec));
+            ? f((node.body as IIf).cond) || (f((node.body as IIf).ifTrue) || f((node.body as IIf).ifFalse) || f(node.dec))
+            : (f(node.dec) || f(node.body));
     } else if (isIDApp(node)) {
         return node.decList.find(node => f(node) != null) || node.annFuncList.find(node => f(node) != null) || null;
     } else if (isILet(node)) {
-        if (node.name.value.startsWith('$match')) {
-            console.log('$match')
-        }
         return f(node.expr)
     } else if (isIFunc(node) || isIScript(node)) {
         return f(node.expr)
-    } else if (isIIf(node)) {
-        return f(node.ifTrue) || f(node.ifFalse) || f(node.cond);
     } else if (isIFunctionCall(node)) {
-        return node.args.find(node => f(node) != null) || null;
+        const findedNode = node.args.find(node => f(node) != null)
+        // @ts-ignore
+        // if (findedNode && "name" in findedNode && findedNode.name && (findedNode.name.value || findedNode.name as unknown as string).startsWith('$match')) {
+        //     console.log('true')
+        //     return null
+        // } else
+            return findedNode || null
+    } else if (isIIf(node)) {
+        return  f(node.ifTrue) || f(node.ifFalse) || f(node.cond);
     } else if (isIGetter(node)) {
         return f(node.ref);
     } else {
         return null;
     }
 };
-
-const findNodeByDApp = (node: IDApp, position: number) => {
-    const validateNodeByPos = (node: TNode, pos: number) => (node: TNode): TNode | null => {
-        return (node.posStart <= pos && node.posEnd >= pos) ? node : null;
-    }
-
-    if (!('annFuncList' in node && node.annFuncList.some(annFunc => validateNodeByPos(annFunc, position)) //совпадение на аннФункции
-        || 'decList' in node && node.decList.some(dec => validateNodeByPos(dec, position)))) { //совпадение на декларации
-        return null //если нет содержимого, то уходим
-    }
-
-    const dec = node.decList.find(node => validateNodeByPos(node, position)(node) != null); //func or let
-
-    if (dec) {
-        return findNodeByFunc(dec, validateNodeByPos(dec, position)) || dec;
-    } else if (!dec) {
-        const annotatedFunc = findAnnotatedFunc(node.annFuncList, position)
-        const constants = !!annotatedFunc && 'func' in annotatedFunc ? getConstantsFromFunction(annotatedFunc.func) : []
-        const constant = getSelectedConst(constants, position)
-        if (!constant) {
-            return validateNodeByPos(annotatedFunc.func, position)(annotatedFunc.func);
-        } else {
-            return constant
-        }
-    } else {
-        return null
-    }
-}
 
 export function offsetToRange(startOffset: number, content: string): { line: number, character: number } {
     const sliced = content.slice(0, startOffset).split('\n');
@@ -155,17 +131,8 @@ export function getNodeByOffset(node: TNode, pos: number): TNode {
         return (node.posStart <= pos && node.posEnd >= pos) ? node : null;
     }
 
-    if (!isIDApp(node)) {
-        const goodChild = findNodeByFunc(node, validateNodeByPos(node, pos));
-        // console.log('goodChild 1', goodChild)
-        return (goodChild) ? getNodeByOffset(goodChild, pos) : node;
-    } else {
-        const goodChild = findNodeByDApp(node, pos)
-        // console.log('getNodeByOffset(goodChild, pos)', getNodeByOffset(goodChild, pos))
-        // console.log('goodChild 2', goodChild)
-        // @ts-ignore
-        return (goodChild) ? getNodeByOffset(goodChild, pos) : node;
-    }
+    const goodChild = findNodeByFunc(node, validateNodeByPos(node, pos));
+    return (goodChild) ? getNodeByOffset(goodChild, pos) : node;
 }
 
 export function findAnnotatedFunc(funcList: any[], pos: number): any {
