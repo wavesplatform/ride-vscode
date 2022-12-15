@@ -19,8 +19,8 @@ import {
 } from 'vscode-languageserver';
 import * as fs from 'fs';
 import {LspService} from './LspService';
-import {scriptInfo} from "../../../ride-js";
 import {getLibURI} from "./utils/getLibURI";
+import {scriptInfo} from '@waves/ride-js';
 
 export class LspServer {
     private hasConfigurationCapability: boolean = false;
