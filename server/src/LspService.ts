@@ -1,12 +1,11 @@
 import {
     CompletionItem,
-    CompletionItemKind as ItemKind,
     CompletionItemKind,
     CompletionList,
     Definition,
     Diagnostic,
     DiagnosticSeverity,
-    Hover, InsertTextFormat,
+    Hover,
     Location,
     MarkedString,
     MarkupContent,
@@ -18,39 +17,28 @@ import {
 import {
     ICompilationError,
     IParseAndCompileResult,
-    IRef,
     parseAndCompile,
     scriptInfo,
     TFunction,
     TStructField
 } from '@waves/ride-js';
 import suggestions from './suggestions';
-import * as jsonSuggestions from './suggestions/suggestions.json';
 import {
-    convertToCompletion,
-    getCompletionDefaultResult,
     getExpressionType,
     getFuncArgumentOrTypeByPos,
     getFuncHoverByNode,
     getFuncHoverByTFunction,
     getNodeByOffset,
-    getNodeType,
-    getPostfixFunctions,
-    intersection,
-    isIBlock,
     isIFunc,
     isIFunctionCall,
     isIGetter,
     isILet,
     isIRef,
-    isIScript,
     isCompileError,
-    isPrimitiveNode,
     offsetToRange,
     rangeToOffset, getTypeDoc, isIConstStr
 } from './utils/index';
-import {getFunctionCallHover, getWordByPos} from "./utils/hoverUtils";
-import {getCharacter} from "./utils/getCharacter";
+import {getFunctionCallHover} from "./utils/hoverUtils";
 import * as complitionUtils from './utils/complitionUtils';
 
 export class LspService {
@@ -152,8 +140,8 @@ export class LspService {
             const ast = parsedResult.exprAst || parsedResult.dAppAst || parsedResult.ast;
             if (!ast) return {contents: []};
             const cursor = rangeToOffset(position.line, position.character, text);
-            // console.log('ast', JSON.stringify(ast, undefined, ' '))
             const node = getNodeByOffset(ast, cursor);
+            // console.log('ast', JSON.stringify(ast, undefined, ' '))
             // console.log('node', JSON.stringify(node, undefined, ' '))
             // console.log('cursor', cursor)
 

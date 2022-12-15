@@ -82,30 +82,35 @@ export const isPrimitiveNode = (node: TNode): node is TPrimitiveNode => isIConst
 
 const findNodeByFunc = (node: TNode, f: (node: TNode) => TNode | null): TNode | null => {
     if (isIDApp(node)) {
+        // console.log("isIDApp")
         return node.decList.find(dec => f(dec) != null) || node.annFuncList.find(node => f(node) != null) || null;
     } else if (isIAnnotatedFunc(node)) {
         return f(node.func) || node.annList.find(annotation => f(annotation) != null) || null
     } else if (isIBlock(node)) {
-        return node.dec.name.value.startsWith('$match')
-            ? f((node.body as IIf).cond) || (f((node.body as IIf).ifTrue) || f((node.body as IIf).ifFalse) || f(node.dec))
-            : (f(node.dec) || f(node.body));
+        // console.log("isIBlock")
+        return (f(node.body)) || f(node.dec);
     } else if (isIDApp(node)) {
         return node.decList.find(node => f(node) != null) || node.annFuncList.find(node => f(node) != null) || null;
     } else if (isILet(node)) {
+        // console.log("isILet")
         return f(node.expr)
     } else if (isIFunc(node) || isIScript(node)) {
+        // console.log("isIFunc || isIScript")
         return f(node.expr)
+    } else if (isIIf(node)) {
+        console.log("isIIf")
+        return f(node.ifTrue) || f(node.cond) || f(node.ifFalse);
     } else if (isIFunctionCall(node)) {
-        const findedNode = node.args.find(node => f(node) != null)
+        // console.log("isIFunctionCall")
+        const findedNode = node.args.find(node => f(node) != null && !(isIRef(node) && node.name.startsWith('$match')))
         // @ts-ignore
         // if (findedNode && "name" in findedNode && findedNode.name && (findedNode.name.value || findedNode.name as unknown as string).startsWith('$match')) {
         //     console.log('true')
         //     return null
         // } else
             return findedNode || null
-    } else if (isIIf(node)) {
-        return  f(node.ifTrue) || f(node.ifFalse) || f(node.cond);
     } else if (isIGetter(node)) {
+        // console.log("isIGetter")
         return f(node.ref);
     } else {
         return null;
