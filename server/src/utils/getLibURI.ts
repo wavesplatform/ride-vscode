@@ -35,7 +35,8 @@ export const getLibURI = (uri: string, libPath: string): string => {
     const pathToLibUn = pathToLib.replace(/\\/g, '/')
     console.log('pathToLib', pathToLib)
     console.log('pathToLibUn', pathToLibUn)
-    // console.log('Files.uriToFilePath(uri)', Files.uriToFilePath(uri))
+    console.log('Files.uriToFilePath(uri)', Files.uriToFilePath(uri))
+    console.log('uri', uri)
     // console.log('path', path.resolve(Files.uriToFilePath(uri) || ''))
     // @ts-ignore
     const subStr = search_largest_substr(uri, (Files.uriToFilePath(uri) || ''))
