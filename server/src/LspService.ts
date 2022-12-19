@@ -141,9 +141,9 @@ export class LspService {
             if (!ast) return {contents: []};
             const cursor = rangeToOffset(position.line, position.character, text);
             const node = getNodeByOffset(ast, cursor);
-            // console.log('ast', JSON.stringify(ast, undefined, ' '))
+            console.log('ast', JSON.stringify(ast, undefined, ' '))
             // console.log('node', JSON.stringify(node, undefined, ' '))
-            // console.log('cursor', cursor)
+            console.log('cursor', cursor)
 
             if (isILet(node)) {
                 contents.push(`**${node.name.value}**: ${getExpressionType(node.expr.resultType)}`);

@@ -1,11 +1,10 @@
-import { CompletionItem, CompletionItemKind, Position, Location } from 'vscode-languageserver-types';
-import { isList, isPrimitive, isStruct, isUnion, listToString, unionToString } from '../suggestions';
-import { TFunction, TList, TStruct, TStructField, TType, TUnion } from '@waves/ride-js'
-import { Context, suggestions, TPosition } from "./context";
+import {CompletionItem, CompletionItemKind, Position} from 'vscode-languageserver-types';
+import {isList, isPrimitive, isStruct, isUnion, listToString, unionToString} from '../suggestions';
+import {TList, TStruct, TStructField, TType, TUnion} from '@waves/ride-js'
+import {Context, suggestions, TPosition} from "./context";
 
 export const ctx = new Context();
-const { types, functions, globalVariables, globalSuggestions } = suggestions;
-import * as jsonSuggestions from '../suggestions/suggestions.json';
+const { types, functions, globalSuggestions } = suggestions;
 
 
 //======================DEFINITION=========================
@@ -64,7 +63,7 @@ export const getColonOrPipeCompletionResult = (text: string, p: TPosition): Comp
 export const checkPostfixFunction = (inputWord: string) => {
     let variable = ctx.getVariable(inputWord);
 
-    const out = functions.filter(({ args }) => {
+    return functions.filter(({args}) => {
         if (!args[0] || !variable || !variable.type) return false;
 
         let type = variable.type;
@@ -88,97 +87,9 @@ export const checkPostfixFunction = (inputWord: string) => {
         }
         return false;
     })
-
-    return out
 };
-
-
-//======================SignatureHelp======================
-
-export function getSignatureHelpResult(word: string, isShift: boolean) {
-    type TStructTypeField = { name: string, type: TStruct };
-
-    const getLabel = (name: string, args: TStructField[], resultType: TType) =>
-        `${name}(${args.map(({ name, type }) =>
-            `${name}: ${getFunctionArgumentString(type)}`).join(', ')}): ${getFunctionArgumentString(resultType)}`;
-
-    const getParameters = (args: TStructField[]) => args.map(({ name, type }) => ({
-        label: `${name}: ${getFunctionArgumentString(type)}`
-    }));
-
-    return [
-        ...getFunctionsByName(word).map(func => ({
-            ...func,
-            args: func.args.filter((_, i) => !(isShift && i === 0))
-        })).map(({ name, args, doc, resultType }) =>
-            ({ label: getLabel(name, args, resultType), documentation: doc, parameters: getParameters(args) })),
-
-        ...types.filter((item): item is TStructTypeField => item.name === word && isStruct(item.type))
-            .map(({ name, type }: TStructTypeField) =>
-                ({ label: getLabel(name, type.fields, type), parameters: getParameters(type.fields) }))
-    ]
-}
-
-//======================Hover==============================
-
-export function getHoverResult(word: string, inputWords: string[]) {
-
-    const getHoverFunctionDoc = (func: TFunction) => `**${func.name}** (${func.args.length > 0 ?
-        `\n${func.args.map(({ name, type, doc }) => `\n * ${`${name}: ${getFunctionArgumentString(type)} - ${doc}`} \n`)}\n` :
-        ' '}) : ${getFunctionArgumentString(func.resultType)} \n>_${func.doc}_`;
-    return unique(
-        getLadderCompletion(ctx, inputWords)
-            .filter(({ name }) => name === word).map(item => `**${item.name}**: ` + getTypeDoc(item))
-            .concat(ctx.variables.filter(({ name }) => name === word)
-                .map(({ type }) => type ? getTypeDoc({ name: '', type: type }, true) : 'Unknown'))
-            .concat(globalVariables.filter(({ name }) => name === word).map(({ doc }) => doc))
-            .concat(getFunctionsByName(word).map((func: TFunction) => getHoverFunctionDoc(func)))
-            .concat(types.filter(({ name }) => name === word).map(item => getTypeDoc(item)))
-            // @ts-ignore
-            .concat(jsonSuggestions.snippets.filter(({ label, detail }) => label === word && detail)
-                // @ts-ignore
-                .map(({detail}) => detail || ''))
-    );
-}
-
-//======================exported functions=================
-
-export function getWordByPos(string: string, character: number) {
-    let sep = ['"', '\'', '*', '(', ')', '{', '}', '[', ']', '!', '<', '>', '|', '\\', '/', '.', ',', ':', ';', '&', ' ', '=', '\t'];
-    let start = 0, end = string.length;
-    for (let i = character; i <= string.length; i++) {
-        if (~sep.indexOf(string[i])) {
-            end = i;
-            break;
-        }
-    }
-    for (let i = character; i >= 0; i--) {
-        if (~sep.indexOf(string[i])) {
-            start = ++i;
-            break;
-        }
-    }
-    return string.substring(start, end);
-}
 
 export const getLastArrayElement = (arr: string[] | null): string => arr !== null ? [...arr].pop() || '' : '';
-
-
-//======================HELPERS============================
-
-const getFunctionArgumentString = (type: TType): string => {
-    if (isPrimitive(type)) {
-        return type
-    } else if (isList(type)) {
-        return listToString(type)
-    } else if (isStruct(type)) {
-        return type.typeName
-    } else if (isUnion(type)) {
-        return unionToString(type);
-    } else {
-        return 'Unknown'
-    }
-};
 
 export const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
     const type = item.type;
@@ -201,8 +112,6 @@ export const getTypeDoc = (item: TStructField, isRec?: Boolean): string => {
     }
     return typeDoc;
 };
-
-const getFunctionsByName = (funcName: string): TFunction[] => functions.filter(({ name }: TFunction) => name === funcName);
 
 const convertToCompletion = (field: TStructField): CompletionItem => {
     let detail: string = '';
