@@ -69,10 +69,10 @@ export class LspServer {
                 const {imports} = info;
                 for (const libPath of imports) {
                     // console.log('getLibURI(document.uri, libPath)', getLibURI(document.uri, libPath))
-                    console.log('document.uri', document.uri)
-                    console.log('decodeURI(document.uri', decodeURI(document.uri))
-                    console.log('libPath', libPath)
-                    const file = await this.getDocument(getLibURI(decodeURI(document.uri), libPath))
+                    // console.log('document.uri', document.uri)
+                    // console.log('decodeURI(document.uri', decodeURI(document.uri))
+                    // console.log('libPath', libPath)
+                    const file = await this.getDocument(getLibURI(document.uri, libPath))
                     // console.log('file', file)
                     libs[libPath] = file.getText();
                 }
