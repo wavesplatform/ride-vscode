@@ -31,10 +31,11 @@ function search_largest_substr() {
 }
 
 export const getLibURI = (uri: string, libPath: string): string => {
+    uri = decodeURIComponent(uri)
     const pathToLib = String.raw`${path.resolve(libPath)}`
     const pathToLibUn = encodeURI(pathToLib.replace(/\\/g, '/'))
     const filePath = String.raw`${Files.uriToFilePath(uri) || ''}`
-    const filePathUn = encodeURI(filePath.replace(/\\/g, '/'))
+    const filePathUn = filePath.replace(/\\/g, '/')
     console.log('pathToLibUn', pathToLibUn)
     console.log('filePathUn', filePathUn)
     console.log('uri', uri)
@@ -47,7 +48,7 @@ export const getLibURI = (uri: string, libPath: string): string => {
     // @ts-ignore
     const subStr = search_largest_substr(uri, filePathUn)
     console.log('subStr', subStr)
-    const uriRoot = uri.replace(subStr, '')
+    const uriRoot = uri.replace(decodeURI(subStr), '')
     console.log('uriRoot', uriRoot)
     console.log('uriRoot + pathToLibUn', uriRoot + pathToLibUn)
     // console.log('encodeURI(uriRoot + pathToLibUn)', encodeURI(uriRoot + pathToLibUn))
