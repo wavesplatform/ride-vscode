@@ -82,35 +82,34 @@ export const isPrimitiveNode = (node: TNode): node is TPrimitiveNode => isIConst
 
 const findNodeByFunc = (node: TNode, f: (node: TNode) => TNode | null): TNode | null => {
     if (isIDApp(node)) {
-        // console.log("isIDApp")
         return node.decList.find(dec => f(dec) != null) || node.annFuncList.find(node => f(node) != null) || null;
     } else if (isIAnnotatedFunc(node)) {
         return f(node.func) || node.annList.find(annotation => f(annotation) != null) || null
     } else if (isIBlock(node)) {
-        // console.log("isIBlock")
-        return (f(node.body)) || f(node.dec);
+        if (node.dec.name.value.startsWith('$match')) {
+            return f(node.body);
+        } else {
+            if (f(node.dec) && f(node.body) && (node.body.posEnd - node.body.posStart) < (node.dec.posEnd - node.dec.posStart)) {
+                return f(node.body)
+            }
+            return f(node.dec) || f(node.body)
+        }
     } else if (isIDApp(node)) {
+        // @ts-ignore
         return node.decList.find(node => f(node) != null) || node.annFuncList.find(node => f(node) != null) || null;
     } else if (isILet(node)) {
-        // console.log("isILet")
         return f(node.expr)
-    } else if (isIFunc(node) || isIScript(node)) {
-        // console.log("isIFunc || isIScript")
+    } else if (isIFunc(node)) {
+        // @ts-ignore
+        return f(node.argList) || f(node.expr)
+    } else if (isIScript(node)) {
         return f(node.expr)
     } else if (isIIf(node)) {
-        console.log("isIIf")
         return f(node.ifTrue) || f(node.cond) || f(node.ifFalse);
     } else if (isIFunctionCall(node)) {
-        // console.log("isIFunctionCall")
         const findedNode = node.args.find(node => f(node) != null && !(isIRef(node) && node.name.startsWith('$match')))
-        // @ts-ignore
-        // if (findedNode && "name" in findedNode && findedNode.name && (findedNode.name.value || findedNode.name as unknown as string).startsWith('$match')) {
-        //     console.log('true')
-        //     return null
-        // } else
-            return findedNode || null
+        return findedNode || null
     } else if (isIGetter(node)) {
-        // console.log("isIGetter")
         return f(node.ref);
     } else {
         return null;
