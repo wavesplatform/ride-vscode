@@ -18,7 +18,7 @@
 	},
 	"dependencies": {
 		"@waves/ride-js": "^2.1.10",
-		"@waves/waves-repl": "^3.0.0",
+		"@waves/waves-repl": "^3.0.1",
 		"react": "^16.5.2",
 		"react-dom": "^16.5.2",
 		"vscode": "^1.1.37",

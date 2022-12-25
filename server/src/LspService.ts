@@ -11,7 +11,7 @@ import {
     SignatureHelp,
     TextDocument
 } from 'vscode-languageserver-types';
-import {compile, scriptInfo} from '@waves/ride-js';
+import {compile, ICompilationError, ICompilationResult, scriptInfo} from '@waves/ride-js';
 import * as utils from './utils';
 import {suggestions, TPosition} from "./context";
 import {IFileContentProvider} from "./FileContentProvider";
