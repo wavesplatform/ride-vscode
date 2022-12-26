@@ -21,6 +21,7 @@ import * as fs from 'fs';
 import {LspService} from './LspService';
 import {getLibURI} from "./utils/getLibURI";
 import {scriptInfo} from '@waves/ride-js';
+import {debounce} from "debounce";
 
 export class LspServer {
     private hasConfigurationCapability: boolean = false;

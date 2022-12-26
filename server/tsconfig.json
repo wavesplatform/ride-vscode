@@ -9,11 +9,9 @@
 		"outDir": "out",
         "rootDir": "src",
         "declaration": true,
-        "lib": [ "es6", "dom" ],
-		"types": ["jest"],
+        "lib": [ "es6" ],
         "typeRoots": [
-            "./src/types",
-			"./node_modules/@types"
+            "./src/types"
           ]
 	},
 	"include": [

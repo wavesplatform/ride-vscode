@@ -47,6 +47,7 @@ export class LspService {
     public static TextDocument = TextDocument;
 
     public validateTextDocument(document: TextDocument, libs: Record<string, string>): Diagnostic[] {
+        console.log('validateTextDocument')
         const text = document.getText();
         try {
             const parsedResult = parseAndCompile(text, 3, undefined, undefined, libs);
