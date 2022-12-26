@@ -1,10 +1,10 @@
 {
 	"name": "waves-ride",
 	"displayName": "RIDE",
-	"description": "Waves Ride language support and REPL for Visual Studio Code",
+	"description": "Waves Ride language support and Waves JS Console for Visual Studio Code",
 	"author": "wavesplatform",
 	"license": "MIT",
-	"version": "1.1.1",
+	"version": "2.0.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/wavesplatform/ride-vscode"
@@ -47,7 +47,7 @@
 		"commands": [
 			{
 				"command": "waves-repl.start",
-				"title": "Start Waves REPL",
+				"title": "Start Waves JS Console",
 				"category": "RIDE"
 			}
 		],
@@ -84,7 +84,7 @@
 				},
 				"rideExtension.repl.API_BASE": {
 					"type": "string",
-					"default": "https://testnodes.wavesnodes.com/",
+					"default": "https://nodes-testnet.wavesnodes.com/",
 					"description": "Node url to send transactions"
 				}
 			}
@@ -92,6 +92,7 @@
 	},
 	"scripts": {
 		"publish-server": "npm run compile:server && cd server && npm run publish-server",
+		"publish-server-beta": "npm run compile:server && cd server && npm run publish-server  --tag beta",
 		"vscode:prepublish": "cd extension && npm run update-vscode && cd .. && npm run compile && npm run updateTmLanguage",
 		"compile:extension": "npm run syncCompilerVersion && tsc -p ./extension/tsconfig.json && cd ./extension && ./node_modules/.bin/webpack",
 		"compile:server": "tsc -p ./server/tsconfig.json",
@@ -105,12 +106,10 @@
 	},
 	"devDependencies": {
 		"@types/mocha": "^5.2.0",
-		"@types/node": "^18.11.17",
-		"@types/jest": "^24.0.23",
+		"@types/node": "^15.14.0",
 		"typescript": "3.9.10"
 	},
 	"dependencies": {
-		"@waves/ride-js": "2.2.3",
-		"vscode-languageserver-types": "^3.16.0"
+		"vscode-languageserver-types": "^3.12.0"
 	}
 }
