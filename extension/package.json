@@ -29,14 +29,14 @@
 		"@types/react": "^16.4.17",
 		"@types/react-dom": "^16.0.9",
 		"autoprefixer": "^9.2.0",
-		"css-loader": "^1.0.0",
+		"css-loader": "^6.7.3",
 		"postcss-flexbugs-fixes": "^4.1.0",
 		"postcss-inline-svg": "^3.1.1",
-		"postcss-loader": "^3.0.0",
-		"style-loader": "^0.23.1",
-		"ts-loader": "^5.2.2",
+		"postcss-loader": "^7.0.2",
+		"style-loader": "^3.3.1",
+		"ts-loader": "^9.4.2",
 		"typescript": "3.9.10",
-		"webpack": "^4.20.2",
-		"webpack-cli": "^3.1.2"
+		"webpack": "^5.75.0",
+		"webpack-cli": "^5.0.1"
 	}
 }
