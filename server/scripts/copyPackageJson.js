@@ -5,6 +5,9 @@ const updatedPackageObj = {
     ...packageObj,
     main: 'index.js',
     types: 'index.d.ts',
+    bin: {
+        'ride-language-server': 'main.js',
+    },
     scripts: undefined,
     private: undefined
 }
