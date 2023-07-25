@@ -4,7 +4,7 @@
 	"description": "Waves Ride language support and Waves JS Console for Visual Studio Code",
 	"author": "wavesplatform",
 	"license": "MIT",
-	"version": "1.4.2",
+	"version": "1.4.3",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/wavesplatform/ride-vscode"
