@@ -1,11 +1,11 @@
-import { CompletionItem, CompletionItemKind, Position, Location } from 'vscode-languageserver-types';
-import { isList, isPrimitive, isStruct, isUnion, listToString, unionToString } from './suggestions';
-import { TFunction, TList, TStruct, TStructField, TType, TUnion } from '@waves/ride-js'
-import { Context, suggestions, TPosition } from "./context";
+import {CompletionItem, CompletionItemKind, Position} from 'vscode-languageserver-types';
+import {isList, isPrimitive, isStruct, isUnion, listToString, unionToString} from './suggestions';
+import {TFunction, TList, TStruct, TStructField, TType, TUnion} from '@waves/ride-js'
+import {Context, suggestions, TPosition} from "./context";
+import * as jsonSuggestions from './suggestions/suggestions.json';
 
 export const ctx = new Context();
 const { types, functions, globalVariables, globalSuggestions } = suggestions;
-import * as jsonSuggestions from './suggestions/suggestions.json';
 
 
 //======================DEFINITION=========================
@@ -65,7 +65,7 @@ export const getColonOrPipeCompletionResult = (text: string, p: TPosition): Comp
 export const checkPostfixFunction = (inputWord: string) => {
     let variable = ctx.getVariable(inputWord);
 
-    const out = functions.filter(({ args }) => {
+    return functions.filter(({args}) => {
         if (!args[0] || !variable || !variable.type) return false;
 
         let type = variable.type;
@@ -89,8 +89,6 @@ export const checkPostfixFunction = (inputWord: string) => {
         }
         return false;
     })
-
-    return out
 };
 
 
@@ -225,7 +223,7 @@ const convertToCompletion = (field: TStructField): CompletionItem => {
 export function intersection(types: TType[]): TStructField[] {
     const items = [...types];
     let structs: TStruct[] = [];
-    if (types === [] || items.length === 0) {
+    if (items.length === 0) {
         return [];
     }
     let next: TType;

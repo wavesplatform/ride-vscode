@@ -6,14 +6,15 @@
 		"outDir": "out",
 		"rootDir": "src",
 		"lib": [ "es6","dom", "es2015" ],
+		"types": [ "node" ],
 		"jsx": "react",
-		"sourceMap": true
+		"sourceMap": true,
+		"skipLibCheck": true
 	},
 	"include": [
 		"src"
 	],
 	"exclude": [
         "node_modules",
-        "src/repl"
 	]
 }
