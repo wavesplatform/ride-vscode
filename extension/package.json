@@ -16,7 +16,7 @@
   "dependencies": {
     "@types/vscode": "^1.116.0",
     "@waves/ride-js": "^2.3.0",
-    "@waves/waves-repl": "file:../../waves-repl",
+    "@waves/waves-repl": "3.1.0-snapshot.1",
     "long": "^5.3.2",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
