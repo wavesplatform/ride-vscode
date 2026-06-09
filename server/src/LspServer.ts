@@ -1,24 +1,24 @@
 'use strict';
 
 import {
-    TextDocument,
-    Diagnostic,
-    InitializeParams,
-    DidChangeConfigurationNotification,
-    DidOpenTextDocumentParams,
-    DidCloseTextDocumentParams,
-    DidChangeTextDocumentParams,
     CompletionItem,
-    TextDocumentPositionParams,
-    IConnection,
-    Files,
-    TextDocumentSyncKind,
     CompletionList,
+    Connection,
+    Diagnostic,
+    DidChangeConfigurationNotification,
+    DidChangeTextDocumentParams,
+    DidCloseTextDocumentParams,
+    DidOpenTextDocumentParams,
+    Files,
     Hover,
-    SignatureHelp
-} from 'vscode-languageserver';
+    InitializeParams,
+    SignatureHelp,
+    TextDocument,
+    TextDocumentPositionParams,
+    TextDocumentSyncKind
+} from 'vscode-languageserver/node';
 import * as fs from 'fs';
-import { LspService } from './LspService';
+import {LspService} from './LspService';
 import {FileContentProvider} from "./FileContentProvider";
 
 export class LspServer {
@@ -29,7 +29,7 @@ export class LspServer {
     private service: LspService;
     private documents: Record<string, TextDocument> = {};
 
-    constructor(private connection: IConnection) {
+    constructor(private connection: Connection) {
         this.service = new LspService(new FileContentProvider(this.documents));
 
         // Bind connection events to server methods
@@ -46,11 +46,11 @@ export class LspServer {
         if (!document) {
             const path = Files.uriToFilePath(uri) || './';
             document = await new Promise<TextDocument>((resolve) => {
-                fs.access(path, (err) => {
+                fs.access(path, (err: NodeJS.ErrnoException | null) => {
                     if (err) {
-                        resolve(undefined)
+                        resolve(TextDocument.create(uri, "ride", 1, ""))
                     } else {
-                        fs.readFile(path, (_, data) => {
+                        fs.readFile(path, (_: NodeJS.ErrnoException | null, data: Buffer) => {
                             resolve(TextDocument.create(uri, "ride", 1, data.toString()))
                         })
                     }
@@ -65,29 +65,22 @@ export class LspServer {
         let changes = didChangeTextDocumentParams.contentChanges;
 
         for (let i = 0; i < changes.length; i++) {
-            if (!changes[i].range && !changes[i].rangeLength) {
+            const change = changes[i];
+            if (!('range' in change)) {
                 // no ranges defined, the text is the entire document then
-                buffer = changes[i].text;
+                buffer = change.text;
                 break;
             }
-            let offset, end, range = changes[i].range;
-            if (range !== undefined) {
-                offset = document.offsetAt(range.start);
-                end = null;
-                if (range.end) {
-                    end = document.offsetAt(range.end);
-                } else {
-                    end = offset + (changes[i].rangeLength || 0);
-                }
-            }
+            const range = change.range;
+            const offset = document.offsetAt(range.start);
+            const end = range.end ? document.offsetAt(range.end) : offset + (change.rangeLength || 0);
 
-            buffer = buffer.substring(0, offset) + changes[i].text + buffer.substring(end || 0);
+            buffer = buffer.substring(0, offset) + change.text + buffer.substring(end);
         }
-        const changedDocument = TextDocument.create(didChangeTextDocumentParams.textDocument.uri, document.languageId, didChangeTextDocumentParams.textDocument.version || 0, buffer);
-        return changedDocument
+        return TextDocument.create(didChangeTextDocumentParams.textDocument.uri, document.languageId, didChangeTextDocumentParams.textDocument.version || 0, buffer)
     }
 
-    private bindInit(connection: IConnection = this.connection, service: LspService = this.service) {
+    private bindInit(connection: Connection = this.connection, service: LspService = this.service) {
         connection.onInitialize((params: InitializeParams) => {
             let capabilities = params.capabilities;
 
@@ -127,14 +120,14 @@ export class LspServer {
                 );
             }
             if (this.hasWorkspaceFolderCapability) {
-                connection.workspace.onDidChangeWorkspaceFolders(_event => {
+                connection.workspace.onDidChangeWorkspaceFolders((_event: unknown) => {
                     connection.console.log('Workspace folder change event received.');
                 });
             }
         });
     }
 
-    private bindCallbacks(connection: IConnection = this.connection, service: LspService = this.service) {
+    private bindCallbacks(connection: Connection = this.connection, service: LspService = this.service) {
         // Document changes
         connection.onDidOpenTextDocument((didOpenTextDocumentParams: DidOpenTextDocumentParams): void => {
             let document = TextDocument.create(didOpenTextDocumentParams.textDocument.uri, didOpenTextDocumentParams.textDocument.languageId, didOpenTextDocumentParams.textDocument.version, didOpenTextDocumentParams.textDocument.text);

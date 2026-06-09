@@ -1,4 +1,4 @@
-import { Files } from "vscode-languageserver";
+import { Files } from "vscode-languageserver/node";
 import {TextDocument} from "vscode-languageserver-types";
 import * as fs from 'fs'
 import { URI } from 'vscode-uri'

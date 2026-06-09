@@ -10,9 +10,8 @@
         "rootDir": "src",
         "declaration": true,
         "lib": [ "es6" ],
-        "typeRoots": [
-            "./src/types"
-          ]
+        "types": [ "node" ],
+        "skipLibCheck": true,
 	},
 	"include": [
 		"src"

@@ -12,7 +12,13 @@ module.exports = {
         rules: [
             {
                 test: /\.(ts|tsx)$/,
-                use: "ts-loader",
+                use: {
+                    loader: "ts-loader",
+                    options: {
+                        transpileOnly: true,
+                        configFile: path.join(__dirname, "tsconfig.webpack.json")
+                    }
+                },
                 exclude: /node_modules/
             },
             {
@@ -28,29 +34,32 @@ module.exports = {
                     {
                         loader: require.resolve('postcss-loader'),
                         options: {
-                            // Necessary for external CSS imports to work
-                            // https://github.com/facebookincubator/create-react-app/issues/2677
-                            ident: 'postcss',
-                            plugins: () => [
-                                require('postcss-flexbugs-fixes'),
-                                require('postcss-inline-svg'),
-                                autoprefixer({
-                                    browsers: [
-                                        '>1%',
-                                        'last 4 versions',
-                                        'Firefox ESR',
-                                        'not ie < 9', // React doesn't support IE8 anyway
-                                    ],
-                                    flexbox: 'no-2009',
-                                }),
-                            ],
+                            postcssOptions: {
+                                plugins: [
+                                    require('postcss-flexbugs-fixes'),
+                                    require('postcss-inline-svg'),
+                                    autoprefixer({
+                                        overrideBrowserslist: [
+                                            '>1%',
+                                            'last 4 versions',
+                                            'Firefox ESR',
+                                            'not ie < 9',
+                                        ],
+                                        flexbox: 'no-2009',
+                                    }),
+                                ],
+                            },
                         },
                     },
                 ],
             }
         ]
     },
+    mode: "production",
     resolve: {
+        alias: {
+            "@waves/waves-repl$": path.resolve(__dirname, "..", "..", "waves-repl", "src", "index.tsx")
+        },
         extensions: [".js", ".jsx", ".ts", ".tsx"]
     }
 };

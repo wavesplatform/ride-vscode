@@ -1,0 +1,21 @@
+name: Publish @waves/ride-language-server
+
+on:
+  push:
+    branches: [ master ]
+    paths: [ 'server/**' ]
+  release:
+    types: [ published ]
+
+jobs:
+  publish:
+    uses: wavesplatform/publish-to-npm/.github/workflows/publish.yml@1e213390b852aaab37dfa3def37feba928c6b7b6
+    with:
+      environment: NPMJS
+      event_name: ${{ github.event_name }}
+      test: false
+      version: ${{ github.event.release.tag_name }}
+      working_directory: 'server'
+    permissions:
+      id-token: write
+      contents: read

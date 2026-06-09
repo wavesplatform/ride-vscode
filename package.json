@@ -20,7 +20,7 @@
 		"Blockchain"
 	],
 	"engines": {
-		"vscode": "^1.23.0"
+		"vscode": "^1.116.0"
 	},
 	"activationEvents": [
 		"onLanguage:ride",
@@ -91,10 +91,10 @@
 		}
 	},
 	"scripts": {
-		"publish-server": "npm run compile:server && cd server && npm run publish-server",
-		"publish-server-beta": "npm run compile:server && cd server && npm run publish-server  --tag beta",
-		"vscode:prepublish": "cd extension && npm run update-vscode && cd .. && npm run compile && npm run updateTmLanguage",
-		"compile:extension": "npm run syncCompilerVersion && tsc -p ./extension/tsconfig.json && cd ./extension && ./node_modules/.bin/webpack",
+		"publish-server": "cd server && npm publish",
+		"publish-server-beta": "cd server && npm publish --tag beta",
+		"vscode:prepublish": "npm run compile && npm run updateTmLanguage",
+		"compile:extension": "npm run syncCompilerVersion && tsc -p ./extension/tsconfig.json && cd ./extension && npx webpack",
 		"compile:server": "tsc -p ./server/tsconfig.json",
 		"watch:extension": "tsc -w -p ./extension/tsconfig.json",
 		"watch:server": "tsc -w -p ./server/tsconfig.json",
@@ -105,11 +105,11 @@
 		"updateTmLanguage": "node ./scripts/updateTmLanguage.js"
 	},
 	"devDependencies": {
-		"@types/mocha": "^5.2.0",
-		"@types/node": "^15.14.0",
-		"typescript": "3.9.10"
+		"@types/mocha": "^10.0.10",
+		"@types/node": "^25.9.2",
+		"typescript": "6.0.3"
 	},
 	"dependencies": {
-		"vscode-languageserver-types": "^3.12.0"
+		"vscode-languageserver-types": "^3.17.5"
 	}
 }

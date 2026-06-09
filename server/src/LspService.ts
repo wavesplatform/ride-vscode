@@ -120,7 +120,7 @@ export class LspService {
                     //TODO Make fashionable humanly
                     if (firstWordMatch.length >= 2 && utils.ctx.getVariable(firstWordMatch[1])) {
                         result = [
-                            ...utils.getCompletionResult(firstWordMatch[0].split('.')),
+                            ...utils.getCompletionResult((firstWordMatch[0] || '').split('.')),
                             ...utils.checkPostfixFunction(inputWord).map(({name}) => ({label: name}))
                         ];
                     }
@@ -153,14 +153,14 @@ export class LspService {
         //todo add hover to func args
         const match = (/[a-zA-z0-9_]+\.[a-zA-z0-9_.]*$/gm)
             .exec(document.getText({start: {line: position.line, character: 0}, end: position}));
-        const line = document.getText().split('\n')[position.line];
+        const line = document.getText().split('\n')[position.line] || '';
         const word = utils.getWordByPos(line, position.character);
         utils.ctx.updateContext(document.getText());
         const p: TPosition = {row: position.line, col: position.character + 1};
         return {contents: utils.getHoverResult(word, (match ? match[0] : '').split('.'))};
     }
 
-    public definition(document: TextDocument, position: Position): Definition {
+    public definition(document: TextDocument, position: Position): Definition | null {
 
         const text = document.getText(),
             line = text.split('\n')[position.line],
@@ -198,8 +198,8 @@ export class LspService {
             fail = true;
 
         return {
-            activeParameter: fail ? null : functionArguments.split(',').length - 1,
-            activeSignature: fail ? null : 0,
+            activeParameter: fail ? undefined : functionArguments.split(',').length - 1,
+            activeSignature: fail ? undefined : 0,
             //get result by last function call
             signatures: fail ? [] : utils.getSignatureHelpResult(lastFunction.slice(0, -1), isPostfix),
         };
