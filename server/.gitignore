@@ -1,0 +1,7 @@
+# npm publish build output (tsconfig.build.json compiles to the package root)
+/*.js
+/*.d.ts
+/*.js.map
+/suggestions/
+# pack artifacts
+*.tgz
