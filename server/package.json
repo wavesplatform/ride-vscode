@@ -4,13 +4,16 @@
 	"version": "1.1.5",
 	"author": "Wavesplatform",
 	"license": "MIT",
-	"main": "out/index.js",
-	"types": "out/index.d.ts",
+	"main": "index.js",
+	"types": "index.d.ts",
 	"files": [
-		"out"
+		"*.js",
+		"*.d.ts",
+		"*.js.map",
+		"suggestions"
 	],
 	"scripts": {
-		"build": "tsc",
+		"build": "tsc -p tsconfig.build.json",
 		"prepublishOnly": "npm run build"
 	},
 	"engines": {
